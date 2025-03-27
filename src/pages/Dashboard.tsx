@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -12,6 +11,7 @@ import {
   FileText,
   LayoutGrid,
   TrendingUp,
+  TrendingDown,
   Upload,
   Users,
 } from "lucide-react";
@@ -160,20 +160,12 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="mt-4 flex items-center">
-                <TrendingUp
-                  className={`w-3 h-3 mr-1 ${
-                    stat.trendUp
-                      ? "text-green-500 dark:text-green-400"
-                      : "text-red-500 dark:text-red-400"
-                  }`}
-                />
-                <p
-                  className={`text-xs ${
-                    stat.trendUp
-                      ? "text-green-500 dark:text-green-400"
-                      : "text-red-500 dark:text-red-400"
-                  }`}
-                >
+                {stat.trendUp ? (
+                  <TrendingUp className="w-3 h-3 mr-1 text-green-500 dark:text-green-400" />
+                ) : (
+                  <TrendingDown className="w-3 h-3 mr-1 text-green-500 dark:text-green-400" />
+                )}
+                <p className={`text-xs ${stat.trendUp ? "text-green-500 dark:text-green-400" : "text-green-500 dark:text-green-400"}`}>
                   {stat.trend}
                 </p>
               </div>
