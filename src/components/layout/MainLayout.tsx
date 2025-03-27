@@ -26,6 +26,11 @@ const getMenuItems = (isAdmin: boolean): MenuItem[] => {
       icon: LayoutDashboard
     },
     {
+      title: "Upload Tests",
+      path: "/upload",
+      icon: Upload
+    },
+    {
       title: "Reports",
       path: "/reports",
       icon: FileText
@@ -44,11 +49,7 @@ const getMenuItems = (isAdmin: boolean): MenuItem[] => {
   
   // Add admin-specific menu items
   if (isAdmin) {
-    baseItems.splice(1, 0, {
-      title: "Upload Tests",
-      path: "/upload",
-      icon: Upload
-    }, {
+    baseItems.splice(2, 0, {
       title: "Students",
       path: "/students",
       icon: Users

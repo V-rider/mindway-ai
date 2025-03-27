@@ -4,17 +4,8 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { UploadForm } from "@/components/ui/UploadForm";
 import { motion } from "framer-motion";
 import { FileText, Upload as UploadIcon, AlertCircle, Lightbulb, Users } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { Navigate } from "react-router-dom";
 
 const Upload = () => {
-  const { isAdmin } = useAuth();
-  
-  // Redirect non-admin users
-  if (!isAdmin) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
   return (
     <MainLayout>
       <div className="space-y-8">
