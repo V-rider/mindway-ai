@@ -41,7 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const mockUsers = [
+      const mockUsers: User[] = [
         {
           id: "1",
           name: "Student User",
