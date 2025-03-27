@@ -10,23 +10,6 @@ interface AuthContextType {
   isAuthenticated: boolean;
 }
 
-const mockUsers: User[] = [
-  {
-    id: "1",
-    name: "Student User",
-    email: "student@example.com",
-    role: "student",
-    avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png"
-  },
-  {
-    id: "2",
-    name: "Admin User",
-    email: "admin@example.com",
-    role: "admin",
-    avatar: "/lovable-uploads/7aff8652-12ca-4080-b580-d23a64527cd3.png"
-  }
-];
-
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
@@ -57,6 +40,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // In a real app, this would be an API call
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const mockUsers = [
+        {
+          id: "1",
+          name: "Student User",
+          email: "student@example.com",
+          role: "student",
+          avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png"
+        },
+        {
+          id: "2",
+          name: "Admin User",
+          email: "admin@example.com",
+          role: "admin",
+          avatar: "/lovable-uploads/7aff8652-12ca-4080-b580-d23a64527cd3.png"
+        }
+      ];
       
       const foundUser = mockUsers.find(u => u.email === email);
       
