@@ -1,14 +1,15 @@
 
 import React, { useState } from "react";
-import { Upload, Check, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, Check, AlertCircle, Loader2, Users, Plus, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { TestMeta } from "@/types";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 export const UploadForm: React.FC = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [dragActive, setDragActive] = useState<boolean>(false);
   const [testMeta, setTestMeta] = useState<Omit<TestMeta, "id" | "userId" | "createdAt">>({
     name: "",
@@ -16,8 +17,10 @@ export const UploadForm: React.FC = () => {
     date: new Date().toISOString().split("T")[0]
   });
   const [uploading, setUploading] = useState<boolean>(false);
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { students } = useAuth();
   
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -35,52 +38,83 @@ export const UploadForm: React.FC = () => {
     e.stopPropagation();
     setDragActive(false);
     
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(Array.from(e.dataTransfer.files));
     }
   };
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0]);
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(Array.from(e.target.files));
     }
   };
   
-  const handleFile = (file: File) => {
-    // Check if file is an image or PDF
-    if (!file.type.match("image/*") && file.type !== "application/pdf") {
+  const handleFiles = (newFiles: File[]) => {
+    // Filter valid files
+    const validFiles = newFiles.filter(file => 
+      file.type.match("image/*") || file.type === "application/pdf"
+    );
+    
+    if (validFiles.length !== newFiles.length) {
       toast({
         title: "Invalid file type",
-        description: "Please upload an image or PDF file",
+        description: "Some files were skipped. Please upload only images or PDF files",
         variant: "destructive"
       });
-      return;
     }
     
-    setFile(file);
+    if (validFiles.length === 0) return;
     
-    // If it's an image, create a preview
-    if (file.type.match("image/*")) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      // For PDFs, just show a placeholder
-      setPreview("/lovable-uploads/2db89c37-4f84-417c-878f-11c576a5afea.png");
-    }
+    // Add files to state
+    setFiles(prev => [...prev, ...validFiles]);
+    
+    // Create previews
+    validFiles.forEach(file => {
+      if (file.type.match("image/*")) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setPreviews(prev => [...prev, e.target?.result as string]);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // For PDFs, show a placeholder
+        setPreviews(prev => [...prev, "/lovable-uploads/2db89c37-4f84-417c-878f-11c576a5afea.png"]);
+      }
+    });
+  };
+  
+  const removeFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviews(prev => prev.filter((_, i) => i !== index));
   };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!file) {
+    if (files.length === 0) {
       toast({
-        title: "Missing file",
-        description: "Please upload a test image or PDF",
+        title: "Missing files",
+        description: "Please upload at least one test image or PDF",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (selectedStudents.length === 0) {
+      toast({
+        title: "No students selected",
+        description: "Please select at least one student",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (selectedStudents.length !== files.length) {
+      toast({
+        title: "Mismatch between files and students",
+        description: "Please ensure the number of files matches the number of selected students",
         variant: "destructive"
       });
       return;
@@ -93,26 +127,18 @@ export const UploadForm: React.FC = () => {
       // Simulate upload delay
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Navigate to the analysis page with a mock test ID
-      const mockTestId = "test-" + Date.now();
-      const params = new URLSearchParams({
-        name: testMeta.name,
-        subject: testMeta.subject,
-        date: testMeta.date
-      });
-      
       toast({
         title: "Upload successful",
-        description: "Your test is being analyzed",
+        description: `${files.length} tests have been uploaded and are being analyzed`,
         variant: "default"
       });
       
-      navigate(`/reports/${mockTestId}?${params.toString()}`);
+      navigate("/reports");
     } catch (error) {
       console.error("Upload error:", error);
       toast({
         title: "Upload failed",
-        description: "There was an error uploading your test",
+        description: "There was an error uploading the tests",
         variant: "destructive"
       });
     } finally {
@@ -124,25 +150,25 @@ export const UploadForm: React.FC = () => {
     <div className="max-w-3xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="space-y-4">
-          <div>
-            <label 
-              htmlFor="testName" 
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >
-              Test Name
-            </label>
-            <input
-              id="testName"
-              type="text"
-              required
-              value={testMeta.name}
-              onChange={e => setTestMeta({...testMeta, name: e.target.value})}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors"
-              placeholder="e.g. Math Midterm Exam"
-            />
-          </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label 
+                htmlFor="testName" 
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                Test Name
+              </label>
+              <input
+                id="testName"
+                type="text"
+                required
+                value={testMeta.name}
+                onChange={e => setTestMeta({...testMeta, name: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors"
+                placeholder="e.g. Math Midterm Exam"
+              />
+            </div>
+            
             <div>
               <label 
                 htmlFor="subject" 
@@ -182,6 +208,7 @@ export const UploadForm: React.FC = () => {
           </div>
         </div>
         
+        {/* File Upload */}
         <div 
           className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
             dragActive 
@@ -193,14 +220,14 @@ export const UploadForm: React.FC = () => {
           onDragLeave={handleDrag}
           onDrop={handleDrop}
         >
-          {!preview ? (
+          {files.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10">
               <Upload className="w-12 h-12 text-gray-400 dark:text-gray-500 mb-4" />
               <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Upload Test Image or PDF
+                Upload Test Images or PDFs
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 text-center max-w-md">
-                Drag and drop your file here, or click to browse.
+                Drag and drop multiple files here, or click to browse.
                 Supported formats: JPEG, PNG, GIF, PDF
               </p>
               
@@ -215,47 +242,155 @@ export const UploadForm: React.FC = () => {
                   className="hidden"
                   accept="image/*,application/pdf"
                   onChange={handleChange}
+                  multiple
                 />
               </label>
             </div>
           ) : (
-            <div className="flex flex-col items-center">
-              <div className="relative w-full max-w-md mx-auto">
-                <img 
-                  src={preview} 
-                  alt="Test preview" 
-                  className="w-full h-auto max-h-[400px] object-contain rounded-lg shadow-md"
-                />
-                <div className="absolute top-2 right-2">
-                  <div className="bg-green-500 text-white p-1 rounded-full">
-                    <Check className="w-4 h-4" />
-                  </div>
-                </div>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">
+                  Uploaded Tests ({files.length})
+                </h3>
+                <label 
+                  htmlFor="add-more-files" 
+                  className="cursor-pointer inline-flex items-center px-3 py-1.5 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 text-sm font-medium rounded-lg transition-colors"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add More
+                  <input
+                    id="add-more-files"
+                    type="file"
+                    className="hidden"
+                    accept="image/*,application/pdf"
+                    onChange={handleChange}
+                    multiple
+                  />
+                </label>
               </div>
               
-              <div className="mt-4 flex items-center justify-center gap-4">
-                <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">
-                  {file?.name}
-                </p>
-                
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFile(null);
-                    setPreview(null);
-                  }}
-                  className="text-sm text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
-                >
-                  Remove
-                </button>
+              {/* File List */}
+              <div className="space-y-3 max-h-80 overflow-y-auto p-2">
+                {files.map((file, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-center bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3"
+                  >
+                    <img 
+                      src={previews[index]} 
+                      alt={`Preview ${index}`} 
+                      className="w-16 h-16 object-contain rounded-md mr-4"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                        {file.name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {(file.size / 1024).toFixed(1)} KB
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(index)}
+                      className="p-1.5 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                      aria-label="Remove file"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           )}
         </div>
         
+        {/* Student Selection */}
+        {students.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">
+                Assign Tests to Students
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {selectedStudents.length} of {students.length} selected
+              </p>
+            </div>
+            
+            <div className="glass-card rounded-xl p-4">
+              <div className="space-y-3 max-h-60 overflow-y-auto">
+                {students.map((student) => (
+                  <div 
+                    key={student.id}
+                    className={`flex items-center p-3 rounded-lg border transition-colors cursor-pointer ${
+                      selectedStudents.includes(student.id)
+                        ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
+                        : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    }`}
+                    onClick={() => {
+                      setSelectedStudents(prev => 
+                        prev.includes(student.id)
+                          ? prev.filter(id => id !== student.id)
+                          : [...prev, student.id]
+                      );
+                    }}
+                  >
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-purple-100 dark:bg-gray-700 flex-shrink-0">
+                      {student.avatar ? (
+                        <img 
+                          src={student.avatar} 
+                          alt={student.name} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Users className="w-5 h-5 text-purple-600 dark:text-purple-400 m-auto" />
+                      )}
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                        {student.name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {student.email}
+                      </p>
+                    </div>
+                    <div className="ml-2">
+                      {selectedStudents.includes(student.id) ? (
+                        <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
+                          <Check className="w-4 h-4 text-white" />
+                        </div>
+                      ) : (
+                        <div className="w-6 h-6 rounded-full border-2 border-gray-300 dark:border-gray-600" />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {students.length === 0 && (
+                <div className="text-center py-4">
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No students found in this class
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            {/* Warning if number doesn't match */}
+            {files.length > 0 && selectedStudents.length > 0 && files.length !== selectedStudents.length && (
+              <div className="flex items-start p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-amber-500 dark:text-amber-400 mt-0.5 mr-2 flex-shrink-0" />
+                <p className="text-sm text-amber-800 dark:text-amber-300">
+                  The number of files ({files.length}) doesn't match the number of selected students ({selectedStudents.length}). 
+                  Please ensure each student has exactly one test file.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+        
         <motion.button
           type="submit"
-          disabled={uploading || !file}
+          disabled={uploading || files.length === 0 || selectedStudents.length === 0 || files.length !== selectedStudents.length}
           className="w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:ring-4 focus:ring-purple-300 text-white font-medium rounded-lg text-sm transition-all disabled:opacity-70 disabled:cursor-not-allowed"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -266,7 +401,7 @@ export const UploadForm: React.FC = () => {
               Uploading...
             </span>
           ) : (
-            "Upload and Analyze"
+            "Upload and Analyze Tests"
           )}
         </motion.button>
       </form>

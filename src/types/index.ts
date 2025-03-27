@@ -5,6 +5,7 @@ export interface User {
   email: string;
   role: 'student' | 'admin';
   avatar?: string;
+  classId?: string;
 }
 
 export interface TestMeta {
@@ -14,6 +15,7 @@ export interface TestMeta {
   date: string;
   userId: string;
   createdAt: string;
+  studentId?: string;
 }
 
 export interface TestResult {
@@ -27,6 +29,8 @@ export interface TestResult {
   errorTypes: ErrorTypeResult[];
   recommendations: string[];
   createdAt: string;
+  studentId?: string;
+  studentName?: string;
 }
 
 export interface Question {
@@ -77,4 +81,21 @@ export interface MenuItem {
   title: string;
   path: string;
   icon: React.ComponentType;
+}
+
+export interface ClassData {
+  id: string;
+  name: string;
+  grade: string;
+  studentCount: number;
+}
+
+export interface StudentPerformance {
+  id: string;
+  name: string;
+  avatar?: string;
+  averageScore: number;
+  improvement: number;
+  strengths: string[];
+  weaknesses: string[];
 }

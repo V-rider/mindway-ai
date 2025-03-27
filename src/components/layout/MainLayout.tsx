@@ -12,47 +12,63 @@ import {
   LogOut, 
   User, 
   Menu, 
-  X
+  X,
+  Users
 } from "lucide-react";
 import { MenuItem } from "@/types";
 
-const menuItems: MenuItem[] = [
-  {
-    title: "Dashboard",
-    path: "/dashboard",
-    icon: LayoutDashboard
-  },
-  {
-    title: "Upload Test",
-    path: "/upload",
-    icon: Upload
-  },
-  {
-    title: "Reports",
-    path: "/reports",
-    icon: FileText
-  },
-  {
-    title: "Analytics",
-    path: "/analytics",
-    icon: BarChart3
-  },
-  {
-    title: "Learning Pathway",
-    path: "/learning-pathway",
-    icon: BookOpen
+// Create a function to get menu items based on user role
+const getMenuItems = (isAdmin: boolean): MenuItem[] => {
+  const baseItems: MenuItem[] = [
+    {
+      title: "Dashboard",
+      path: "/dashboard",
+      icon: LayoutDashboard
+    },
+    {
+      title: "Reports",
+      path: "/reports",
+      icon: FileText
+    },
+    {
+      title: "Analytics",
+      path: "/analytics",
+      icon: BarChart3
+    },
+    {
+      title: "Learning Pathway",
+      path: "/learning-pathway",
+      icon: BookOpen
+    }
+  ];
+  
+  // Add admin-specific menu items
+  if (isAdmin) {
+    baseItems.splice(1, 0, {
+      title: "Upload Tests",
+      path: "/upload",
+      icon: Upload
+    }, {
+      title: "Students",
+      path: "/students",
+      icon: Users
+    });
   }
-];
+  
+  return baseItems;
+};
 
 interface MainLayoutProps {
   children: React.ReactNode;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  
+  const menuItems = getMenuItems(isAdmin);
   
   const handleLogout = () => {
     logout();

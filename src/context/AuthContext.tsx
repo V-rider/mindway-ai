@@ -8,6 +8,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  isAdmin: boolean;
+  students: User[];
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -15,19 +17,64 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   login: async () => {},
   logout: () => {},
-  isAuthenticated: false
+  isAuthenticated: false,
+  isAdmin: false,
+  students: []
 });
+
+// Mock student data
+const mockStudents: User[] = [
+  {
+    id: "3",
+    name: "Alex Chen",
+    email: "alex@example.com",
+    role: "student",
+    avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
+    classId: "class-1"
+  },
+  {
+    id: "4",
+    name: "Sarah Wong",
+    email: "sarah@example.com",
+    role: "student",
+    avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
+    classId: "class-1"
+  },
+  {
+    id: "5",
+    name: "Michael Lee",
+    email: "michael@example.com",
+    role: "student",
+    avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
+    classId: "class-1"
+  },
+  {
+    id: "6",
+    name: "Emily Tan",
+    email: "emily@example.com",
+    role: "student",
+    avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
+    classId: "class-2"
+  }
+];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [students, setStudents] = useState<User[]>([]);
 
   useEffect(() => {
     // Check if user is stored in localStorage
     const storedUser = localStorage.getItem("pathwayUser");
     
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      
+      // If admin, load students in their class
+      if (parsedUser.role === "admin" && parsedUser.classId) {
+        setStudents(mockStudents.filter(student => student.classId === parsedUser.classId));
+      }
     }
     
     setIsLoading(false);
@@ -47,14 +94,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           name: "Student User",
           email: "student@example.com",
           role: "student",
-          avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png"
+          avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
+          classId: "class-1"
         },
         {
           id: "2",
           name: "Admin User",
           email: "admin@example.com",
           role: "admin",
-          avatar: "/lovable-uploads/7aff8652-12ca-4080-b580-d23a64527cd3.png"
+          avatar: "/lovable-uploads/7aff8652-12ca-4080-b580-d23a64527cd3.png",
+          classId: "class-1"
         }
       ];
       
@@ -62,6 +111,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (!foundUser) {
         throw new Error("Invalid email or password");
+      }
+      
+      // If admin, load students in their class
+      if (foundUser.role === "admin" && foundUser.classId) {
+        setStudents(mockStudents.filter(student => student.classId === foundUser.classId));
       }
       
       // Store in localStorage for persistence
@@ -78,6 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     localStorage.removeItem("pathwayUser");
     setUser(null);
+    setStudents([]);
   };
 
   return (
@@ -87,7 +142,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         logout,
-        isAuthenticated: !!user
+        isAuthenticated: !!user,
+        isAdmin: user?.role === "admin",
+        students
       }}
     >
       {children}

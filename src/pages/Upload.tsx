@@ -3,9 +3,18 @@ import React from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { UploadForm } from "@/components/ui/UploadForm";
 import { motion } from "framer-motion";
-import { FileText, Upload as UploadIcon, AlertCircle, Lightbulb } from "lucide-react";
+import { FileText, Upload as UploadIcon, AlertCircle, Lightbulb, Users } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { Navigate } from "react-router-dom";
 
 const Upload = () => {
+  const { isAdmin } = useAuth();
+  
+  // Redirect non-admin users
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
   return (
     <MainLayout>
       <div className="space-y-8">
@@ -17,10 +26,10 @@ const Upload = () => {
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-              Upload Test
+              Upload Tests
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Upload a scanned math test to receive detailed analysis and personalized learning recommendations.
+              Upload scanned math tests to analyze student performance and generate personalized learning recommendations.
             </p>
           </motion.div>
         </div>
@@ -41,23 +50,23 @@ const Upload = () => {
               {[
                 {
                   step: 1,
-                  title: "Upload your test",
-                  description: "Take a clear photo or scan of your math test and upload it.",
+                  title: "Upload tests in batch",
+                  description: "Take clear photos or scans of students' math tests and upload them as a batch.",
                   icon: UploadIcon,
                   color: "bg-purple-500",
                 },
                 {
                   step: 2,
                   title: "AI Analysis",
-                  description: "Our AI system will analyze your test, identify concepts, and detect error patterns.",
+                  description: "Our AI system will analyze each test, identify concepts, and detect error patterns.",
                   icon: FileText,
                   color: "bg-indigo-500",
                 },
                 {
                   step: 3,
-                  title: "Review Results",
-                  description: "Get detailed feedback on your performance and areas for improvement.",
-                  icon: AlertCircle,
+                  title: "View Student Results",
+                  description: "Get detailed feedback on each student's performance and track class progress.",
+                  icon: Users,
                   color: "bg-blue-500",
                 },
               ].map((step, index) => (
@@ -107,8 +116,9 @@ const Upload = () => {
                   Tips for Best Results
                 </h3>
                 <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                  <li>Ensure the image is well-lit and all questions are clearly visible</li>
-                  <li>Include all pages of the test in a single file if possible</li>
+                  <li>Ensure images are well-lit and all questions are clearly visible</li>
+                  <li>Label each test file with the student's name for easier identification</li>
+                  <li>Include all pages of each test in a single file if possible</li>
                   <li>Make sure teacher markings and corrections are visible</li>
                   <li>PNG, JPEG, and PDF formats are supported</li>
                 </ul>

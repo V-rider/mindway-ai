@@ -15,6 +15,7 @@ import Reports from "./pages/Reports";
 import Analytics from "./pages/Analytics";
 import LearningPathway from "./pages/LearningPathway";
 import NotFound from "./pages/NotFound";
+import Students from "./pages/Students";
 
 // Create a new QueryClient
 const queryClient = new QueryClient();
@@ -58,6 +59,15 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <Upload />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/students" 
+          element={
+            <ProtectedRoute>
+              <Students />
             </ProtectedRoute>
           } 
         />
