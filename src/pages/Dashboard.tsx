@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -374,11 +375,13 @@ const Dashboard = () => {
     return <Navigate to="/" replace />;
   }
   
-  // If the user isn't an admin, show Analytics page
+  // If the user isn't an admin, show the student Analytics page wrapped in MainLayout
   if (!isAdmin) {
     return (
       <MainLayout>
-        <Analytics />
+        <div className="container mx-auto">
+          <Analytics />
+        </div>
       </MainLayout>
     );
   }
