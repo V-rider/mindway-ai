@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { HeatmapData } from '@/types';
 import { 
@@ -6,9 +5,7 @@ import {
   Tooltip, 
   XAxis, 
   YAxis, 
-  CartesianGrid,
-  Cell,
-  Rect
+  CartesianGrid
 } from 'recharts';
 import { customTooltips } from '@/components/ui/custom-tooltips';
 

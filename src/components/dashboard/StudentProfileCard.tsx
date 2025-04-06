@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { User, TrendingUp, TrendingDown, Download, FileText, ArrowLeft, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
-  Chart as ChartComponent,
+  LineChart,
   Line,
   CartesianGrid,
   XAxis,
