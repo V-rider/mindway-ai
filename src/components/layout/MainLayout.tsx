@@ -40,8 +40,8 @@ const getMenuItems = (isAdmin: boolean): MenuItem[] => {
       icon: BarChart3
     },
     {
-      title: "Learning Pathway",
-      path: "/learning-pathway",
+      title: "Learning Mindway",
+      path: "/learning-mindway",
       icon: BookOpen
     }
   ];
