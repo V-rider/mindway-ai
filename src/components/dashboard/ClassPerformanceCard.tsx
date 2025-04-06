@@ -1,0 +1,219 @@
+
+import React from 'react';
+import { ClassPerformance, StudentPerformance } from '@/types';
+import { motion } from 'framer-motion';
+import { User, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
+
+interface ClassPerformanceCardProps {
+  classData: ClassPerformance;
+  students: StudentPerformance[];
+  onStudentSelect: (studentId: string) => void;
+}
+
+export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
+  classData,
+  students,
+  onStudentSelect,
+}) => {
+  // Sort students by average score descending
+  const sortedStudents = [...students].sort((a, b) => b.averageScore - a.averageScore);
+  
+  return (
+    <div className="space-y-6">
+      {/* Class Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+            {classData.name}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Grade {classData.grade} • {students.length} students
+          </p>
+        </div>
+        <div className="mt-4 md:mt-0 flex items-center gap-3">
+          <div className="px-4 py-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+            <span className="text-sm text-gray-600 dark:text-gray-400">Average:</span>
+            <span className={`ml-2 font-bold ${
+              classData.averageScore >= 75 
+                ? "text-green-600 dark:text-green-400" 
+                : classData.averageScore >= 60
+                ? "text-yellow-600 dark:text-yellow-400"
+                : "text-red-600 dark:text-red-400"
+            }`}>
+              {classData.averageScore.toFixed(1)}%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Performance Overview */}
+      <motion.div 
+        className="glass-card rounded-xl p-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+          Topic Mastery Overview
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {classData.topicMastery.map((topic, index) => (
+            <div 
+              key={index} 
+              className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700"
+            >
+              <div className="flex justify-between items-start mb-3">
+                <h4 className="font-medium text-gray-800 dark:text-gray-200">
+                  {topic.topic}
+                </h4>
+                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  topic.mastery >= 75 
+                    ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400" 
+                    : topic.mastery >= 60
+                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+                    : "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+                }`}>
+                  {topic.mastery}% mastery
+                </div>
+              </div>
+              
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div 
+                  className={`h-2 rounded-full ${
+                    topic.mastery >= 75 
+                      ? "bg-green-500" 
+                      : topic.mastery >= 60
+                      ? "bg-yellow-500"
+                      : "bg-red-500"
+                  }`} 
+                  style={{ width: `${topic.mastery}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+      
+      {/* Common Error Patterns */}
+      <motion.div 
+        className="glass-card rounded-xl p-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+          Common Error Patterns
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {classData.errorPatterns.map((error, index) => (
+            <div 
+              key={index} 
+              className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700"
+            >
+              <div className="flex justify-between items-start mb-2">
+                <h4 className="font-medium text-gray-800 dark:text-gray-200">
+                  {error.pattern}
+                </h4>
+                <div className="text-sm font-medium text-red-600 dark:text-red-400">
+                  {error.percentage}% of students
+                </div>
+              </div>
+              
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
+                <div 
+                  className="h-2 rounded-full bg-red-500" 
+                  style={{ width: `${error.percentage}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+      
+      {/* Student List */}
+      <motion.div 
+        className="glass-card rounded-xl p-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+          Students
+        </h3>
+        
+        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+          {sortedStudents.map((student) => (
+            <motion.div
+              key={student.id}
+              className="py-4 first:pt-0 last:pb-0 cursor-pointer"
+              onClick={() => onStudentSelect(student.id)}
+              whileHover={{ x: 5 }}
+            >
+              <div className="flex items-center">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-purple-100 dark:bg-gray-700 flex items-center justify-center mr-4">
+                  {student.avatar ? (
+                    <img 
+                      src={student.avatar} 
+                      alt={student.name} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  )}
+                </div>
+                
+                <div className="flex-1">
+                  <h4 className="text-base font-medium text-gray-800 dark:text-gray-200">
+                    {student.name}
+                  </h4>
+                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <div className="flex items-center">
+                      <span>Average: </span>
+                      <span className={`ml-1 ${
+                        student.averageScore >= 75 
+                          ? "text-green-600 dark:text-green-400" 
+                          : student.averageScore >= 60
+                          ? "text-yellow-600 dark:text-yellow-400"
+                          : "text-red-600 dark:text-red-400"
+                      }`}>
+                        {student.averageScore}%
+                      </span>
+                    </div>
+                    <div className="flex items-center ml-4">
+                      <span>Growth: </span>
+                      <div className={`ml-1 flex items-center ${
+                        student.improvement > 0 
+                          ? "text-green-600 dark:text-green-400" 
+                          : student.improvement < 0
+                          ? "text-red-600 dark:text-red-400"
+                          : "text-gray-600 dark:text-gray-400"
+                      }`}>
+                        {student.improvement > 0 ? (
+                          <>
+                            <TrendingUp className="w-3 h-3 mr-1" />
+                            {student.improvement}%
+                          </>
+                        ) : student.improvement < 0 ? (
+                          <>
+                            <TrendingDown className="w-3 h-3 mr-1" />
+                            {Math.abs(student.improvement)}%
+                          </>
+                        ) : (
+                          "0%"
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    </div>
+  );
+};

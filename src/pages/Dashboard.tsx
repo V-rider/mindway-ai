@@ -1,400 +1,514 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
-import { Link } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+import { 
+  School, 
+  ClassPerformance, 
+  StudentProfile, 
+  HeatmapData, 
+  StudentPerformance, 
+  ReportTemplate 
+} from "@/types";
+import { PerformanceOverview } from "@/components/dashboard/PerformanceOverview";
+import { PerformanceHeatmap } from "@/components/dashboard/PerformanceHeatmap";
+import { ClassPerformanceCard } from "@/components/dashboard/ClassPerformanceCard";
+import { StudentProfileCard } from "@/components/dashboard/StudentProfileCard";
+import { FilterBar } from "@/components/dashboard/FilterBar";
+import { ReportGenerator } from "@/components/dashboard/ReportGenerator";
+
+import { Button } from "@/components/ui/button";
+import { Download, ChevronLeft, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
-import {
-  BarChart3,
-  BookOpen,
-  ChevronRight,
-  Clock,
-  FileText,
-  LayoutGrid,
-  TrendingUp,
-  TrendingDown,
-  Upload,
-  Users,
-} from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  Legend,
-} from "recharts";
-import { TestResult, TestMeta } from "@/types";
+
+// Mock data
+const mockSchool: School = {
+  id: "school-1",
+  name: "Riverdale Elementary",
+  classes: [
+    { id: "class-1", name: "Class 3A", grade: "3", studentCount: 24 },
+    { id: "class-2", name: "Class 4B", grade: "4", studentCount: 22 },
+    { id: "class-3", name: "Class 5C", grade: "5", studentCount: 20 },
+    { id: "class-4", name: "Class 6A", grade: "6", studentCount: 25 },
+    { id: "class-5", name: "Class 6B", grade: "6", studentCount: 23 },
+  ]
+};
+
+const mockClassPerformances: ClassPerformance[] = [
+  {
+    id: "class-1",
+    name: "Class 3A",
+    grade: "3",
+    averageScore: 72,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 85 },
+      { topic: "Multiplication", mastery: 76 },
+      { topic: "Division", mastery: 65 },
+      { topic: "Fractions", mastery: 58 },
+      { topic: "Geometry", mastery: 74 },
+    ],
+    errorPatterns: [
+      { pattern: "Improper fraction simplification", percentage: 45 },
+      { pattern: "Division calculation errors", percentage: 30 },
+      { pattern: "Misunderstood word problems", percentage: 25 },
+    ]
+  },
+  {
+    id: "class-2",
+    name: "Class 4B",
+    grade: "4",
+    averageScore: 68,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 90 },
+      { topic: "Multiplication", mastery: 82 },
+      { topic: "Division", mastery: 72 },
+      { topic: "Fractions", mastery: 60 },
+      { topic: "Decimals", mastery: 55 },
+      { topic: "Geometry", mastery: 65 },
+    ],
+    errorPatterns: [
+      { pattern: "Decimal place value confusion", percentage: 50 },
+      { pattern: "Improper fraction simplification", percentage: 35 },
+      { pattern: "Geometry concept misunderstanding", percentage: 28 },
+    ]
+  },
+  {
+    id: "class-3",
+    name: "Class 5C",
+    grade: "5",
+    averageScore: 78,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 94 },
+      { topic: "Multiplication", mastery: 88 },
+      { topic: "Division", mastery: 82 },
+      { topic: "Fractions", mastery: 75 },
+      { topic: "Decimals", mastery: 70 },
+      { topic: "Percentages", mastery: 68 },
+      { topic: "Geometry", mastery: 80 },
+    ],
+    errorPatterns: [
+      { pattern: "Percentage calculation errors", percentage: 35 },
+      { pattern: "Complex fraction operations", percentage: 28 },
+      { pattern: "Word problem interpretation", percentage: 22 },
+    ]
+  },
+  {
+    id: "class-4",
+    name: "Class 6A",
+    grade: "6",
+    averageScore: 83,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 96 },
+      { topic: "Multiplication", mastery: 92 },
+      { topic: "Division", mastery: 88 },
+      { topic: "Fractions", mastery: 85 },
+      { topic: "Decimals", mastery: 82 },
+      { topic: "Percentages", mastery: 78 },
+      { topic: "Pre-Algebra", mastery: 75 },
+      { topic: "Geometry", mastery: 84 },
+    ],
+    errorPatterns: [
+      { pattern: "Pre-algebra concept confusion", percentage: 30 },
+      { pattern: "Complex word problems", percentage: 25 },
+      { pattern: "Multi-step calculation errors", percentage: 20 },
+    ]
+  },
+  {
+    id: "class-5",
+    name: "Class 6B",
+    grade: "6",
+    averageScore: 75,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 94 },
+      { topic: "Multiplication", mastery: 88 },
+      { topic: "Division", mastery: 82 },
+      { topic: "Fractions", mastery: 78 },
+      { topic: "Decimals", mastery: 74 },
+      { topic: "Percentages", mastery: 70 },
+      { topic: "Pre-Algebra", mastery: 62 },
+      { topic: "Geometry", mastery: 75 },
+    ],
+    errorPatterns: [
+      { pattern: "Pre-algebra concept confusion", percentage: 40 },
+      { pattern: "Complex fraction operations", percentage: 32 },
+      { pattern: "Multi-step calculation errors", percentage: 28 },
+    ]
+  },
+];
+
+const mockStudents: StudentPerformance[] = [
+  {
+    id: "student-1",
+    name: "Emma Johnson",
+    averageScore: 85,
+    improvement: 5,
+    strengths: ["Multiplication", "Word Problems"],
+    weaknesses: ["Fractions", "Percentages"],
+  },
+  {
+    id: "student-2",
+    name: "James Smith",
+    averageScore: 72,
+    improvement: -2,
+    strengths: ["Addition & Subtraction", "Geometry"],
+    weaknesses: ["Division", "Word Problems"],
+  },
+  {
+    id: "student-3",
+    name: "Sofia Garcia",
+    averageScore: 91,
+    improvement: 8,
+    strengths: ["Fractions", "Geometry", "Word Problems"],
+    weaknesses: ["Complex Calculations"],
+  },
+  {
+    id: "student-4",
+    name: "Noah Wilson",
+    averageScore: 68,
+    improvement: 3,
+    strengths: ["Addition & Subtraction"],
+    weaknesses: ["Fractions", "Word Problems", "Multi-step Problems"],
+  },
+  {
+    id: "student-5",
+    name: "Olivia Brown",
+    averageScore: 79,
+    improvement: 4,
+    strengths: ["Multiplication", "Division"],
+    weaknesses: ["Fractions", "Geometry"],
+  },
+  {
+    id: "student-6",
+    name: "Liam Taylor",
+    averageScore: 65,
+    improvement: 7,
+    strengths: ["Addition & Subtraction"],
+    weaknesses: ["Multiplication", "Division", "Fractions"],
+  },
+];
+
+const mockStudentProfile: StudentProfile = {
+  id: "student-1",
+  name: "Emma Johnson",
+  email: "emma.j@example.edu",
+  grade: "3",
+  className: "Class 3A",
+  averageScore: 85,
+  progressData: [
+    { date: "2023-09-05", score: 75, testId: "test-1", testName: "Math Fundamentals Quiz" },
+    { date: "2023-09-18", score: 78, testId: "test-2", testName: "Number Operations Test" },
+    { date: "2023-10-02", score: 82, testId: "test-3", testName: "Fractions Assessment" },
+    { date: "2023-10-15", score: 80, testId: "test-4", testName: "Geometry Basics" },
+    { date: "2023-10-30", score: 85, testId: "test-5", testName: "Mixed Topics Quiz" },
+    { date: "2023-11-12", score: 90, testId: "test-6", testName: "Mid-Term Assessment" },
+  ],
+  mistakeBreakdown: [
+    { type: "Calculation Errors", percentage: 30 },
+    { type: "Conceptual Gaps", percentage: 40 },
+    { type: "Careless Mistakes", percentage: 20 },
+    { type: "Time Management", percentage: 10 },
+  ],
+  strengths: [
+    "Strong understanding of basic arithmetic operations",
+    "Excellent at solving word problems",
+    "Good visualization skills for geometric concepts",
+  ],
+  weaknesses: [
+    "Struggles with fraction simplification",
+    "Needs more practice with decimal operations",
+    "Difficulty with multi-step problems",
+  ],
+  recommendedExercises: [
+    { id: "ex-1", title: "Fraction Fundamentals", topic: "Fractions", difficulty: "medium" },
+    { id: "ex-2", title: "Decimal Operations", topic: "Decimals", difficulty: "medium" },
+    { id: "ex-3", title: "Multi-Step Problem Solving", topic: "Problem Solving", difficulty: "hard" },
+    { id: "ex-4", title: "Geometry Practice", topic: "Geometry", difficulty: "easy" },
+  ],
+};
+
+const mockHeatmapData: HeatmapData[] = [
+  {
+    className: "Class 3A",
+    grade: "3",
+    topics: [
+      { name: "Addition & Subtraction", performance: 85 },
+      { name: "Multiplication", performance: 76 },
+      { name: "Division", performance: 65 },
+      { name: "Fractions", performance: 58 },
+      { name: "Geometry", performance: 74 },
+    ],
+  },
+  {
+    className: "Class 4B",
+    grade: "4",
+    topics: [
+      { name: "Addition & Subtraction", performance: 90 },
+      { name: "Multiplication", performance: 82 },
+      { name: "Division", performance: 72 },
+      { name: "Fractions", performance: 60 },
+      { name: "Decimals", performance: 55 },
+      { name: "Geometry", performance: 65 },
+    ],
+  },
+  {
+    className: "Class 5C",
+    grade: "5",
+    topics: [
+      { name: "Addition & Subtraction", performance: 94 },
+      { name: "Multiplication", performance: 88 },
+      { name: "Division", performance: 82 },
+      { name: "Fractions", performance: 75 },
+      { name: "Decimals", performance: 70 },
+      { name: "Percentages", performance: 68 },
+      { name: "Geometry", performance: 80 },
+    ],
+  },
+  {
+    className: "Class 6A",
+    grade: "6",
+    topics: [
+      { name: "Addition & Subtraction", performance: 96 },
+      { name: "Multiplication", performance: 92 },
+      { name: "Division", performance: 88 },
+      { name: "Fractions", performance: 85 },
+      { name: "Decimals", performance: 82 },
+      { name: "Percentages", performance: 78 },
+      { name: "Pre-Algebra", performance: 75 },
+      { name: "Geometry", performance: 84 },
+    ],
+  },
+  {
+    className: "Class 6B",
+    grade: "6",
+    topics: [
+      { name: "Addition & Subtraction", performance: 94 },
+      { name: "Multiplication", performance: 88 },
+      { name: "Division", performance: 82 },
+      { name: "Fractions", performance: 78 },
+      { name: "Decimals", performance: 74 },
+      { name: "Percentages", performance: 70 },
+      { name: "Pre-Algebra", performance: 62 },
+      { name: "Geometry", performance: 75 },
+    ],
+  },
+];
+
+const mockReportTemplates: ReportTemplate[] = [
+  {
+    id: "template-1",
+    name: "Student Progress Report",
+    type: "student",
+    frequency: "weekly",
+    recipients: [],
+    format: "pdf",
+  },
+  {
+    id: "template-2",
+    name: "Class Performance Summary",
+    type: "class",
+    frequency: "monthly",
+    recipients: [],
+    format: "pdf",
+  },
+  {
+    id: "template-3",
+    name: "School-Wide Analytics",
+    type: "school",
+    frequency: "monthly",
+    recipients: [],
+    format: "pdf",
+  },
+  {
+    id: "template-4",
+    name: "Raw Data Export",
+    type: "school",
+    frequency: "custom",
+    recipients: [],
+    format: "csv",
+  },
+];
+
+// Grade and subjects list for filters
+const gradesList = ["3", "4", "5", "6"];
+const subjectsList = ["Mathematics", "Arithmetic", "Geometry", "Pre-Algebra"];
+
+// View states
+type ViewState = "overview" | "class" | "student";
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
+  const [viewState, setViewState] = useState<ViewState>("overview");
+  const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [showReportGenerator, setShowReportGenerator] = useState(false);
   
-  // Mock data for recent tests
-  const recentTests: (TestMeta & { score: number })[] = [
-    {
-      id: "test-1",
-      name: "Midterm Math Exam",
-      subject: "Mathematics",
-      date: "2023-10-15",
-      userId: "1",
-      createdAt: "2023-10-15T14:30:00Z",
-      score: 78,
-    },
-    {
-      id: "test-2",
-      name: "Multiplication Quiz",
-      subject: "Arithmetic",
-      date: "2023-10-08",
-      userId: "1",
-      createdAt: "2023-10-08T10:15:00Z",
-      score: 92,
-    },
-    {
-      id: "test-3",
-      name: "Fractions Assessment",
-      subject: "Mathematics",
-      date: "2023-09-28",
-      userId: "1",
-      createdAt: "2023-09-28T09:45:00Z",
-      score: 65,
-    },
-  ];
-  
-  // Mock data for performance chart
-  const performanceData = [
-    { name: "Week 1", score: 65 },
-    { name: "Week 2", score: 70 },
-    { name: "Week 3", score: 68 },
-    { name: "Week 4", score: 75 },
-    { name: "Week 5", score: 78 },
-    { name: "Week 6", score: 82 },
-    { name: "Week 7", score: 85 },
-  ];
-  
-  // Mock data for concept mastery
-  const conceptData = [
-    { name: "Number Operations", mastery: 85 },
-    { name: "Fractions", mastery: 62 },
-    { name: "Decimals", mastery: 75 },
-    { name: "Geometry", mastery: 80 },
-    { name: "Measurement", mastery: 70 },
-  ];
-  
-  // Get score color based on percentage
-  const getScoreColor = (score: number): string => {
-    if (score >= 80) return "text-green-500 dark:text-green-400";
-    if (score >= 60) return "text-yellow-500 dark:text-yellow-400";
-    return "text-red-500 dark:text-red-400";
+  // Handle view changes
+  const handleViewClass = (classId: string) => {
+    setSelectedClassId(classId);
+    setViewState("class");
   };
   
+  const handleViewStudent = (studentId: string) => {
+    setSelectedStudentId(studentId);
+    setViewState("student");
+  };
+  
+  const handleBackToOverview = () => {
+    setViewState("overview");
+    setSelectedClassId(null);
+    setSelectedStudentId(null);
+  };
+  
+  const handleBackToClass = () => {
+    setViewState("class");
+    setSelectedStudentId(null);
+  };
+  
+  const handleGenerateReport = () => {
+    setShowReportGenerator(true);
+  };
+  
+  // If the user isn't authenticated, redirect to login
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+  
+  // If the user isn't an admin, show a simplified dashboard
+  if (!isAdmin) {
+    return (
+      <MainLayout>
+        <div className="text-center py-12">
+          <div className="w-20 h-20 mx-auto rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+            <BookOpen className="w-10 h-10 text-purple-600 dark:text-purple-400" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+            Welcome to Pathway AI
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
+            You need administrator privileges to access the analytics dashboard. Please contact your system administrator for assistance.
+          </p>
+        </div>
+      </MainLayout>
+    );
+  }
+  
+  // Get the selected class details if in class view
+  const selectedClass = mockClassPerformances.find(c => c.id === selectedClassId);
+  
+  // Render different views based on viewState
   return (
     <MainLayout>
-      <div className="space-y-8">
-        {/* Page Header */}
+      {/* Back button if not in overview */}
+      {viewState !== "overview" && (
+        <div className="mb-6">
+          <button
+            onClick={viewState === "class" ? handleBackToOverview : handleBackToClass}
+            className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+          >
+            <ChevronLeft className="w-5 h-5 mr-1" />
+            Back to {viewState === "class" ? "Overview" : "Class"}
+          </button>
+        </div>
+      )}
+      
+      {/* Page Header */}
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-            Dashboard
+            {viewState === "overview" 
+              ? "Admin Dashboard" 
+              : viewState === "class" && selectedClass
+              ? `${selectedClass.name} Dashboard`
+              : viewState === "student" && selectedStudentId
+              ? "Student Profile"
+              : "Dashboard"}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Welcome back, {user?.name}. Here's an overview of your math learning progress.
+            {viewState === "overview"
+              ? "Comprehensive view of school-wide performance metrics"
+              : viewState === "class" && selectedClass
+              ? `Performance analytics for Grade ${selectedClass.grade} students`
+              : viewState === "student"
+              ? "Detailed student analytics and learning recommendations"
+              : "Analytics Dashboard"}
           </p>
         </div>
         
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            {
-              title: "Average Score",
-              value: "76%",
-              icon: BarChart3,
-              color: "bg-indigo-500",
-              trend: "+8% from last month",
-              trendUp: true,
-            },
-            {
-              title: "Total Tests",
-              value: "12",
-              icon: FileText,
-              color: "bg-purple-500",
-              trend: "+3 new tests",
-              trendUp: true,
-            },
-            {
-              title: "Learning Path Progress",
-              value: "68%",
-              icon: BookOpen,
-              color: "bg-blue-500",
-              trend: "4 topics to complete",
-              trendUp: true,
-            },
-            {
-              title: "Time Spent",
-              value: "28h",
-              icon: Clock,
-              color: "bg-pink-500",
-              trend: "+5h from last week",
-              trendUp: true,
-            },
-          ].map((stat, index) => (
-            <motion.div
-              key={index}
-              className="glass-card rounded-xl p-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    {stat.title}
-                  </p>
-                  <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">
-                    {stat.value}
-                  </h3>
-                </div>
-                <div className={`${stat.color} p-3 rounded-lg text-white`}>
-                  <stat.icon className="w-5 h-5" />
-                </div>
-              </div>
-              <div className="mt-4 flex items-center">
-                {stat.trendUp ? (
-                  <TrendingUp className="w-3 h-3 mr-1 text-green-500 dark:text-green-400" />
-                ) : (
-                  <TrendingDown className="w-3 h-3 mr-1 text-green-500 dark:text-green-400" />
-                )}
-                <p className={`text-xs ${stat.trendUp ? "text-green-500 dark:text-green-400" : "text-green-500 dark:text-green-400"}`}>
-                  {stat.trend}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-        
-        {/* Performance Chart */}
-        <motion.div
-          className="glass-card rounded-xl p-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.4 }}
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-              Performance Trend
-            </h2>
-            <div className="flex items-center space-x-2">
-              <button className="text-sm font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300">
-                Last 7 weeks
-              </button>
-            </div>
-          </div>
-          
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={performanceData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
-                <Tooltip
-                  formatter={(value) => [`${value}%`, "Score"]}
-                  contentStyle={{
-                    backgroundColor: "white",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "0.5rem",
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="score"
-                  stroke="#8b5cf6"
-                  strokeWidth={3}
-                  activeDot={{ r: 6 }}
-                  dot={{ r: 4, fill: "#8b5cf6" }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Tests */}
-          <motion.div
-            className="glass-card rounded-xl p-6 lg:col-span-2"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.5 }}
+        {viewState !== "student" && (
+          <Button
+            onClick={handleGenerateReport}
+            className="flex items-center gap-2"
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-                Recent Tests
-              </h2>
-              <Link
-                to="/reports"
-                className="text-sm font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 inline-flex items-center"
-              >
-                View all <ChevronRight className="w-4 h-4 ml-1" />
-              </Link>
-            </div>
-            
-            <div className="space-y-4">
-              {recentTests.map((test) => (
-                <Link key={test.id} to={`/reports/${test.id}`}>
-                  <motion.div
-                    className="flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                    whileHover={{ y: -2, boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-4">
-                      <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                        {test.name}
-                      </h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {test.subject} • {new Date(test.date).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="ml-4">
-                      <span
-                        className={`text-sm font-bold ${getScoreColor(test.score)}`}
-                      >
-                        {test.score}%
-                      </span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400 ml-2" />
-                  </motion.div>
-                </Link>
-              ))}
-            </div>
-            
-            <div className="mt-6">
-              <Link
-                to="/upload"
-                className="w-full inline-flex items-center justify-center py-3 px-6 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-purple-600 dark:text-purple-400 font-medium rounded-lg text-sm transition-colors"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Upload New Test
-              </Link>
-            </div>
-          </motion.div>
-          
-          {/* Concept Mastery */}
-          <motion.div
-            className="glass-card rounded-xl p-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.6 }}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-                Concept Mastery
-              </h2>
-              <Link
-                to="/learning-pathway"
-                className="text-sm font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 inline-flex items-center"
-              >
-                View path <ChevronRight className="w-4 h-4 ml-1" />
-              </Link>
-            </div>
-            
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={conceptData}
-                  layout="vertical"
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} opacity={0.3} />
-                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12 }} />
-                  <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} width={100} />
-                  <Tooltip
-                    formatter={(value) => [`${value}%`, "Mastery"]}
-                    contentStyle={{
-                      backgroundColor: "white",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "0.5rem",
-                    }}
-                  />
-                  <Bar dataKey="mastery" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            
-            <div className="mt-4">
-              <Link
-                to="/analytics"
-                className="w-full inline-flex items-center justify-center py-3 px-6 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-purple-600 dark:text-purple-400 font-medium rounded-lg text-sm transition-colors"
-              >
-                <BarChart3 className="w-4 h-4 mr-2" />
-                View Detailed Analytics
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-        
-        {/* Quick Links */}
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.7 }}
-        >
-          {[
-            {
-              title: "Upload Test",
-              description: "Scan and analyze a new math test",
-              icon: Upload,
-              link: "/upload",
-              color: "bg-gradient-to-br from-purple-500 to-indigo-600",
-            },
-            {
-              title: "View Reports",
-              description: "Access all your previous test reports",
-              icon: FileText,
-              link: "/reports",
-              color: "bg-gradient-to-br from-pink-500 to-purple-600",
-            },
-            {
-              title: "Analytics",
-              description: "Track progress and identify trends",
-              icon: BarChart3,
-              link: "/analytics",
-              color: "bg-gradient-to-br from-blue-500 to-indigo-600",
-            },
-            {
-              title: "Learning Path",
-              description: "Follow your personalized learning journey",
-              icon: BookOpen,
-              link: "/learning-pathway",
-              color: "bg-gradient-to-br from-purple-600 to-blue-500",
-            },
-          ].map((link, index) => (
-            <Link key={index} to={link.link}>
-              <motion.div
-                className="glass-card rounded-xl p-6 hover:shadow-lg transition-shadow h-full"
-                whileHover={{ y: -4 }}
-              >
-                <div
-                  className={`w-12 h-12 rounded-xl ${link.color} flex items-center justify-center mb-4`}
-                >
-                  <link.icon className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2">
-                  {link.title}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {link.description}
-                </p>
-              </motion.div>
-            </Link>
-          ))}
-        </motion.div>
+            <Download className="w-4 h-4" />
+            Generate Report
+          </Button>
+        )}
       </div>
+      
+      {/* Filters */}
+      {viewState === "overview" && (
+        <FilterBar 
+          onFilterChange={() => {}} 
+          grades={gradesList}
+          subjects={subjectsList}
+        />
+      )}
+      
+      {/* Overview Dashboard */}
+      {viewState === "overview" && (
+        <div className="space-y-8">
+          <PerformanceOverview 
+            school={mockSchool} 
+            classPerformances={mockClassPerformances}
+            onClassSelect={handleViewClass}
+          />
+          
+          <PerformanceHeatmap 
+            data={mockHeatmapData}
+            onClassSelect={(className) => {
+              const classData = mockClassPerformances.find(c => c.name === className);
+              if (classData) {
+                handleViewClass(classData.id);
+              }
+            }}
+          />
+        </div>
+      )}
+      
+      {/* Class Dashboard */}
+      {viewState === "class" && selectedClass && (
+        <ClassPerformanceCard
+          classData={selectedClass}
+          students={mockStudents}
+          onStudentSelect={handleViewStudent}
+        />
+      )}
+      
+      {/* Student Profile */}
+      {viewState === "student" && (
+        <StudentProfileCard
+          student={mockStudentProfile}
+          onBack={handleBackToClass}
+          onGenerateReport={() => setShowReportGenerator(true)}
+        />
+      )}
+      
+      {/* Report Generator Dialog */}
+      {showReportGenerator && (
+        <ReportGenerator
+          templates={mockReportTemplates}
+          type={viewState === "student" ? "student" : viewState === "class" ? "class" : "school"}
+          selectedIds={
+            viewState === "student" && selectedStudentId
+              ? [selectedStudentId]
+              : viewState === "class" && selectedClassId
+              ? [selectedClassId]
+              : undefined
+          }
+          onClose={() => setShowReportGenerator(false)}
+        />
+      )}
     </MainLayout>
   );
 };
