@@ -1,8 +1,8 @@
-
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
 import { Navigate } from "react-router-dom";
+import Analytics from "./Analytics";
 import { 
   School, 
   ClassPerformance, 
@@ -374,21 +374,11 @@ const Dashboard = () => {
     return <Navigate to="/" replace />;
   }
   
-  // If the user isn't an admin, show a simplified dashboard
+  // If the user isn't an admin, show Analytics page
   if (!isAdmin) {
     return (
       <MainLayout>
-        <div className="text-center py-12">
-          <div className="w-20 h-20 mx-auto rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
-            <BookOpen className="w-10 h-10 text-purple-600 dark:text-purple-400" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-            Welcome to Pathway AI
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
-            You need administrator privileges to access the analytics dashboard. Please contact your system administrator for assistance.
-          </p>
-        </div>
+        <Analytics />
       </MainLayout>
     );
   }
