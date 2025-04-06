@@ -107,7 +107,7 @@ export const StudentProfileCard: React.FC<StudentProfileCardProps> = ({
             </h4>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <ChartComponent
+                <LineChart
                   data={chartData}
                   margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
                 >
@@ -139,7 +139,7 @@ export const StudentProfileCard: React.FC<StudentProfileCardProps> = ({
                     activeDot={{ r: 8 }} 
                     isAnimationActive={true} 
                   />
-                </ChartComponent>
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
