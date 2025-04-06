@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
   LayoutDashboard, 
   Upload, 
@@ -89,11 +88,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           {/* Logo and Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <Link to="/dashboard" className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
-                <BookOpen className="text-white w-5 h-5" />
-              </div>
+              <img 
+                src="/lovable-uploads/81e0cb63-c50b-4e64-826e-e52133b0f5e9.png" 
+                alt="Cortex Logo" 
+                className="w-10 h-10 object-contain"
+              />
               <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
-                Pathway AI
+                Cortex
               </span>
             </Link>
             <button 
