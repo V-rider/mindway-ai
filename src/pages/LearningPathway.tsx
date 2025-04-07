@@ -1,12 +1,11 @@
-
 import React, { useEffect, useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { motion } from "framer-motion";
-import { LearningMindway as LearningMindwayComponent } from "@/components/ui/LearningPath";
+import { LearningPathway as LearningPathwayComponent } from "@/components/ui/LearningPath";
 import { LearningPath } from "@/types";
 import { useSearchParams } from "react-router-dom";
 
-const LearningMindway = () => {
+const LearningPathway = () => {
   const [searchParams] = useSearchParams();
   const selectedConcept = searchParams.get("concept") || undefined;
   
@@ -439,7 +438,7 @@ const LearningMindway = () => {
         {/* Page Header */}
         <div>
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-            Learning Mindway
+            Learning Pathway
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Follow your personalized learning journey to master math concepts.
@@ -451,8 +450,8 @@ const LearningMindway = () => {
           </p>
         </div>
         
-        {/* Learning Mindway Component */}
-        <LearningMindwayComponent 
+        {/* Learning Pathway Component */}
+        <LearningPathwayComponent 
           learningPaths={mockLearningPaths}
           selectedConcept={selectedConcept}
         />
@@ -461,4 +460,4 @@ const LearningMindway = () => {
   );
 };
 
-export default LearningMindway;
+export default LearningPathway;

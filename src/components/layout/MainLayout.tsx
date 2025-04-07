@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -40,8 +41,8 @@ const getMenuItems = (isAdmin: boolean): MenuItem[] => {
       icon: BarChart3
     },
     {
-      title: "Learning Mindway",
-      path: "/learning-mindway",
+      title: "Learning Pathway",
+      path: "/learning-pathway",
       icon: BookOpen
     }
   ];

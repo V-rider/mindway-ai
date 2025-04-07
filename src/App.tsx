@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,7 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import Reports from "./pages/Reports";
 import Analytics from "./pages/Analytics";
-import LearningMindway from "./pages/LearningPathway";
+import LearningPathway from "./pages/LearningPathway";
 import NotFound from "./pages/NotFound";
 import Students from "./pages/Students";
 
@@ -99,10 +100,10 @@ const AppRoutes = () => {
         />
         
         <Route 
-          path="/learning-mindway" 
+          path="/learning-pathway" 
           element={
             <ProtectedRoute>
-              <LearningMindway />
+              <LearningPathway />
             </ProtectedRoute>
           } 
         />

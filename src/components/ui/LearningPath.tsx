@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { LearningPath, LearningTopic, Exercise } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,12 +13,12 @@ import {
   Trophy
 } from "lucide-react";
 
-interface LearningMindwayProps {
+interface LearningPathwayProps {
   learningPaths: LearningPath[];
   selectedConcept?: string;
 }
 
-export const LearningMindway: React.FC<LearningMindwayProps> = ({ 
+export const LearningPathway: React.FC<LearningPathwayProps> = ({ 
   learningPaths,
   selectedConcept
 }) => {
@@ -83,7 +84,7 @@ export const LearningMindway: React.FC<LearningMindwayProps> = ({
   return (
     <div className="space-y-8">
       <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 text-center mb-6">
-        Math Learning Mindway
+        Math Learning Pathway
       </h2>
       
       <div className="space-y-6">
