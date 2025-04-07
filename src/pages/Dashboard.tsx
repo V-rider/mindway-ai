@@ -376,13 +376,9 @@ const Dashboard = () => {
     return <Navigate to="/" replace />;
   }
   
-  // If the user isn't an admin, show the student Analytics page wrapped in MainLayout
+  // If the user isn't an admin, redirect to the Analytics page
   if (!isAdmin) {
-    return (
-      <MainLayout>
-        <Analytics />
-      </MainLayout>
-    );
+    return <Analytics />;
   }
   
   // Get the selected class details if in class view

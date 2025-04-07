@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -158,7 +157,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </motion.div>
       
       {/* Main Content */}
-      <div className="flex-1 w-full transition-all duration-300" style={{ marginLeft: sidebarOpen ? '16rem' : '0' }}>
+      <div className="flex-1 transition-all duration-300" style={{ marginLeft: sidebarOpen ? '16rem' : '0' }}>
         {/* Header */}
         <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center justify-between px-4 py-3">
