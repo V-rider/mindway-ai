@@ -77,7 +77,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
   
   return (
-    <div className="min-h-screen flex w-full bg-purple-50 dark:bg-gray-900">
+    <div className="min-h-screen flex bg-purple-50 dark:bg-gray-900">
       {/* Sidebar */}
       <motion.div
         initial={{ x: -300 }}
@@ -158,7 +158,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </motion.div>
       
       {/* Main Content */}
-      <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? "ml-64" : "ml-0"}`}>
+      <div className="flex-1 w-full transition-all duration-300" style={{ marginLeft: sidebarOpen ? '16rem' : '0' }}>
         {/* Header */}
         <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center justify-between px-4 py-3">
@@ -181,7 +181,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </header>
         
         {/* Page Content */}
-        <main className="p-6">
+        <main className="p-6 w-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -189,6 +189,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
+              className="w-full"
             >
               {children}
             </motion.div>

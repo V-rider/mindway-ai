@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -381,9 +380,7 @@ const Dashboard = () => {
   if (!isAdmin) {
     return (
       <MainLayout>
-        <div className="w-full max-w-7xl mx-auto">
-          <Analytics />
-        </div>
+        <Analytics />
       </MainLayout>
     );
   }
