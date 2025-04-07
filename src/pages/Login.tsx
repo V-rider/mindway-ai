@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -63,7 +62,7 @@ const Login = () => {
               <BookOpen className="text-white w-8 h-8" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Pathway AI
+              Mindway AI
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
               Math Test Analysis & Learning Pathways
@@ -235,7 +234,7 @@ const Login = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <h2 className="text-4xl font-bold mb-6">
-              Revolutionize Math Education
+              Revolutionize Math Education with Mindway AI
             </h2>
             
             <p className="text-lg text-purple-100 mb-8">
