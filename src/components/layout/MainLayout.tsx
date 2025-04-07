@@ -77,7 +77,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
   
   return (
-    <div className="min-h-screen flex bg-purple-50 dark:bg-gray-900">
+    <div className="min-h-screen flex w-full bg-purple-50 dark:bg-gray-900">
       {/* Sidebar */}
       <motion.div
         initial={{ x: -300 }}
@@ -189,7 +189,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="container mx-auto"
             >
               {children}
             </motion.div>

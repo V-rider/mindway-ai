@@ -18,6 +18,7 @@ import { ClassPerformanceCard } from "@/components/dashboard/ClassPerformanceCar
 import { StudentProfileCard } from "@/components/dashboard/StudentProfileCard";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { ReportGenerator } from "@/components/dashboard/ReportGenerator";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import { Button } from "@/components/ui/button";
 import { Download, ChevronLeft, BookOpen } from "lucide-react";
@@ -343,6 +344,7 @@ const Dashboard = () => {
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [showReportGenerator, setShowReportGenerator] = useState(false);
+  const isMobile = useIsMobile();
   
   // Handle view changes
   const handleViewClass = (classId: string) => {
@@ -379,7 +381,7 @@ const Dashboard = () => {
   if (!isAdmin) {
     return (
       <MainLayout>
-        <div className="container mx-auto">
+        <div className="w-full max-w-7xl mx-auto">
           <Analytics />
         </div>
       </MainLayout>
@@ -392,116 +394,120 @@ const Dashboard = () => {
   // Render different views based on viewState
   return (
     <MainLayout>
-      {/* Back button if not in overview */}
-      {viewState !== "overview" && (
-        <div className="mb-6">
-          <button
-            onClick={viewState === "class" ? handleBackToOverview : handleBackToClass}
-            className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
-          >
-            <ChevronLeft className="w-5 h-5 mr-1" />
-            Back to {viewState === "class" ? "Overview" : "Class"}
-          </button>
-        </div>
-      )}
-      
-      {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-            {viewState === "overview" 
-              ? "Admin Dashboard" 
-              : viewState === "class" && selectedClass
-              ? `${selectedClass.name} Dashboard`
-              : viewState === "student" && selectedStudentId
-              ? "Student Profile"
-              : "Dashboard"}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {viewState === "overview"
-              ? "Comprehensive view of school-wide performance metrics"
-              : viewState === "class" && selectedClass
-              ? `Performance analytics for Grade ${selectedClass.grade} students`
-              : viewState === "student"
-              ? "Detailed student analytics and learning recommendations"
-              : "Analytics Dashboard"}
-          </p>
+      <div className="w-full max-w-7xl mx-auto">
+        {/* Back button if not in overview */}
+        {viewState !== "overview" && (
+          <div className="mb-6">
+            <button
+              onClick={viewState === "class" ? handleBackToOverview : handleBackToClass}
+              className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+            >
+              <ChevronLeft className="w-5 h-5 mr-1" />
+              Back to {viewState === "class" ? "Overview" : "Class"}
+            </button>
+          </div>
+        )}
+        
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+              {viewState === "overview" 
+                ? "Admin Dashboard" 
+                : viewState === "class" && selectedClass
+                ? `${selectedClass.name} Dashboard`
+                : viewState === "student" && selectedStudentId
+                ? "Student Profile"
+                : "Dashboard"}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              {viewState === "overview"
+                ? "Comprehensive view of school-wide performance metrics"
+                : viewState === "class" && selectedClass
+                ? `Performance analytics for Grade ${selectedClass.grade} students`
+                : viewState === "student"
+                ? "Detailed student analytics and learning recommendations"
+                : "Analytics Dashboard"}
+            </p>
+          </div>
+          
+          {viewState !== "student" && (
+            <Button
+              onClick={handleGenerateReport}
+              className="flex items-center gap-2 shrink-0"
+            >
+              <Download className="w-4 h-4" />
+              Generate Report
+            </Button>
+          )}
         </div>
         
-        {viewState !== "student" && (
-          <Button
-            onClick={handleGenerateReport}
-            className="flex items-center gap-2"
-          >
-            <Download className="w-4 h-4" />
-            Generate Report
-          </Button>
+        {/* Filters */}
+        {viewState === "overview" && (
+          <div className="mb-6">
+            <FilterBar 
+              onFilterChange={() => {}} 
+              grades={gradesList}
+              subjects={subjectsList}
+            />
+          </div>
+        )}
+        
+        {/* Overview Dashboard */}
+        {viewState === "overview" && (
+          <div className="space-y-8">
+            <PerformanceOverview 
+              school={mockSchool} 
+              classPerformances={mockClassPerformances}
+              onClassSelect={handleViewClass}
+            />
+            
+            <PerformanceHeatmap 
+              data={mockHeatmapData}
+              onClassSelect={(className) => {
+                const classData = mockClassPerformances.find(c => c.name === className);
+                if (classData) {
+                  handleViewClass(classData.id);
+                }
+              }}
+            />
+          </div>
+        )}
+        
+        {/* Class Dashboard */}
+        {viewState === "class" && selectedClass && (
+          <ClassPerformanceCard
+            classData={selectedClass}
+            students={mockStudents}
+            onStudentSelect={handleViewStudent}
+          />
+        )}
+        
+        {/* Student Profile */}
+        {viewState === "student" && (
+          <StudentProfileCard
+            student={mockStudentProfile}
+            onBack={handleBackToClass}
+            onGenerateReport={() => setShowReportGenerator(true)}
+          />
+        )}
+        
+        {/* Report Generator Dialog */}
+        {showReportGenerator && (
+          <ReportGenerator
+            templates={mockReportTemplates}
+            type={viewState === "student" ? "student" : viewState === "class" ? "class" : "school"}
+            selectedIds={
+              viewState === "student" && selectedStudentId
+                ? [selectedStudentId]
+                : viewState === "class" && selectedClassId
+                ? [selectedClassId]
+                : undefined
+            }
+            onClose={() => setShowReportGenerator(false)}
+          />
         )}
       </div>
-      
-      {/* Filters */}
-      {viewState === "overview" && (
-        <FilterBar 
-          onFilterChange={() => {}} 
-          grades={gradesList}
-          subjects={subjectsList}
-        />
-      )}
-      
-      {/* Overview Dashboard */}
-      {viewState === "overview" && (
-        <div className="space-y-8">
-          <PerformanceOverview 
-            school={mockSchool} 
-            classPerformances={mockClassPerformances}
-            onClassSelect={handleViewClass}
-          />
-          
-          <PerformanceHeatmap 
-            data={mockHeatmapData}
-            onClassSelect={(className) => {
-              const classData = mockClassPerformances.find(c => c.name === className);
-              if (classData) {
-                handleViewClass(classData.id);
-              }
-            }}
-          />
-        </div>
-      )}
-      
-      {/* Class Dashboard */}
-      {viewState === "class" && selectedClass && (
-        <ClassPerformanceCard
-          classData={selectedClass}
-          students={mockStudents}
-          onStudentSelect={handleViewStudent}
-        />
-      )}
-      
-      {/* Student Profile */}
-      {viewState === "student" && (
-        <StudentProfileCard
-          student={mockStudentProfile}
-          onBack={handleBackToClass}
-          onGenerateReport={() => setShowReportGenerator(true)}
-        />
-      )}
-      
-      {/* Report Generator Dialog */}
-      {showReportGenerator && (
-        <ReportGenerator
-          templates={mockReportTemplates}
-          type={viewState === "student" ? "student" : viewState === "class" ? "class" : "school"}
-          selectedIds={
-            viewState === "student" && selectedStudentId
-              ? [selectedStudentId]
-              : viewState === "class" && selectedClassId
-              ? [selectedClassId]
-              : undefined
-          }
-          onClose={() => setShowReportGenerator(false)}
-        />
-      )}
     </MainLayout>
   );
 };
