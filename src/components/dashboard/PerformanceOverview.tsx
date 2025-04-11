@@ -59,7 +59,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
               {school.name} Overview
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Monitoring performance
+              Monitoring performance across {school.classes.length} classes
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -76,7 +76,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
               </span>
             </div>
             <div className="px-4 py-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Total:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Total Classes:</span>
               <span className="ml-2 font-bold text-gray-800 dark:text-gray-200">
                 {school.classes.length}
               </span>
