@@ -203,8 +203,8 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                     <li key={index} className="text-sm text-gray-700 dark:text-gray-300">
                       <div className="flex justify-between">
                         <span>{error.pattern}</span>
-                        <span className="font-medium text-gray-800 dark:text-gray-200">
-                          {error.count} classes
+                        <span className="text-gray-800 dark:text-gray-200">
+                          {error.count}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">

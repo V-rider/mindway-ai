@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -188,7 +189,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="w-full"
             >
               {children}
             </motion.div>
