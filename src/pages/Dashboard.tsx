@@ -18,9 +18,10 @@ import { StudentProfileCard } from "@/components/dashboard/StudentProfileCard";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { ReportGenerator } from "@/components/dashboard/ReportGenerator";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { PaperMiscorrectionChecker } from "@/components/dashboard/PaperMiscorrectionChecker";
 
 import { Button } from "@/components/ui/button";
-import { Download, ChevronLeft, BookOpen } from "lucide-react";
+import { Download, ChevronLeft, BookOpen, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 // Mock data
@@ -335,7 +336,7 @@ const gradesList = ["3", "4", "5", "6"];
 const subjectsList = ["Mathematics", "Arithmetic", "Geometry", "Pre-Algebra"];
 
 // View states
-type ViewState = "overview" | "class" | "student";
+type ViewState = "overview" | "class" | "student" | "miscorrection";
 
 const Dashboard = () => {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -370,6 +371,10 @@ const Dashboard = () => {
   const handleGenerateReport = () => {
     setShowReportGenerator(true);
   };
+
+  const handleViewMiscorrection = () => {
+    setViewState("miscorrection");
+  };
   
   // If the user isn't authenticated, redirect to login
   if (!isAuthenticated) {
@@ -392,11 +397,11 @@ const Dashboard = () => {
         {viewState !== "overview" && (
           <div className="mb-6">
             <button
-              onClick={viewState === "class" ? handleBackToOverview : handleBackToClass}
+              onClick={viewState === "class" || viewState === "miscorrection" ? handleBackToOverview : handleBackToClass}
               className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
             >
               <ChevronLeft className="w-5 h-5 mr-1" />
-              Back to {viewState === "class" ? "Overview" : "Class"}
+              Back to {viewState === "class" || viewState === "miscorrection" ? "Overview" : "Class"}
             </button>
           </div>
         )}
@@ -411,6 +416,8 @@ const Dashboard = () => {
                 ? `${selectedClass.name} Dashboard`
                 : viewState === "student" && selectedStudentId
                 ? "Student Profile"
+                : viewState === "miscorrection"
+                ? "Paper Miscorrection Checker"
                 : "Dashboard"}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -420,11 +427,33 @@ const Dashboard = () => {
                 ? `Performance analytics for Grade ${selectedClass.grade} students`
                 : viewState === "student"
                 ? "Detailed student analytics and learning recommendations"
+                : viewState === "miscorrection"
+                ? "Check for possible miscorrections on student papers"
                 : "Analytics Dashboard"}
             </p>
           </div>
           
-          {viewState !== "student" && (
+          {viewState === "overview" && (
+            <div className="flex gap-2">
+              <Button
+                onClick={handleViewMiscorrection}
+                className="flex items-center gap-2 shrink-0 bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Check Miscorrections
+              </Button>
+              
+              <Button
+                onClick={handleGenerateReport}
+                className="flex items-center gap-2 shrink-0"
+              >
+                <Download className="w-4 h-4" />
+                Generate Report
+              </Button>
+            </div>
+          )}
+          
+          {viewState !== "overview" && viewState !== "miscorrection" && (
             <Button
               onClick={handleGenerateReport}
               className="flex items-center gap-2 shrink-0"
@@ -483,6 +512,11 @@ const Dashboard = () => {
             onBack={handleBackToClass}
             onGenerateReport={() => setShowReportGenerator(true)}
           />
+        )}
+
+        {/* Paper Miscorrection Checker */}
+        {viewState === "miscorrection" && (
+          <PaperMiscorrectionChecker />
         )}
         
         {/* Report Generator Dialog */}
