@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -21,7 +22,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { PaperMiscorrectionChecker } from "@/components/dashboard/PaperMiscorrectionChecker";
 
 import { Button } from "@/components/ui/button";
-import { Download, ChevronLeft, BookOpen, CheckCircle } from "lucide-react";
+import { 
+  Download, 
+  ChevronLeft, 
+  Search, 
+  FileText,
+  BarChart3
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 // Mock data
@@ -396,13 +403,14 @@ const Dashboard = () => {
         {/* Back button if not in overview */}
         {viewState !== "overview" && (
           <div className="mb-6">
-            <button
+            <Button 
+              variant="ghost"
               onClick={viewState === "class" || viewState === "miscorrection" ? handleBackToOverview : handleBackToClass}
-              className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+              className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
             >
               <ChevronLeft className="w-5 h-5 mr-1" />
               Back to {viewState === "class" || viewState === "miscorrection" ? "Overview" : "Class"}
-            </button>
+            </Button>
           </div>
         )}
         
@@ -411,7 +419,7 @@ const Dashboard = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
               {viewState === "overview" 
-                ? "Admin Dashboard" 
+                ? "Teacher Dashboard" 
                 : viewState === "class" && selectedClass
                 ? `${selectedClass.name} Dashboard`
                 : viewState === "student" && selectedStudentId
@@ -422,11 +430,11 @@ const Dashboard = () => {
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
               {viewState === "overview"
-                ? "Comprehensive view of school-wide performance metrics"
+                ? "Performance analytics at a glance"
                 : viewState === "class" && selectedClass
-                ? `Performance analytics for Grade ${selectedClass.grade} students`
+                ? `Grade ${selectedClass.grade} performance insights`
                 : viewState === "student"
-                ? "Detailed student analytics and learning recommendations"
+                ? "Detailed student analytics and recommendations"
                 : viewState === "miscorrection"
                 ? "Check for possible miscorrections on student papers"
                 : "Analytics Dashboard"}
@@ -437,18 +445,19 @@ const Dashboard = () => {
             <div className="flex gap-2">
               <Button
                 onClick={handleViewMiscorrection}
-                className="flex items-center gap-2 shrink-0 bg-green-600 hover:bg-green-700"
+                variant="outline"
+                className="flex items-center gap-2 shrink-0"
               >
-                <CheckCircle className="w-4 h-4" />
-                Check Miscorrections
+                <Search className="w-4 h-4" />
+                <span className="sm:inline hidden">Check Papers</span>
               </Button>
               
               <Button
                 onClick={handleGenerateReport}
                 className="flex items-center gap-2 shrink-0"
               >
-                <Download className="w-4 h-4" />
-                Generate Report
+                <FileText className="w-4 h-4" />
+                <span className="sm:inline hidden">Reports</span>
               </Button>
             </div>
           )}
@@ -458,8 +467,8 @@ const Dashboard = () => {
               onClick={handleGenerateReport}
               className="flex items-center gap-2 shrink-0"
             >
-              <Download className="w-4 h-4" />
-              Generate Report
+              <FileText className="w-4 h-4" />
+              <span className="sm:inline hidden">Generate Report</span>
             </Button>
           )}
         </div>

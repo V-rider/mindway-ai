@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { HeatmapData } from '@/types';
 import { 
   ResponsiveContainer, 
@@ -8,6 +9,20 @@ import {
   CartesianGrid
 } from 'recharts';
 import { customTooltips } from '@/components/ui/custom-tooltips';
+import { AlertTriangle } from 'lucide-react';
+import { 
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { 
+  DropdownMenu, 
+  DropdownMenuTrigger, 
+  DropdownMenuContent, 
+  DropdownMenuItem 
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { ChevronDown } from 'lucide-react';
 
 interface PerformanceHeatmapProps {
   data: HeatmapData[];
@@ -15,16 +30,29 @@ interface PerformanceHeatmapProps {
 }
 
 // Custom heatmap component using Recharts
-const HeatMap = ({ data, onClassSelect }: PerformanceHeatmapProps) => {
+const HeatMap = ({ data, onClassSelect, filteredGrade }: PerformanceHeatmapProps & { filteredGrade?: string }) => {
   if (!data || data.length === 0) return null;
+  
+  // Filter data by grade if provided
+  const filteredData = filteredGrade 
+    ? data.filter(classData => classData.grade === filteredGrade)
+    : data;
+  
+  if (filteredData.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-48 text-gray-500 dark:text-gray-400">
+        No data available for the selected filter
+      </div>
+    );
+  }
   
   // Extract all unique topics across classes
   const allTopics = Array.from(
-    new Set(data.flatMap(classData => classData.topics.map(t => t.name)))
+    new Set(filteredData.flatMap(classData => classData.topics.map(t => t.name)))
   );
   
   // Get the performance data in format for the heatmap
-  const heatmapData = data.map(classData => {
+  const heatmapData = filteredData.map(classData => {
     const result: Record<string, any> = {
       name: classData.className,
       grade: classData.grade,
@@ -42,114 +70,210 @@ const HeatMap = ({ data, onClassSelect }: PerformanceHeatmapProps) => {
   const getColorByValue = (value?: number) => {
     if (value === undefined) return '#f1f5f9'; // light gray for missing data
     if (value >= 80) return '#10b981'; // green for high performance
-    if (value >= 70) return '#60a5fa'; // blue for good performance
-    if (value >= 60) return '#facc15'; // yellow for average performance
-    if (value >= 50) return '#f97316'; // orange for below average
+    if (value >= 65) return '#facc15'; // yellow for average performance
     return '#ef4444'; // red for poor performance
   };
   
+  // Group data by grade
+  const gradeGroups = new Map<string, typeof heatmapData>();
+  heatmapData.forEach(item => {
+    const grade = item.grade;
+    if (!gradeGroups.has(grade)) {
+      gradeGroups.set(grade, []);
+    }
+    gradeGroups.get(grade)!.push(item);
+  });
+  
+  // Sort grades
+  const sortedGrades = Array.from(gradeGroups.keys()).sort();
+  
   return (
-    <div className="w-full h-full min-h-[400px]">
-      <ResponsiveContainer width="100%" height="100%" minHeight={400}>
-        <div className="recharts-wrapper">
-          <div className="recharts-heatmap">
-            {/* Header row with topic names */}
-            <div className="flex border-b border-gray-200 dark:border-gray-700">
-              <div className="w-32 p-2 font-medium text-gray-700 dark:text-gray-300">
-                Class
-              </div>
-              {allTopics.map((topic, i) => (
-                <div key={i} className="flex-1 p-2 text-sm font-medium text-center text-gray-700 dark:text-gray-300 min-w-[80px]">
-                  {topic}
-                </div>
-              ))}
+    <div className="w-full space-y-4">
+      {filteredGrade ? (
+        <div className="w-full">
+          <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            <div className="w-32 p-2 font-medium text-gray-700 dark:text-gray-300">
+              Class
             </div>
-            
-            {/* Data rows */}
-            <div className="flex flex-col">
-              {heatmapData.map((rowData, i) => (
-                <div 
-                  key={i} 
-                  className="flex border-b border-gray-200 dark:border-gray-700 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                  onClick={() => onClassSelect(rowData.name)}
-                >
-                  <div className="w-32 p-2 text-sm text-gray-800 dark:text-gray-200 flex items-center">
-                    <div>
-                      <div>{rowData.name}</div>
-                      <div className="text-xs text-gray-500">Grade {rowData.grade}</div>
-                    </div>
+            {allTopics.map((topic, i) => (
+              <div key={i} className="flex-1 p-2 text-sm font-medium text-center text-gray-700 dark:text-gray-300 min-w-[80px]">
+                {topic}
+              </div>
+            ))}
+          </div>
+          
+          {/* Data rows */}
+          <div className="flex flex-col">
+            {heatmapData.map((rowData, i) => (
+              <div 
+                key={i} 
+                className="flex border-b border-gray-200 dark:border-gray-700 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                onClick={() => onClassSelect(rowData.name)}
+              >
+                <div className="w-32 p-2 text-sm text-gray-800 dark:text-gray-200 flex items-center">
+                  <div>
+                    <div>{rowData.name}</div>
+                    <div className="text-xs text-gray-500">Grade {rowData.grade}</div>
                   </div>
-                  
-                  {allTopics.map((topic, j) => {
-                    const value = rowData[topic];
-                    return (
+                </div>
+                
+                {allTopics.map((topic, j) => {
+                  const value = rowData[topic];
+                  return (
+                    <div 
+                      key={j} 
+                      className="flex-1 p-2 min-w-[80px] flex items-center justify-center"
+                    >
                       <div 
-                        key={j} 
-                        className="flex-1 p-2 min-w-[80px] flex items-center justify-center"
+                        className="w-full h-8 rounded relative" 
+                        style={{ 
+                          backgroundColor: getColorByValue(value),
+                          opacity: value ? 0.8 : 0.3
+                        }}
                         data-tooltip-id={`heatmap-tooltip-${i}-${j}`}
                         data-tooltip-content={`${topic}: ${value || 'N/A'}%`}
                       >
-                        <div 
-                          className="w-full h-8 rounded" 
-                          style={{ 
-                            backgroundColor: getColorByValue(value),
-                            opacity: value ? 0.8 : 0.3
-                          }}
-                        >
-                          {value && (
-                            <div className="h-full flex items-center justify-center text-xs font-medium text-white">
-                              {value}%
-                            </div>
-                          )}
-                        </div>
+                        {value && value < 65 && (
+                          <div className="absolute -top-1 -right-1">
+                            <AlertTriangle className="w-4 h-4 text-white" />
+                          </div>
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Color legend */}
-          <div className="flex justify-end items-center gap-4 mt-4">
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              Performance:
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-red-500"></div>
-              <span className="text-xs text-gray-600 dark:text-gray-400">Poor</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-orange-500"></div>
-              <span className="text-xs text-gray-600 dark:text-gray-400">Below Avg</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-yellow-500"></div>
-              <span className="text-xs text-gray-600 dark:text-gray-400">Average</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-blue-500"></div>
-              <span className="text-xs text-gray-600 dark:text-gray-400">Good</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-green-500"></div>
-              <span className="text-xs text-gray-600 dark:text-gray-400">Excellent</span>
-            </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         </div>
-      </ResponsiveContainer>
+      ) : (
+        // Grouped by grade with collapsible sections
+        sortedGrades.map(grade => (
+          <Collapsible key={grade} className="w-full border rounded-md border-gray-200 dark:border-gray-700 overflow-hidden">
+            <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 text-left">
+              <span className="font-medium">Grade {grade}</span>
+              <ChevronDown className="h-4 w-4" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="border-t border-gray-200 dark:border-gray-700">
+              <div className="flex border-b border-gray-200 dark:border-gray-700">
+                <div className="w-32 p-2 font-medium text-gray-700 dark:text-gray-300">
+                  Class
+                </div>
+                {allTopics.map((topic, i) => (
+                  <div key={i} className="flex-1 p-2 text-sm font-medium text-center text-gray-700 dark:text-gray-300 min-w-[80px]">
+                    {topic}
+                  </div>
+                ))}
+              </div>
+              
+              {/* Data rows */}
+              <div className="flex flex-col">
+                {gradeGroups.get(grade)?.map((rowData, i) => (
+                  <div 
+                    key={i} 
+                    className="flex border-b border-gray-200 dark:border-gray-700 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                    onClick={() => onClassSelect(rowData.name)}
+                  >
+                    <div className="w-32 p-2 text-sm text-gray-800 dark:text-gray-200 flex items-center">
+                      <div>
+                        <div>{rowData.name}</div>
+                      </div>
+                    </div>
+                    
+                    {allTopics.map((topic, j) => {
+                      const value = rowData[topic];
+                      return (
+                        <div 
+                          key={j} 
+                          className="flex-1 p-2 min-w-[80px] flex items-center justify-center"
+                        >
+                          <div 
+                            className="w-full h-8 rounded relative" 
+                            style={{ 
+                              backgroundColor: getColorByValue(value),
+                              opacity: value ? 0.8 : 0.3
+                            }}
+                            data-tooltip-id={`heatmap-tooltip-${i}-${j}`}
+                            data-tooltip-content={`${topic}: ${value || 'N/A'}%`}
+                          >
+                            {value && value < 65 && (
+                              <div className="absolute -top-1 -right-1">
+                                <AlertTriangle className="w-4 h-4 text-white" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        ))
+      )}
+      
+      {/* Color legend */}
+      <div className="flex justify-end items-center gap-4 mt-4">
+        <div className="text-xs text-gray-500 dark:text-gray-400">
+          Performance:
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-red-500"></div>
+          <span className="text-xs text-gray-600 dark:text-gray-400">Needs Improvement (<65%)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-yellow-500"></div>
+          <span className="text-xs text-gray-600 dark:text-gray-400">Average (65-79%)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-green-500"></div>
+          <span className="text-xs text-gray-600 dark:text-gray-400">Excellent (≥80%)</span>
+        </div>
+      </div>
     </div>
   );
 };
 
 export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, onClassSelect }) => {
+  const [filteredGrade, setFilteredGrade] = useState<string | undefined>(undefined);
+  
+  // Extract all unique grades
+  const grades = Array.from(new Set(data.map(item => item.grade))).sort();
+  
   return (
     <div className="glass-card rounded-xl p-6">
-      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-6">
-        Performance Heatmap by Topic
-      </h3>
+      <div className="flex flex-wrap items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+          Performance Heatmap by Topic
+        </h3>
+        
+        <div className="flex items-center gap-2 mt-2 sm:mt-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                {filteredGrade ? `Grade ${filteredGrade}` : 'All Grades'}
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => setFilteredGrade(undefined)}>
+                All Grades
+              </DropdownMenuItem>
+              {grades.map(grade => (
+                <DropdownMenuItem 
+                  key={grade}
+                  onClick={() => setFilteredGrade(grade)}
+                >
+                  Grade {grade}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
       <div className="overflow-x-auto">
-        <HeatMap data={data} onClassSelect={onClassSelect} />
+        <HeatMap data={data} onClassSelect={onClassSelect} filteredGrade={filteredGrade} />
       </div>
       <div className="text-center mt-4 text-sm text-gray-500 dark:text-gray-400">
         Click on a class row to view detailed performance data
