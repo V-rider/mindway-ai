@@ -66,7 +66,7 @@ export const PaperMiscorrectionChecker: React.FC = () => {
               markedPoints: 0,
               correctPoints: 2,
               confidence: 92,
-              explanation: 'Student's approach is correct. They converted to equivalent fractions with a common denominator correctly. Final simplification was not required in the question.',
+              explanation: "Student\'s approach is correct. They converted to equivalent fractions with a common denominator correctly. Final simplification was not required in the question.",
               status: 'pending'
             },
             {
@@ -86,7 +86,7 @@ export const PaperMiscorrectionChecker: React.FC = () => {
               markedPoints: 0,
               correctPoints: 0,
               confidence: 99,
-              explanation: 'Student's answer is incorrect. The correct answer is 3.75 × 4 = 15.0, marking is accurate.',
+              explanation: "Student\'s answer is incorrect. The correct answer is 3.75 × 4 = 15.0, marking is accurate.",
               status: 'pending'
             },
             {
@@ -96,7 +96,7 @@ export const PaperMiscorrectionChecker: React.FC = () => {
               markedPoints: 1,
               correctPoints: 5,
               confidence: 89,
-              explanation: 'Student's work correctly follows order of operations. Final answer 16 is correct. Appears points were deducted in error.',
+              explanation: "Student\'s work correctly follows order of operations. Final answer 16 is correct. Appears points were deducted in error.",
               status: 'pending'
             }
           ]);
@@ -279,7 +279,7 @@ export const PaperMiscorrectionChecker: React.FC = () => {
                   <div className="space-y-4">
                     <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-md">
                       <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                        Student's Answer:
+                        Student&apos;s Answer:
                       </div>
                       <div className="text-gray-800 dark:text-gray-200 font-mono bg-white dark:bg-gray-900/50 p-2 rounded border border-gray-200 dark:border-gray-700">
                         {result.studentAnswer}
