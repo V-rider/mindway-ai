@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -16,6 +15,8 @@ import {
   Users
 } from "lucide-react";
 import { MenuItem } from "@/types";
+import { useTranslation } from '@/hooks/use-translation';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 // Create a function to get menu items based on user role
 const getMenuItems = (isAdmin: boolean): MenuItem[] => {
@@ -65,6 +66,7 @@ interface MainLayoutProps {
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { user, logout, isAdmin } = useAuth();
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -118,7 +120,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     }`}
                   >
                     <item.icon className="w-5 h-5" />
-                    <span>{item.title}</span>
+                    <span>{t(item.title.toLowerCase().replace(' ', '.'))}</span>
                   </Link>
                 </li>
               ))}
@@ -172,9 +174,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               </button>
             )}
             
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-4">
+              <LanguageSwitcher />
               <div className="text-sm text-gray-600 dark:text-gray-300">
-                Welcome, {user?.name}
+                {t('welcome')}, {user?.name}
               </div>
             </div>
           </div>
