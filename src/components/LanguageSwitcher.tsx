@@ -25,6 +25,9 @@ export const LanguageSwitcher = () => {
           English
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setLanguage('zh')}>
+          简体中文
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setLanguage('zh-TW')}>
           繁體中文
         </DropdownMenuItem>
       </DropdownMenuContent>

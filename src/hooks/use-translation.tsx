@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState } from 'react';
 
-type Language = 'en' | 'zh';
+type Language = 'en' | 'zh' | 'zh-TW';
 
 interface TranslationContextType {
   currentLanguage: Language;
@@ -30,6 +30,16 @@ const translations = {
     'welcome': '歡迎',
     'logout': '登出',
   },
+  'zh-TW': {
+    'dashboard': '儀表板',
+    'upload.tests': '上傳測驗',
+    'reports': '報告',
+    'analytics': '分析',
+    'learning.pathway': '學習路徑',
+    'students': '學生',
+    'welcome': '歡迎',
+    'logout': '登出',
+  }
 };
 
 const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
@@ -40,7 +50,12 @@ export const TranslationProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const value = {
     currentLanguage,
     setLanguage: setCurrentLanguage,
-    t: (key: string) => translations[currentLanguage][key] || key,
+    t: (key: string) => {
+      if (!translations[currentLanguage]) {
+        return key;
+      }
+      return translations[currentLanguage][key] || key;
+    },
   };
 
   return (
