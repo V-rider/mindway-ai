@@ -1,9 +1,10 @@
 
 import React from "react";
-import { TestResult, Question } from "@/types";
+import { TestResult } from "@/types";
 import { motion } from "framer-motion";
-import { AlertCircle, CheckCircle2, BookOpen } from "lucide-react";
+import { AlertCircle, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface TestAnalysisProps {
   result: TestResult;
@@ -11,6 +12,8 @@ interface TestAnalysisProps {
 }
 
 export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) => {
+  const { t } = useTranslation();
+  
   // Helper function to get color based on percentage score
   const getScoreColor = (percentage: number): string => {
     if (percentage >= 80) return "text-green-500 dark:text-green-400";
@@ -37,9 +40,9 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">{testName} - Analysis</h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">{testName} - {t('analysis')}</h2>
         <div className="inline-flex items-center gap-2 px-4 py-1 bg-purple-100 dark:bg-purple-900/30 rounded-full text-purple-700 dark:text-purple-300 text-sm font-medium">
-          <span>Overall Score:</span>
+          <span>{t('overall.score')}:</span>
           <span className={getScoreColor(result.score)}>
             {result.score}%
           </span>
@@ -55,17 +58,17 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Total Questions</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('total.questions')}</h3>
             <p className="text-3xl font-bold text-gray-800 dark:text-gray-100">{result.totalQuestions}</p>
           </div>
           
           <div className="text-center">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Correct Answers</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('correct.answers')}</h3>
             <p className="text-3xl font-bold text-green-500 dark:text-green-400">{result.correctAnswers}</p>
           </div>
           
           <div className="text-center">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Incorrect Answers</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('incorrect.answers')}</h3>
             <p className="text-3xl font-bold text-red-500 dark:text-red-400">{result.incorrectAnswers}</p>
           </div>
         </div>
@@ -79,7 +82,7 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
         className="space-y-4"
       >
         <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-          Performance by Concept
+          {t('performance.by.concept')}
         </h3>
         
         <div className="glass-card rounded-xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -115,7 +118,7 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
               </div>
               
               <div className="text-xs text-gray-500 dark:text-gray-400">
-                {concept.score} of {concept.total} correct
+                {concept.score} {t('of')} {concept.total} {t('correct')}
               </div>
               
               <Link
@@ -123,7 +126,7 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
                 className="inline-flex items-center text-xs text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-medium transition-colors"
               >
                 <BookOpen className="w-3 h-3 mr-1" /> 
-                Practice this concept
+                {t('practice.this.concept')}
               </Link>
             </motion.div>
           ))}
@@ -138,7 +141,7 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
         className="space-y-4"
       >
         <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-          Common Error Types
+          {t('common.error.types')}
         </h3>
         
         <div className="glass-card rounded-xl p-6">
@@ -156,7 +159,7 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
                   </h4>
                 </div>
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {error.count} {error.count === 1 ? "error" : "errors"} ({error.percentage}%)
+                  {error.count} {error.count === 1 ? t('error') : t('errors')} ({error.percentage}%)
                 </span>
               </div>
               
@@ -182,7 +185,7 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
         className="space-y-4"
       >
         <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-          Recommendations for Improvement
+          {t('recommendations.for.improvement')}
         </h3>
         
         <div className="glass-card rounded-xl p-6">

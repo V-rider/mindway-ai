@@ -39,6 +39,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout }) => {
           onClick={onLogout}
           className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           aria-label={t('logout')}
+          title={t('logout')}
         >
           <LogOut className="w-5 h-5 text-gray-500 dark:text-gray-400" />
         </button>

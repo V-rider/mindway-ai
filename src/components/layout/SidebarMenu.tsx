@@ -19,8 +19,10 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({ menuItems }) => {
           <li key={item.path}>
             <Link
               to={item.path}
-              className={`nav-link flex items-center gap-3 ${
-                location.pathname === item.path ? "active" : ""
+              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                location.pathname === item.path 
+                  ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300" 
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
             >
               <item.icon className="w-5 h-5" />
