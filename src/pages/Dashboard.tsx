@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -41,6 +40,8 @@ const mockSchool: School = {
     { id: "class-3", name: "Class 5C", grade: "5", studentCount: 20 },
     { id: "class-4", name: "Class 6A", grade: "6", studentCount: 25 },
     { id: "class-5", name: "Class 6B", grade: "6", studentCount: 23 },
+    { id: "class-6", name: "Class 6C", grade: "6", studentCount: 24 },
+    { id: "class-7", name: "Class 6D", grade: "6", studentCount: 26 },
   ]
 };
 
@@ -144,6 +145,48 @@ const mockClassPerformances: ClassPerformance[] = [
       { pattern: "Multi-step calculation errors", percentage: 28 },
     ]
   },
+  {
+    id: "class-6",
+    name: "Class 6C",
+    grade: "6",
+    averageScore: 79,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 95 },
+      { topic: "Multiplication", mastery: 90 },
+      { topic: "Division", mastery: 85 },
+      { topic: "Fractions", mastery: 80 },
+      { topic: "Decimals", mastery: 78 },
+      { topic: "Percentages", mastery: 73 },
+      { topic: "Pre-Algebra", mastery: 68 },
+      { topic: "Geometry", mastery: 82 },
+    ],
+    errorPatterns: [
+      { pattern: "Pre-algebra variable usage", percentage: 35 },
+      { pattern: "Percentage calculation errors", percentage: 30 },
+      { pattern: "Geometry proof understanding", percentage: 25 },
+    ]
+  },
+  {
+    id: "class-7",
+    name: "Class 6D",
+    grade: "6",
+    averageScore: 81,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 97 },
+      { topic: "Multiplication", mastery: 93 },
+      { topic: "Division", mastery: 87 },
+      { topic: "Fractions", mastery: 83 },
+      { topic: "Decimals", mastery: 80 },
+      { topic: "Percentages", mastery: 75 },
+      { topic: "Pre-Algebra", mastery: 72 },
+      { topic: "Geometry", mastery: 88 },
+    ],
+    errorPatterns: [
+      { pattern: "Algebra equation solving", percentage: 28 },
+      { pattern: "Word problem interpretation", percentage: 24 },
+      { pattern: "Mixed fraction operations", percentage: 22 },
+    ]
+  },
 ];
 
 const mockStudents: StudentPerformance[] = [
@@ -194,6 +237,30 @@ const mockStudents: StudentPerformance[] = [
     improvement: 7,
     strengths: ["Addition & Subtraction"],
     weaknesses: ["Multiplication", "Division", "Fractions"],
+  },
+  {
+    id: "student-7",
+    name: "Ethan Miller",
+    averageScore: 84,
+    improvement: 6,
+    strengths: ["Geometry", "Pre-Algebra", "Word Problems"],
+    weaknesses: ["Complex Fractions"],
+  },
+  {
+    id: "student-8",
+    name: "Isabella Chen",
+    averageScore: 91,
+    improvement: 4,
+    strengths: ["All Mathematical Operations", "Problem Solving"],
+    weaknesses: ["Time Management"],
+  },
+  {
+    id: "student-9",
+    name: "Lucas Rodriguez",
+    averageScore: 73,
+    improvement: 8,
+    strengths: ["Geometry", "Patterns"],
+    weaknesses: ["Word Problems", "Pre-Algebra Concepts"],
   },
 ];
 
@@ -299,6 +366,34 @@ const mockHeatmapData: HeatmapData[] = [
       { name: "Percentages", performance: 70 },
       { name: "Pre-Algebra", performance: 62 },
       { name: "Geometry", performance: 75 },
+    ],
+  },
+  {
+    className: "Class 6C",
+    grade: "6",
+    topics: [
+      { name: "Addition & Subtraction", performance: 95 },
+      { name: "Multiplication", performance: 90 },
+      { name: "Division", performance: 85 },
+      { name: "Fractions", performance: 80 },
+      { name: "Decimals", performance: 78 },
+      { name: "Percentages", performance: 73 },
+      { name: "Pre-Algebra", performance: 68 },
+      { name: "Geometry", performance: 82 },
+    ],
+  },
+  {
+    className: "Class 6D",
+    grade: "6",
+    topics: [
+      { name: "Addition & Subtraction", performance: 97 },
+      { name: "Multiplication", performance: 93 },
+      { name: "Division", performance: 87 },
+      { name: "Fractions", performance: 83 },
+      { name: "Decimals", performance: 80 },
+      { name: "Percentages", performance: 75 },
+      { name: "Pre-Algebra", performance: 72 },
+      { name: "Geometry", performance: 88 },
     ],
   },
 ];
