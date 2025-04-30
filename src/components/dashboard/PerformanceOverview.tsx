@@ -36,6 +36,7 @@ import {
   DropdownMenuItem 
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { useAuth } from "@/context/AuthContext";
 
 interface PerformanceOverviewProps {
   school: School;
@@ -49,6 +50,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
   onClassSelect 
 }) => {
   const [selectedGrade, setSelectedGrade] = useState<string | "all">("all");
+  const { user } = useAuth();
   
   // Filter classes by grade if needed
   const filteredClasses = selectedGrade === "all"
@@ -85,14 +87,23 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
     .sort((a, b) => b.count - a.count || b.avgPercentage - a.avgPercentage)
     .slice(0, 3);
   
+  // Mock data for teacher's classes - in a real app, this would come from user data
+  const teacherClasses = ["Class 3A", "Class 6B", "Class 6D"];
+  const isTeacherClass = (className: string) => teacherClasses.includes(className);
+  
   // Data for charts
-  const classBarChartData = filteredClasses.map(classData => ({
-    name: classData.name,
-    score: classData.averageScore,
-    grade: `Grade ${classData.grade}`,
-    fill: classData.averageScore >= 80 ? "#10b981" : 
-          classData.averageScore >= 65 ? "#facc15" : "#ef4444"
-  }));
+  const classBarChartData = filteredClasses.map(classData => {
+    const isTeaching = isTeacherClass(classData.name);
+    
+    return {
+      name: classData.name,
+      score: classData.averageScore,
+      grade: `Grade ${classData.grade}`,
+      fill: classData.averageScore >= 80 ? "#10b981" : 
+            classData.averageScore >= 65 ? "#facc15" : "#ef4444",
+      isTeaching: isTeaching
+    };
+  });
   
   // Error patterns for pie chart
   const errorPieChartData = commonErrorPatterns.map((error, index) => ({
@@ -102,7 +113,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
     fill: ["#f87171", "#fb923c", "#fbbf24"][index % 3] // red, orange, amber
   }));
   
-  // Get unique grades for filter
+  // Extract unique grades for filter dropdown
   const grades = Array.from(new Set(classPerformances.map(cp => cp.grade))).sort();
     
   return (
@@ -194,10 +205,13 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Classes Overview Chart */}
           <div className="col-span-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-4 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center">
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
               <BarChart3 className="w-5 h-5 mr-2 text-blue-500" />
               Class Performance
             </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+              Classes you teach are highlighted in purple
+            </p>
             
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -212,6 +226,22 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                     angle={-45}
                     textAnchor="end"
                     height={70}
+                    tick={props => {
+                      const isTeaching = classBarChartData.find(item => item.name === props.payload.value)?.isTeaching;
+                      return (
+                        <text 
+                          x={props.x} 
+                          y={props.y} 
+                          dy={16} 
+                          textAnchor="end" 
+                          fill={isTeaching ? "#9b87f5" : "#666"}
+                          fontWeight={isTeaching ? "600" : "normal"}
+                          transform={`rotate(-45, ${props.x}, ${props.y})`}
+                        >
+                          {props.payload.value}
+                        </text>
+                      );
+                    }}
                   />
                   <YAxis domain={[0, 100]} />
                   <Tooltip content={customTooltips.renderBarChartTooltip} />
@@ -227,7 +257,12 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                     cursor="pointer"
                   >
                     {classBarChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.fill}
+                        stroke={entry.isTeaching ? "#9b87f5" : "none"}
+                        strokeWidth={entry.isTeaching ? 2 : 0}
+                      />
                     ))}
                   </Bar>
                 </BarChart>
@@ -258,18 +293,31 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                       {lowPerformingClasses.slice(0, 3).map(classData => (
                         <li 
                           key={classData.id} 
-                          className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 p-2 rounded-md"
+                          className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 p-2 rounded-md ${
+                            isTeacherClass(classData.name) ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                          }`}
                           onClick={() => onClassSelect(classData.id)}
                         >
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm text-gray-700 dark:text-gray-300">
+                            <span className={`text-sm ${
+                              isTeacherClass(classData.name) 
+                                ? 'text-purple-700 dark:text-purple-300 font-medium' 
+                                : 'text-gray-700 dark:text-gray-300'
+                            }`}>
                               {classData.name} (Grade {classData.grade})
                             </span>
                             <span className="text-sm font-medium text-red-600 dark:text-red-400">
                               {classData.averageScore}%
                             </span>
                           </div>
-                          <Progress value={classData.averageScore} className="h-2 bg-gray-200 dark:bg-gray-700" />
+                          <Progress 
+                            value={classData.averageScore} 
+                            className={`h-2 ${
+                              isTeacherClass(classData.name)
+                                ? 'bg-purple-100 dark:bg-purple-900/30'
+                                : 'bg-gray-200 dark:bg-gray-700'
+                            }`}
+                          />
                         </li>
                       ))}
                     </ul>
@@ -357,3 +405,4 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
     </div>
   );
 };
+

@@ -25,7 +25,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({ menuItems }) => {
                   : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
             >
-              <item.icon className="w-5 h-5" />
+              {React.createElement(item.icon, { className: "w-5 h-5" })}
               <span>{t(item.title.toLowerCase().replace(' ', '.'))}</span>
             </Link>
           </li>

@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
+import { useAuth } from "@/context/AuthContext";
 
 interface PerformanceHeatmapProps {
   data: HeatmapData[];
@@ -30,7 +31,10 @@ interface PerformanceHeatmapProps {
 }
 
 // Custom heatmap component using Recharts
-const HeatMap = ({ data, onClassSelect, filteredGrade }: PerformanceHeatmapProps & { filteredGrade?: string }) => {
+const HeatMap = ({ data, onClassSelect, filteredGrade, teacherClasses }: PerformanceHeatmapProps & { 
+  filteredGrade?: string;
+  teacherClasses?: string[];
+}) => {
   if (!data || data.length === 0) return null;
   
   // Filter data by grade if provided
@@ -87,6 +91,11 @@ const HeatMap = ({ data, onClassSelect, filteredGrade }: PerformanceHeatmapProps
   // Sort grades
   const sortedGrades = Array.from(gradeGroups.keys()).sort();
   
+  // Function to check if a class is taught by the current user
+  const isTeacherClass = (className: string) => {
+    return teacherClasses?.includes(className) || false;
+  };
+  
   return (
     <div className="w-full space-y-4">
       {filteredGrade ? (
@@ -107,10 +116,16 @@ const HeatMap = ({ data, onClassSelect, filteredGrade }: PerformanceHeatmapProps
             {heatmapData.map((rowData, i) => (
               <div 
                 key={i} 
-                className="flex border-b border-gray-200 dark:border-gray-700 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                className={`flex border-b border-gray-200 dark:border-gray-700 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 ${
+                  isTeacherClass(rowData.name) ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                }`}
                 onClick={() => onClassSelect(rowData.name)}
               >
-                <div className="w-32 p-2 text-sm text-gray-800 dark:text-gray-200 flex items-center">
+                <div className={`w-32 p-2 text-sm flex items-center ${
+                  isTeacherClass(rowData.name) 
+                    ? 'text-purple-700 dark:text-purple-300 font-medium' 
+                    : 'text-gray-800 dark:text-gray-200'
+                }`}>
                   <div>
                     <div>{rowData.name}</div>
                     <div className="text-xs text-gray-500">Grade {rowData.grade}</div>
@@ -128,7 +143,9 @@ const HeatMap = ({ data, onClassSelect, filteredGrade }: PerformanceHeatmapProps
                         className="w-full h-8 rounded relative" 
                         style={{ 
                           backgroundColor: getColorByValue(value),
-                          opacity: value ? 0.8 : 0.3
+                          opacity: value ? 0.8 : 0.3,
+                          // Add a border for teacher's classes
+                          border: isTeacherClass(rowData.name) ? '2px solid #9b87f5' : 'none',
                         }}
                         data-tooltip-id={`heatmap-tooltip-${i}-${j}`}
                         data-tooltip-content={`${topic}: ${value || 'N/A'}%`}
@@ -147,14 +164,13 @@ const HeatMap = ({ data, onClassSelect, filteredGrade }: PerformanceHeatmapProps
           </div>
         </div>
       ) : (
-        // Grouped by grade with collapsible sections
+        // Show all grades expanded without collapsible sections
         sortedGrades.map(grade => (
-          <Collapsible key={grade} className="w-full border rounded-md border-gray-200 dark:border-gray-700 overflow-hidden">
-            <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 text-left">
+          <div key={grade} className="w-full border rounded-md border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+            <div className="flex items-center w-full p-3 bg-gray-50 dark:bg-gray-800/50 text-left">
               <span className="font-medium">Grade {grade}</span>
-              <ChevronDown className="h-4 w-4" />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="border-t border-gray-200 dark:border-gray-700">
+            </div>
+            <div className="border-t border-gray-200 dark:border-gray-700">
               <div className="flex border-b border-gray-200 dark:border-gray-700">
                 <div className="w-32 p-2 font-medium text-gray-700 dark:text-gray-300">
                   Class
@@ -171,10 +187,16 @@ const HeatMap = ({ data, onClassSelect, filteredGrade }: PerformanceHeatmapProps
                 {gradeGroups.get(grade)?.map((rowData, i) => (
                   <div 
                     key={i} 
-                    className="flex border-b border-gray-200 dark:border-gray-700 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                    className={`flex border-b border-gray-200 dark:border-gray-700 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 ${
+                      isTeacherClass(rowData.name) ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                    }`}
                     onClick={() => onClassSelect(rowData.name)}
                   >
-                    <div className="w-32 p-2 text-sm text-gray-800 dark:text-gray-200 flex items-center">
+                    <div className={`w-32 p-2 text-sm flex items-center ${
+                      isTeacherClass(rowData.name) 
+                        ? 'text-purple-700 dark:text-purple-300 font-medium' 
+                        : 'text-gray-800 dark:text-gray-200'
+                    }`}>
                       <div>
                         <div>{rowData.name}</div>
                       </div>
@@ -191,7 +213,9 @@ const HeatMap = ({ data, onClassSelect, filteredGrade }: PerformanceHeatmapProps
                             className="w-full h-8 rounded relative" 
                             style={{ 
                               backgroundColor: getColorByValue(value),
-                              opacity: value ? 0.8 : 0.3
+                              opacity: value ? 0.8 : 0.3,
+                              // Add a border for teacher's classes
+                              border: isTeacherClass(rowData.name) ? '2px solid #9b87f5' : 'none',
                             }}
                             data-tooltip-id={`heatmap-tooltip-${i}-${j}`}
                             data-tooltip-content={`${topic}: ${value || 'N/A'}%`}
@@ -208,8 +232,8 @@ const HeatMap = ({ data, onClassSelect, filteredGrade }: PerformanceHeatmapProps
                   </div>
                 ))}
               </div>
-            </CollapsibleContent>
-          </Collapsible>
+            </div>
+          </div>
         ))
       )}
       
@@ -237,33 +261,39 @@ const HeatMap = ({ data, onClassSelect, filteredGrade }: PerformanceHeatmapProps
 
 export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, onClassSelect }) => {
   const [filteredGrade, setFilteredGrade] = useState<string | undefined>(undefined);
+  const { user } = useAuth();
   
   // Extract all unique grades
   const grades = Array.from(new Set(data.map(item => item.grade))).sort();
   
+  // Mock data for teacher's classes - in a real app, this would come from user data
+  const teacherClasses = ["Class 3A", "Class 6B", "Class 6D"];
+  
   return (
     <div className="glass-card rounded-xl p-6">
       <div className="flex flex-wrap items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-          Performance Heatmap by Topic
-        </h3>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+            Performance Heatmap by Topic
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Classes taught by you are highlighted in purple
+          </p>
+        </div>
         
         <div className="flex items-center gap-2 mt-2 sm:mt-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
-                {filteredGrade ? `Grade ${filteredGrade}` : 'All Grades'}
+                {filteredGrade ? `Grade ${filteredGrade}` : 'Filter by Grade'}
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => setFilteredGrade(undefined)}>
-                All Grades
-              </DropdownMenuItem>
               {grades.map(grade => (
                 <DropdownMenuItem 
                   key={grade}
-                  onClick={() => setFilteredGrade(grade)}
+                  onClick={() => setFilteredGrade(grade === filteredGrade ? undefined : grade)}
                 >
                   Grade {grade}
                 </DropdownMenuItem>
@@ -273,7 +303,12 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
         </div>
       </div>
       <div className="overflow-x-auto">
-        <HeatMap data={data} onClassSelect={onClassSelect} filteredGrade={filteredGrade} />
+        <HeatMap 
+          data={data} 
+          onClassSelect={onClassSelect} 
+          filteredGrade={filteredGrade} 
+          teacherClasses={teacherClasses}
+        />
       </div>
       <div className="text-center mt-4 text-sm text-gray-500 dark:text-gray-400">
         Click on a class row to view detailed performance data
@@ -281,3 +316,4 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
     </div>
   );
 };
+
