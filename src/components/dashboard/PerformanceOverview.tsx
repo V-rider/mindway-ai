@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { School, ClassPerformance } from "@/types";
 import { motion } from "framer-motion";
@@ -49,13 +48,11 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
   classPerformances,
   onClassSelect 
 }) => {
-  const [selectedGrade, setSelectedGrade] = useState<string | "all">("all");
+  const [selectedGrade, setSelectedGrade] = useState<string>("6"); // Default to Grade 6
   const { user } = useAuth();
   
-  // Filter classes by grade if needed
-  const filteredClasses = selectedGrade === "all"
-    ? classPerformances
-    : classPerformances.filter(cp => cp.grade === selectedGrade);
+  // Filter classes by grade
+  const filteredClasses = classPerformances.filter(cp => cp.grade === selectedGrade);
   
   const overallAverage = filteredClasses.reduce(
     (sum, cp) => sum + cp.averageScore, 
@@ -140,14 +137,11 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="flex items-center gap-2">
-                  {selectedGrade === "all" ? "All Grades" : `Grade ${selectedGrade}`}
+                  Grade {selectedGrade}
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setSelectedGrade("all")}>
-                  All Grades
-                </DropdownMenuItem>
                 {grades.map(grade => (
                   <DropdownMenuItem 
                     key={grade}
@@ -405,4 +399,3 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
     </div>
   );
 };
-

@@ -1,36 +1,40 @@
 
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import { useTranslation } from '@/hooks/use-translation';
+import { NavLink } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { cn } from "@/lib/utils";
 import { MenuItem } from "@/types";
 
 interface SidebarMenuProps {
-  menuItems: MenuItem[];
+  items: MenuItem[];
+  currentYear?: number;
 }
 
-export const SidebarMenu: React.FC<SidebarMenuProps> = ({ menuItems }) => {
-  const location = useLocation();
-  const { t } = useTranslation();
+export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items, currentYear = 2023 }) => {
+  const { isAdmin } = useAuth();
 
   return (
-    <nav className="flex-1 overflow-y-auto px-3 py-4">
-      <ul className="space-y-2">
-        {menuItems.map((item) => (
-          <li key={item.path}>
-            <Link
-              to={item.path}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                location.pathname === item.path 
-                  ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300" 
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-            >
-              {React.createElement(item.icon, { className: "w-5 h-5" })}
-              <span>{t(item.title.toLowerCase().replace(' ', '.'))}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <div className="mt-6">
+      <nav>
+        <ul className="space-y-1">
+          {items.map((item, index) => (
+            <li key={index}>
+              <NavLink
+                to={item.path}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center p-3 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 group transition-colors",
+                    isActive && "bg-gray-100 dark:bg-gray-800 text-blue-600 dark:text-blue-400 font-medium"
+                  )
+                }
+              >
+                <item.icon size={20} strokeWidth={1.75} />
+                <span className="ml-3">{item.title}</span>
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
   );
 };
