@@ -32,15 +32,13 @@ interface PerformanceHeatmapProps {
 
 // Custom heatmap component using Recharts
 const HeatMap = ({ data, onClassSelect, filteredGrade, teacherClasses }: PerformanceHeatmapProps & { 
-  filteredGrade?: string;
+  filteredGrade: string;
   teacherClasses?: string[];
 }) => {
   if (!data || data.length === 0) return null;
   
-  // Filter data by grade if provided
-  const filteredData = filteredGrade 
-    ? data.filter(classData => classData.grade === filteredGrade)
-    : data;
+  // Filter data by grade
+  const filteredData = data.filter(classData => classData.grade === filteredGrade);
   
   if (filteredData.length === 0) {
     return (
@@ -78,19 +76,6 @@ const HeatMap = ({ data, onClassSelect, filteredGrade, teacherClasses }: Perform
     return '#ef4444'; // red for poor performance
   };
   
-  // Group data by grade
-  const gradeGroups = new Map<string, typeof heatmapData>();
-  heatmapData.forEach(item => {
-    const grade = item.grade;
-    if (!gradeGroups.has(grade)) {
-      gradeGroups.set(grade, []);
-    }
-    gradeGroups.get(grade)!.push(item);
-  });
-  
-  // Sort grades
-  const sortedGrades = Array.from(gradeGroups.keys()).sort();
-  
   // Function to check if a class is taught by the current user
   const isTeacherClass = (className: string) => {
     return teacherClasses?.includes(className) || false;
@@ -98,144 +83,70 @@ const HeatMap = ({ data, onClassSelect, filteredGrade, teacherClasses }: Perform
   
   return (
     <div className="w-full space-y-4">
-      {filteredGrade ? (
-        <div className="w-full">
-          <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-            <div className="w-32 p-2 font-medium text-gray-700 dark:text-gray-300">
-              Class
+      <div className="w-full">
+        <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+          <div className="w-32 p-2 font-medium text-gray-700 dark:text-gray-300">
+            Class
+          </div>
+          {allTopics.map((topic, i) => (
+            <div key={i} className="flex-1 p-2 text-sm font-medium text-center text-gray-700 dark:text-gray-300 min-w-[80px]">
+              {topic}
             </div>
-            {allTopics.map((topic, i) => (
-              <div key={i} className="flex-1 p-2 text-sm font-medium text-center text-gray-700 dark:text-gray-300 min-w-[80px]">
-                {topic}
-              </div>
-            ))}
-          </div>
-          
-          {/* Data rows */}
-          <div className="flex flex-col">
-            {heatmapData.map((rowData, i) => (
-              <div 
-                key={i} 
-                className={`flex border-b border-gray-200 dark:border-gray-700 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 ${
-                  isTeacherClass(rowData.name) ? 'bg-purple-50 dark:bg-purple-900/20' : ''
-                }`}
-                onClick={() => onClassSelect(rowData.name)}
-              >
-                <div className={`w-32 p-2 text-sm flex items-center ${
-                  isTeacherClass(rowData.name) 
-                    ? 'text-purple-700 dark:text-purple-300 font-medium' 
-                    : 'text-gray-800 dark:text-gray-200'
-                }`}>
-                  <div>
-                    <div>{rowData.name}</div>
-                    <div className="text-xs text-gray-500">Grade {rowData.grade}</div>
-                  </div>
-                </div>
-                
-                {allTopics.map((topic, j) => {
-                  const value = rowData[topic];
-                  return (
-                    <div 
-                      key={j} 
-                      className="flex-1 p-2 min-w-[80px] flex items-center justify-center"
-                    >
-                      <div 
-                        className="w-full h-8 rounded relative" 
-                        style={{ 
-                          backgroundColor: getColorByValue(value),
-                          opacity: value ? 0.8 : 0.3,
-                          // Add a border for teacher's classes
-                          border: isTeacherClass(rowData.name) ? '2px solid #9b87f5' : 'none',
-                        }}
-                        data-tooltip-id={`heatmap-tooltip-${i}-${j}`}
-                        data-tooltip-content={`${topic}: ${value || 'N/A'}%`}
-                      >
-                        {value && value < 65 && (
-                          <div className="absolute -top-1 -right-1">
-                            <AlertTriangle className="w-4 h-4 text-white" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
-      ) : (
-        // Show all grades expanded without collapsible sections
-        sortedGrades.map(grade => (
-          <div key={grade} className="w-full border rounded-md border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
-            <div className="flex items-center w-full p-3 bg-gray-50 dark:bg-gray-800/50 text-left">
-              <span className="font-medium">Grade {grade}</span>
-            </div>
-            <div className="border-t border-gray-200 dark:border-gray-700">
-              <div className="flex border-b border-gray-200 dark:border-gray-700">
-                <div className="w-32 p-2 font-medium text-gray-700 dark:text-gray-300">
-                  Class
+        
+        {/* Data rows */}
+        <div className="flex flex-col">
+          {heatmapData.map((rowData, i) => (
+            <div 
+              key={i} 
+              className={`flex border-b border-gray-200 dark:border-gray-700 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 ${
+                isTeacherClass(rowData.name) ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+              }`}
+              onClick={() => onClassSelect(rowData.name)}
+            >
+              <div className={`w-32 p-2 text-sm flex items-center ${
+                isTeacherClass(rowData.name) 
+                  ? 'text-purple-700 dark:text-purple-300 font-medium' 
+                  : 'text-gray-800 dark:text-gray-200'
+              }`}>
+                <div>
+                  <div>{rowData.name}</div>
+                  <div className="text-xs text-gray-500">Grade {rowData.grade}</div>
                 </div>
-                {allTopics.map((topic, i) => (
-                  <div key={i} className="flex-1 p-2 text-sm font-medium text-center text-gray-700 dark:text-gray-300 min-w-[80px]">
-                    {topic}
-                  </div>
-                ))}
               </div>
               
-              {/* Data rows */}
-              <div className="flex flex-col">
-                {gradeGroups.get(grade)?.map((rowData, i) => (
+              {allTopics.map((topic, j) => {
+                const value = rowData[topic];
+                return (
                   <div 
-                    key={i} 
-                    className={`flex border-b border-gray-200 dark:border-gray-700 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 ${
-                      isTeacherClass(rowData.name) ? 'bg-purple-50 dark:bg-purple-900/20' : ''
-                    }`}
-                    onClick={() => onClassSelect(rowData.name)}
+                    key={j} 
+                    className="flex-1 p-2 min-w-[80px] flex items-center justify-center"
                   >
-                    <div className={`w-32 p-2 text-sm flex items-center ${
-                      isTeacherClass(rowData.name) 
-                        ? 'text-purple-700 dark:text-purple-300 font-medium' 
-                        : 'text-gray-800 dark:text-gray-200'
-                    }`}>
-                      <div>
-                        <div>{rowData.name}</div>
-                      </div>
-                    </div>
-                    
-                    {allTopics.map((topic, j) => {
-                      const value = rowData[topic];
-                      return (
-                        <div 
-                          key={j} 
-                          className="flex-1 p-2 min-w-[80px] flex items-center justify-center"
-                        >
-                          <div 
-                            className="w-full h-8 rounded relative" 
-                            style={{ 
-                              backgroundColor: getColorByValue(value),
-                              opacity: value ? 0.8 : 0.3,
-                              // Add a border for teacher's classes
-                              border: isTeacherClass(rowData.name) ? '2px solid #9b87f5' : 'none',
-                            }}
-                            data-tooltip-id={`heatmap-tooltip-${i}-${j}`}
-                            data-tooltip-content={`${topic}: ${value || 'N/A'}%`}
-                          >
-                            {value && value < 65 && (
-                              <div className="absolute -top-1 -right-1">
-                                <AlertTriangle className="w-4 h-4 text-white" />
-                              </div>
-                            )}
-                          </div>
+                    <div 
+                      className="w-full h-8 rounded relative" 
+                      style={{ 
+                        backgroundColor: getColorByValue(value),
+                        opacity: value ? 0.8 : 0.3,
+                        // Add a border for teacher's classes
+                        border: isTeacherClass(rowData.name) ? '2px solid #9b87f5' : 'none',
+                      }}
+                      data-tooltip-id={`heatmap-tooltip-${i}-${j}`}
+                      data-tooltip-content={`${topic}: ${value || 'N/A'}%`}
+                    >
+                      {value && value < 65 && (
+                        <div className="absolute -top-1 -right-1">
+                          <AlertTriangle className="w-4 h-4 text-white" />
                         </div>
-                      );
-                    })}
+                      )}
+                    </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
-          </div>
-        ))
-      )}
+          ))}
+        </div>
+      </div>
       
       {/* Color legend */}
       <div className="flex justify-end items-center gap-4 mt-4">
@@ -260,7 +171,7 @@ const HeatMap = ({ data, onClassSelect, filteredGrade, teacherClasses }: Perform
 };
 
 export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, onClassSelect }) => {
-  const [filteredGrade, setFilteredGrade] = useState<string | undefined>(undefined);
+  const [filteredGrade, setFilteredGrade] = useState<string>("6"); // Default to Grade 6
   const { user } = useAuth();
   
   // Extract all unique grades
@@ -285,7 +196,7 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
-                {filteredGrade ? `Grade ${filteredGrade}` : 'Filter by Grade'}
+                Grade {filteredGrade}
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -293,7 +204,7 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
               {grades.map(grade => (
                 <DropdownMenuItem 
                   key={grade}
-                  onClick={() => setFilteredGrade(grade === filteredGrade ? undefined : grade)}
+                  onClick={() => setFilteredGrade(grade)}
                 >
                   Grade {grade}
                 </DropdownMenuItem>
@@ -316,4 +227,3 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
     </div>
   );
 };
-
