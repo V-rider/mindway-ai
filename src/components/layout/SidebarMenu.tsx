@@ -17,7 +17,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items, currentYear = 2
     <div className="mt-6">
       <nav>
         <ul className="space-y-1">
-          {items.map((item, index) => (
+          {items?.map((item, index) => (
             <li key={index}>
               <NavLink
                 to={item.path}
@@ -28,7 +28,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items, currentYear = 2
                   )
                 }
               >
-                <item.icon size={20} strokeWidth={1.75} />
+                {React.createElement(item.icon, { size: 20, strokeWidth: 1.75 })}
                 <span className="ml-3">{item.title}</span>
               </NavLink>
             </li>
