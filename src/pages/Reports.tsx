@@ -7,21 +7,21 @@ import {
   FileText, 
   Search, 
   Filter, 
-  Calendar, 
-  SortAsc, 
-  SortDesc,
-  X,
   Download,
-  Share,
-  Users
+  Users,
+  X,
+  Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 
 const Reports = () => {
   // State for selected grade and search term
   const [selectedGrade, setSelectedGrade] = useState<string>("6");
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] = useState<string>("date");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   
   // List of available grades
   const grades = ["3", "4", "5", "6"];
@@ -39,9 +39,9 @@ const Reports = () => {
       mostChallenging: "Basic Fractions",
       highestPerforming: "Number Operations",
       recentTests: [
-        { id: "g3-test-1", name: "Addition & Subtraction Test", date: "2023-10-15", performance: "Above Average" },
-        { id: "g3-test-2", name: "Shapes Quiz", date: "2023-09-28", performance: "Average" },
-        { id: "g3-test-3", name: "Word Problems Assessment", date: "2023-09-10", performance: "Above Average" }
+        { id: "g3-test-1", name: "Addition & Subtraction Test", date: "2023-10-15", performance: "Above Average", completionRate: "92%" },
+        { id: "g3-test-2", name: "Shapes Quiz", date: "2023-09-28", performance: "Average", completionRate: "85%" },
+        { id: "g3-test-3", name: "Word Problems Assessment", date: "2023-09-10", performance: "Above Average", completionRate: "88%" }
       ]
     },
     "4": {
@@ -55,9 +55,9 @@ const Reports = () => {
       mostChallenging: "Geometry",
       highestPerforming: "Multiplication & Division",
       recentTests: [
-        { id: "g4-test-1", name: "Multiplication Test", date: "2023-10-18", performance: "Above Average" },
-        { id: "g4-test-2", name: "Fractions Quiz", date: "2023-10-01", performance: "Average" },
-        { id: "g4-test-3", name: "Geometry Basics", date: "2023-09-15", performance: "Below Average" }
+        { id: "g4-test-1", name: "Multiplication Test", date: "2023-10-18", performance: "Above Average", completionRate: "90%" },
+        { id: "g4-test-2", name: "Fractions Quiz", date: "2023-10-01", performance: "Average", completionRate: "87%" },
+        { id: "g4-test-3", name: "Geometry Basics", date: "2023-09-15", performance: "Below Average", completionRate: "78%" }
       ]
     },
     "5": {
@@ -71,9 +71,9 @@ const Reports = () => {
       mostChallenging: "Advanced Geometry",
       highestPerforming: "Data & Graphs",
       recentTests: [
-        { id: "g5-test-1", name: "Decimal Operations", date: "2023-10-20", performance: "Above Average" },
-        { id: "g5-test-2", name: "Pre-Algebra Concepts", date: "2023-10-05", performance: "Above Average" },
-        { id: "g5-test-3", name: "Geometry & Measurement", date: "2023-09-22", performance: "Average" }
+        { id: "g5-test-1", name: "Decimal Operations", date: "2023-10-20", performance: "Above Average", completionRate: "95%" },
+        { id: "g5-test-2", name: "Pre-Algebra Concepts", date: "2023-10-05", performance: "Above Average", completionRate: "92%" },
+        { id: "g5-test-3", name: "Geometry & Measurement", date: "2023-09-22", performance: "Average", completionRate: "89%" }
       ]
     },
     "6": {
@@ -87,9 +87,9 @@ const Reports = () => {
       mostChallenging: "Algebra Introduction",
       highestPerforming: "Statistics",
       recentTests: [
-        { id: "g6-test-1", name: "Ratios & Proportions Quiz", date: "2023-10-25", performance: "Excellent" },
-        { id: "g6-test-2", name: "Algebra Basics Test", date: "2023-10-10", performance: "Above Average" },
-        { id: "g6-test-3", name: "Statistics & Data Analysis", date: "2023-09-27", performance: "Excellent" }
+        { id: "g6-test-1", name: "Ratios & Proportions Quiz", date: "2023-10-25", performance: "Excellent", completionRate: "98%" },
+        { id: "g6-test-2", name: "Algebra Basics Test", date: "2023-10-10", performance: "Above Average", completionRate: "94%" },
+        { id: "g6-test-3", name: "Statistics & Data Analysis", date: "2023-09-27", performance: "Excellent", completionRate: "97%" }
       ]
     }
   };
@@ -126,11 +126,41 @@ const Reports = () => {
         return "text-gray-600 dark:text-gray-400";
     }
   };
+  
+  // Function to sort tests
+  const sortTests = (tests: any[]) => {
+    return [...tests].sort((a, b) => {
+      let comparison = 0;
+      
+      if (sortField === "date") {
+        comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+      } else if (sortField === "name") {
+        comparison = a.name.localeCompare(b.name);
+      } else if (sortField === "performance") {
+        const performanceOrder = ["Excellent", "Above Average", "Good", "Average", "Below Average", "Needs Improvement", "Needs Support"];
+        comparison = performanceOrder.indexOf(a.performance) - performanceOrder.indexOf(b.performance);
+      }
+      
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+  };
 
   // Filter recent tests based on search term
-  const filteredTests = currentGradeData.recentTests.filter(test => 
-    test.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTests = currentGradeData.recentTests
+    .filter(test => test.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  
+  // Sort filtered tests
+  const sortedAndFilteredTests = sortTests(filteredTests);
+  
+  // Toggle sort direction
+  const toggleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
   
   return (
     <MainLayout>
@@ -243,7 +273,7 @@ const Reports = () => {
           </div>
         </div>
         
-        {/* Recent Tests */}
+        {/* Recent Tests - Improved to use a proper table for better readability */}
         <div className="glass-card rounded-xl p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
@@ -274,35 +304,91 @@ const Reports = () => {
             </div>
           </div>
           
-          {filteredTests.length > 0 ? (
-            <div className="space-y-4">
-              {filteredTests.map(test => (
-                <motion.div
-                  key={test.id}
-                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-all"
-                  whileHover={{ y: -2 }}
-                >
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-4">
-                      <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100">
-                        {test.name}
-                      </h3>
-                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        <span>{formatDate(test.date)}</span>
+          {sortedAndFilteredTests.length > 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead 
+                      className="cursor-pointer" 
+                      onClick={() => toggleSort("name")}
+                    >
+                      <div className="flex items-center">
+                        Assessment Name
+                        {sortField === "name" && (
+                          <span className="ml-2">
+                            {sortDirection === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
                       </div>
-                    </div>
-                    <div className="ml-4 flex items-center">
-                      <div className={`font-medium ${getPerformanceColor(test.performance)}`}>
-                        {test.performance}
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer" 
+                      onClick={() => toggleSort("date")}
+                    >
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        Date
+                        {sortField === "date" && (
+                          <span className="ml-2">
+                            {sortDirection === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
                       </div>
-                      <ChevronRight className="w-5 h-5 text-gray-400 ml-2" />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer" 
+                      onClick={() => toggleSort("performance")}
+                    >
+                      <div className="flex items-center">
+                        Performance
+                        {sortField === "performance" && (
+                          <span className="ml-2">
+                            {sortDirection === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </div>
+                    </TableHead>
+                    <TableHead>Completion Rate</TableHead>
+                    <TableHead className="w-[50px]">View</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedAndFilteredTests.map((test) => (
+                    <TableRow 
+                      key={test.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
+                    >
+                      <TableCell>
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 rounded-md bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-3">
+                            <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                          </div>
+                          <span className="font-medium text-gray-800 dark:text-gray-100">
+                            {test.name}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{formatDate(test.date)}</TableCell>
+                      <TableCell>
+                        <span className={`font-medium ${getPerformanceColor(test.performance)}`}>
+                          {test.performance}
+                        </span>
+                      </TableCell>
+                      <TableCell>{test.completionRate}</TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="rounded-full p-2 h-auto w-auto"
+                        >
+                          <ChevronRight className="w-5 h-5 text-gray-500" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           ) : (
             <div className="text-center py-8">
