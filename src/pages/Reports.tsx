@@ -1,6 +1,6 @@
+
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
   ChevronRight, 
@@ -13,289 +13,321 @@ import {
   X,
   Download,
   Share,
-  Upload as UploadIcon
+  Users
 } from "lucide-react";
-import { TestAnalysis } from "@/components/ui/TestAnalysis";
-import { ChartsSection } from "@/components/ui/Charts";
-import { TestMeta, TestResult } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Reports = () => {
-  const { testId } = useParams();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  
+  // State for selected grade and search term
+  const [selectedGrade, setSelectedGrade] = useState<string>("6");
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   
-  // Mock data for the test list
-  const testList: (TestMeta & { score: number })[] = [
-    {
-      id: "test-1",
-      name: "Midterm Math Exam",
-      subject: "Mathematics",
-      date: "2023-10-15",
-      userId: "1",
-      createdAt: "2023-10-15T14:30:00Z",
-      score: 78,
-    },
-    {
-      id: "test-2",
-      name: "Multiplication Quiz",
-      subject: "Arithmetic",
-      date: "2023-10-08",
-      userId: "1",
-      createdAt: "2023-10-08T10:15:00Z",
-      score: 92,
-    },
-    {
-      id: "test-3",
-      name: "Fractions Assessment",
-      subject: "Mathematics",
-      date: "2023-09-28",
-      userId: "1",
-      createdAt: "2023-09-28T09:45:00Z",
-      score: 65,
-    },
-    {
-      id: "test-4",
-      name: "Geometry Basics Test",
-      subject: "Geometry",
-      date: "2023-09-15",
-      userId: "1",
-      createdAt: "2023-09-15T11:20:00Z",
-      score: 81,
-    },
-    {
-      id: "test-5",
-      name: "Decimals Practice Test",
-      subject: "Mathematics",
-      date: "2023-09-05",
-      userId: "1",
-      createdAt: "2023-09-05T13:40:00Z",
-      score: 73,
-    },
-  ];
+  // List of available grades
+  const grades = ["3", "4", "5", "6"];
   
-  // Filter tests based on search term
-  const filteredTests = testList.filter(test => 
-    test.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    test.subject.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  
-  // Sort tests by date
-  const sortedTests = [...filteredTests].sort((a, b) => {
-    const dateA = new Date(a.date);
-    const dateB = new Date(b.date);
-    return sortOrder === "asc" 
-      ? dateA.getTime() - dateB.getTime() 
-      : dateB.getTime() - dateA.getTime();
-  });
-  
-  // Mock data for test analysis if a test ID is provided
-  const mockTestResult: TestResult = {
-    id: testId || "test-1",
-    testId: testId || "test-1",
-    score: 78,
-    totalQuestions: 25,
-    correctAnswers: 19,
-    incorrectAnswers: 6,
-    concepts: [
-      { name: "Number Operations", score: 8, total: 10, percentage: 80 },
-      { name: "Fractions", score: 4, total: 5, percentage: 80 },
-      { name: "Decimals", score: 3, total: 5, percentage: 60 },
-      { name: "Geometry", score: 4, total: 5, percentage: 80 }
-    ],
-    errorTypes: [
-      { type: "Calculation Errors", count: 2, percentage: 33 },
-      { type: "Conceptual Misunderstanding", count: 2, percentage: 33 },
-      { type: "Procedural Errors", count: 1, percentage: 17 },
-      { type: "Careless Mistakes", count: 1, percentage: 17 }
-    ],
-    recommendations: [
-      "Focus on practicing decimal operations, especially multiplication and division with decimals.",
-      "Review the concept of equivalent fractions and fraction simplification.",
-      "Work on careful reading of problems to avoid careless mistakes.",
-      "Practice more complex multi-step problems that combine different concepts."
-    ],
-    createdAt: "2023-10-15T14:30:00Z"
+  // Mock test data by grade
+  const testStatsByGrade = {
+    "3": {
+      averageScore: 76,
+      subjectPerformance: [
+        { subject: "Number Operations", performance: "Good", color: "text-green-500" },
+        { subject: "Shapes & Patterns", performance: "Needs Improvement", color: "text-yellow-500" },
+        { subject: "Word Problems", performance: "Good", color: "text-green-500" },
+        { subject: "Basic Fractions", performance: "Needs Improvement", color: "text-yellow-500" }
+      ],
+      mostChallenging: "Basic Fractions",
+      highestPerforming: "Number Operations",
+      recentTests: [
+        { id: "g3-test-1", name: "Addition & Subtraction Test", date: "2023-10-15", performance: "Above Average" },
+        { id: "g3-test-2", name: "Shapes Quiz", date: "2023-09-28", performance: "Average" },
+        { id: "g3-test-3", name: "Word Problems Assessment", date: "2023-09-10", performance: "Above Average" }
+      ]
+    },
+    "4": {
+      averageScore: 74,
+      subjectPerformance: [
+        { subject: "Multiplication & Division", performance: "Good", color: "text-green-500" },
+        { subject: "Fractions", performance: "Needs Improvement", color: "text-yellow-500" },
+        { subject: "Geometry", performance: "Needs Support", color: "text-red-500" },
+        { subject: "Measurement", performance: "Good", color: "text-green-500" }
+      ],
+      mostChallenging: "Geometry",
+      highestPerforming: "Multiplication & Division",
+      recentTests: [
+        { id: "g4-test-1", name: "Multiplication Test", date: "2023-10-18", performance: "Above Average" },
+        { id: "g4-test-2", name: "Fractions Quiz", date: "2023-10-01", performance: "Average" },
+        { id: "g4-test-3", name: "Geometry Basics", date: "2023-09-15", performance: "Below Average" }
+      ]
+    },
+    "5": {
+      averageScore: 78,
+      subjectPerformance: [
+        { subject: "Fractions & Decimals", performance: "Good", color: "text-green-500" },
+        { subject: "Pre-Algebra", performance: "Good", color: "text-green-500" },
+        { subject: "Data & Graphs", performance: "Excellent", color: "text-green-500" },
+        { subject: "Advanced Geometry", performance: "Needs Improvement", color: "text-yellow-500" }
+      ],
+      mostChallenging: "Advanced Geometry",
+      highestPerforming: "Data & Graphs",
+      recentTests: [
+        { id: "g5-test-1", name: "Decimal Operations", date: "2023-10-20", performance: "Above Average" },
+        { id: "g5-test-2", name: "Pre-Algebra Concepts", date: "2023-10-05", performance: "Above Average" },
+        { id: "g5-test-3", name: "Geometry & Measurement", date: "2023-09-22", performance: "Average" }
+      ]
+    },
+    "6": {
+      averageScore: 82,
+      subjectPerformance: [
+        { subject: "Ratios & Proportions", performance: "Excellent", color: "text-green-500" },
+        { subject: "Algebra Introduction", performance: "Good", color: "text-green-500" },
+        { subject: "Statistics", performance: "Excellent", color: "text-green-500" },
+        { subject: "Geometric Formulas", performance: "Good", color: "text-green-500" }
+      ],
+      mostChallenging: "Algebra Introduction",
+      highestPerforming: "Statistics",
+      recentTests: [
+        { id: "g6-test-1", name: "Ratios & Proportions Quiz", date: "2023-10-25", performance: "Excellent" },
+        { id: "g6-test-2", name: "Algebra Basics Test", date: "2023-10-10", performance: "Above Average" },
+        { id: "g6-test-3", name: "Statistics & Data Analysis", date: "2023-09-27", performance: "Excellent" }
+      ]
+    }
   };
   
-  // If there's a test ID in the URL, show the test analysis page
-  if (testId) {
-    // Get the test name from the search params
-    const testName = searchParams.get("name") || "Math Test";
-    
-    return (
-      <MainLayout>
-        <div className="space-y-8">
-          {/* Page Header */}
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => navigate("/reports")}
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 inline-flex items-center"
-            >
-              <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
-              Back to all reports
-            </button>
-            
-            <div className="flex items-center gap-3">
-              <button
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download
-              </button>
-              <button
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg"
-              >
-                <Share className="w-4 h-4 mr-2" />
-                Share
-              </button>
-            </div>
-          </div>
-          
-          {/* Test Analysis */}
-          <div>
-            <TestAnalysis result={mockTestResult} testName={testName} />
-          </div>
-          
-          {/* Charts */}
-          <div className="mt-8">
-            <ChartsSection result={mockTestResult} />
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
+  // Get data for the selected grade
+  const currentGradeData = testStatsByGrade[selectedGrade as keyof typeof testStatsByGrade];
   
-  // Otherwise, show the test list page
+  // Function to format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+  
+  // Function to get performance color
+  const getPerformanceColor = (performance: string) => {
+    switch (performance) {
+      case "Excellent":
+        return "text-green-600 dark:text-green-400";
+      case "Above Average":
+        return "text-green-500 dark:text-green-400";
+      case "Good":
+        return "text-green-500 dark:text-green-400";
+      case "Average":
+        return "text-yellow-500 dark:text-yellow-400";
+      case "Below Average":
+        return "text-yellow-600 dark:text-yellow-500";
+      case "Needs Improvement":
+        return "text-yellow-600 dark:text-yellow-500";
+      case "Needs Support":
+        return "text-red-500 dark:text-red-400";
+      default:
+        return "text-gray-600 dark:text-gray-400";
+    }
+  };
+
+  // Filter recent tests based on search term
+  const filteredTests = currentGradeData.recentTests.filter(test => 
+    test.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
   return (
     <MainLayout>
       <div className="space-y-8">
         {/* Page Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-            Test Reports
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            View and analyze all your previous test results.
-          </p>
-        </div>
-        
-        {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="relative flex-1 max-w-md">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="search"
-              className="block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-              placeholder="Search tests by name or subject..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            )}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+              Grade {selectedGrade} Reports
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Overall class performance and recent assessments
+            </p>
           </div>
           
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-              className="inline-flex items-center justify-center p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+          {/* Grade Selector */}
+          <div className="w-full sm:w-auto">
+            <Select 
+              value={selectedGrade} 
+              onValueChange={setSelectedGrade}
             >
-              {sortOrder === "asc" ? <SortAsc className="w-5 h-5" /> : <SortDesc className="w-5 h-5" />}
-            </button>
-            
-            <button
-              className="inline-flex items-center justify-center p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-            >
-              <Calendar className="w-5 h-5" />
-            </button>
-            
-            <button
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              Filter
-            </button>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Select Grade" />
+              </SelectTrigger>
+              <SelectContent>
+                {grades.map(grade => (
+                  <SelectItem key={grade} value={grade}>
+                    Grade {grade}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         
-        {/* Test List */}
-        <div className="space-y-4">
-          {sortedTests.length > 0 ? (
-            sortedTests.map((test) => (
-              <Link
-                key={test.id}
-                to={`/reports/${test.id}?name=${encodeURIComponent(test.name)}&subject=${encodeURIComponent(test.subject)}&date=${encodeURIComponent(test.date)}`}
-              >
+        {/* Performance Overview */}
+        <div className="glass-card rounded-xl p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+              Performance Overview
+            </h2>
+            <div className="flex items-center mt-2 sm:mt-0">
+              <Users className="w-5 h-5 text-purple-600 dark:text-purple-400 mr-2" />
+              <span className="font-medium text-gray-800 dark:text-gray-100">Grade {selectedGrade} Classes</span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">Overall Performance</span>
+              <div className="flex items-center">
+                <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-3">
+                  <span className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                    {currentGradeData.averageScore}%
+                  </span>
+                </div>
+                <span className="font-medium text-gray-800 dark:text-gray-100">
+                  {currentGradeData.averageScore >= 80 ? "Excellent" : 
+                   currentGradeData.averageScore >= 70 ? "Good" : 
+                   currentGradeData.averageScore >= 60 ? "Average" : "Needs Improvement"}
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">Highest Performing Area</span>
+              <div className="flex items-center">
+                <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-3">
+                  <span className="text-lg font-bold text-green-600 dark:text-green-400">✓</span>
+                </div>
+                <span className="font-medium text-gray-800 dark:text-gray-100">
+                  {currentGradeData.highestPerforming}
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">Needs Most Support</span>
+              <div className="flex items-center">
+                <div className="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mr-3">
+                  <span className="text-lg font-bold text-yellow-600 dark:text-yellow-400">!</span>
+                </div>
+                <span className="font-medium text-gray-800 dark:text-gray-100">
+                  {currentGradeData.mostChallenging}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Subject Performance */}
+        <div className="glass-card rounded-xl p-6">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-6">
+            Subject Performance
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {currentGradeData.subjectPerformance.map((subject, index) => (
+              <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium text-gray-800 dark:text-gray-100">
+                    {subject.subject}
+                  </h3>
+                  <span className={subject.color}>
+                    {subject.performance}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Recent Tests */}
+        <div className="glass-card rounded-xl p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+              Recent Assessments
+            </h2>
+            
+            <div className="w-full sm:w-auto mt-4 sm:mt-0">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  type="search"
+                  className="block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  placeholder="Search assessments..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {filteredTests.length > 0 ? (
+            <div className="space-y-4">
+              {filteredTests.map(test => (
                 <motion.div
-                  className="glass-card rounded-xl p-4 hover:shadow-md transition-all"
+                  key={test.id}
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-all"
                   whileHover={{ y: -2 }}
                 >
                   <div className="flex items-center">
-                    <div className="w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-4">
-                      <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                    <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-4">
+                      <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div className="flex-1">
                       <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100">
                         {test.name}
                       </h3>
                       <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        <span>{test.subject}</span>
-                        <span className="mx-2">•</span>
-                        <span>{new Date(test.date).toLocaleDateString()}</span>
+                        <span>{formatDate(test.date)}</span>
                       </div>
                     </div>
                     <div className="ml-4 flex items-center">
-                      <div
-                        className={`text-lg font-bold mr-4 ${
-                          test.score >= 80
-                            ? "text-green-500 dark:text-green-400"
-                            : test.score >= 60
-                            ? "text-yellow-500 dark:text-yellow-400"
-                            : "text-red-500 dark:text-red-400"
-                        }`}
-                      >
-                        {test.score}%
+                      <div className={`font-medium ${getPerformanceColor(test.performance)}`}>
+                        {test.performance}
                       </div>
-                      <ChevronRight className="w-5 h-5 text-gray-400" />
+                      <ChevronRight className="w-5 h-5 text-gray-400 ml-2" />
                     </div>
                   </div>
                 </motion.div>
-              </Link>
-            ))
+              ))}
+            </div>
           ) : (
-            <div className="glass-card rounded-xl p-8 text-center">
+            <div className="text-center py-8">
               <div className="flex flex-col items-center justify-center">
                 <div className="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
                   <Search className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-2">
-                  No tests found
+                  No assessments found
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                <p className="text-gray-600 dark:text-gray-400">
                   {searchTerm
-                    ? "No tests match your search criteria. Try a different search term."
-                    : "You haven't uploaded any tests yet."}
+                    ? "No assessments match your search criteria. Try a different search term."
+                    : "No recent assessments available for this grade."}
                 </p>
-                <Link
-                  to="/upload"
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg"
-                >
-                  <UploadIcon className="w-4 h-4 mr-2" />
-                  Upload Test
-                </Link>
               </div>
             </div>
           )}
+          
+          <div className="flex justify-center mt-6">
+            <Button className="flex items-center gap-2">
+              <Download className="w-4 h-4" />
+              <span>Download Complete Report</span>
+            </Button>
+          </div>
         </div>
       </div>
     </MainLayout>
