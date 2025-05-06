@@ -10,7 +10,7 @@ interface SidebarMenuProps {
   currentYear?: number;
 }
 
-export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items, currentYear = 2023 }) => {
+export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items = [], currentYear = 2023 }) => {
   const { isAdmin } = useAuth();
 
   return (
@@ -28,7 +28,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items, currentYear = 2
                   )
                 }
               >
-                {item.icon && React.createElement(item.icon, { className: "w-5 h-5 mr-3" })}
+                {item.icon && React.createElement(item.icon, { className: "w-5 h-5 mr-3", "aria-hidden": "true" })}
                 <span>{item.title}</span>
               </NavLink>
             </li>
