@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { LearningPath, LearningTopic, Exercise } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,8 +10,10 @@ import {
   Play,
   BarChart3,
   Trophy,
-  Percent
+  Percent,
+  Rocket
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface LearningPathwayProps {
   learningPaths: LearningPath[];
@@ -300,6 +301,17 @@ export const LearningPathway: React.FC<LearningPathwayProps> = ({
             <span className="font-medium">Pro Tip:</span> Focus on topics where your test score was below 70% for maximum improvement.
           </p>
         </div>
+      </div>
+      
+      {/* Add the "Start Learning!!!" button */}
+      <div className="flex justify-center mt-10">
+        <Button 
+          size="lg" 
+          className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg px-10 py-6 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+        >
+          <Rocket className="mr-2 h-5 w-5" />
+          Start Learning!!!
+        </Button>
       </div>
     </div>
   );
