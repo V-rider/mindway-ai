@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useMemo } from "react";
 import { LearningPath, LearningTopic, Exercise } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -33,6 +34,17 @@ export const LearningPathway: React.FC<LearningPathwayProps> = ({
   const [expandedTopics, setExpandedTopics] = useState<string[]>(
     selectedConcept ? [selectedConcept] : []
   );
+  
+  // Generate static random percentages for each strand
+  const strandPercentages = useMemo(() => {
+    const percentages: Record<string, number> = {};
+    
+    learningPaths.forEach(path => {
+      percentages[path.strand] = Math.floor(Math.random() * (95 - 40 + 1) + 40);
+    });
+    
+    return percentages;
+  }, [learningPaths]);
   
   const toggleStrand = (strand: string) => {
     setExpandedStrands(
@@ -96,7 +108,7 @@ export const LearningPathway: React.FC<LearningPathwayProps> = ({
       
       <div className="space-y-6">
         {learningPaths.map((path, index) => {
-          const completionPercentage = getStrandPercentage(path.strand);
+          const completionPercentage = strandPercentages[path.strand];
           return (
             <div 
               key={path.strand}
