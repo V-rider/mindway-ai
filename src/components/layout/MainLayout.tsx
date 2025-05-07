@@ -16,8 +16,8 @@ import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 
 // Create a function to get menu items based on user role
-const getMenuItems = (isAdmin: boolean): MenuItem[] => {
-  const baseItems: MenuItem[] = [
+const getMenuItems = (isAdmin: boolean) => {
+  const baseItems = [
     {
       title: "Dashboard",
       path: "/dashboard",

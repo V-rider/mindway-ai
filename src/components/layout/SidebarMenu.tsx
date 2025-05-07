@@ -13,7 +13,12 @@ type SidebarMenuItemProps = {
 };
 
 type SidebarMenuProps = {
-  items?: SidebarMenuItemProps[];
+  items?: {
+    title: string;
+    path: string;
+    icon: React.ComponentType<{ className?: string }>;
+    onClick?: () => void;
+  }[];
 };
 
 const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({ 
@@ -38,10 +43,7 @@ const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
     >
       {icon && (
         <span className="w-5 h-5">
-          {React.cloneElement(icon as React.ReactElement, { 
-            // Use proper TypeScript approach for passing className
-            className: "w-5 h-5" 
-          })}
+          {icon}
         </span>
       )}
       <span>{label}</span>
@@ -63,9 +65,18 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items = [] }) => {
 
   return (
     <nav className="space-y-1 py-2">
-      {items.map((item, i) => (
-        <SidebarMenuItem key={i} {...item} />
-      ))}
+      {items.map((item, i) => {
+        const Icon = item.icon;
+        return (
+          <SidebarMenuItem 
+            key={i} 
+            to={item.path} 
+            label={item.title} 
+            icon={Icon ? <Icon className="w-5 h-5" /> : undefined}
+            onClick={item.onClick}
+          />
+        );
+      })}
     </nav>
   );
 };
