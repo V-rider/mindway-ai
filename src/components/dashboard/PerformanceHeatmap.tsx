@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { HeatmapData } from '@/types';
 import { 
@@ -189,9 +188,8 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
   // Extract all unique grades
   const grades = Array.from(new Set(data.map(item => item.grade))).sort();
   
-  // Teacher's classes (for highlighting)
-  // In a real app, this would come from the user profile or API
-  const teacherClasses = ["Class 3A", "Class 6B", "Class 6D"];
+  // Updated teacher's classes - expanded to include classes in grades 3, 4, and 5
+  const teacherClasses = ["Class 3A", "Class 3D", "Class 4B", "Class 5C", "Class 6B", "Class 6D"];
   
   // Prepare the data with exactly 4 classes (A, B, C, D) for each grade
   const standardizedData: HeatmapData[] = [];

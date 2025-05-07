@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { School, ClassPerformance } from "@/types";
 import { motion } from "framer-motion";
@@ -6,7 +7,8 @@ import {
   PieChart,
   AlertTriangle, 
   Flag,
-  ChevronDown
+  ChevronDown,
+  School as SchoolIcon
 } from "lucide-react";
 import {
   BarChart,
@@ -84,8 +86,8 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
     .sort((a, b) => b.count - a.count || b.avgPercentage - a.avgPercentage)
     .slice(0, 3);
   
-  // Mock data for teacher's classes - in a real app, this would come from user data
-  const teacherClasses = ["Class 3A", "Class 6B", "Class 6D"];
+  // Updated teacher's classes - expanded to include classes in grades 3, 4, and 5
+  const teacherClasses = ["Class 3A", "Class 3D", "Class 4B", "Class 5C", "Class 6B", "Class 6D"];
   const isTeacherClass = (className: string) => teacherClasses.includes(className);
   
   // Data for charts
@@ -124,11 +126,13 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
+              <SchoolIcon className="h-6 w-6 mr-2 text-purple-500" />
               {school.name} Overview
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Performance insights
+            <p className="text-gray-600 dark:text-gray-400 mt-1 flex items-center">
+              <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500" />
+              Classes you teach are highlighted in purple
             </p>
           </div>
           
@@ -293,11 +297,14 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                           onClick={() => onClassSelect(classData.id)}
                         >
                           <div className="flex items-center justify-between mb-1">
-                            <span className={`text-sm ${
+                            <span className={`text-sm flex items-center ${
                               isTeacherClass(classData.name) 
                                 ? 'text-purple-700 dark:text-purple-300 font-medium' 
                                 : 'text-gray-700 dark:text-gray-300'
                             }`}>
+                              {isTeacherClass(classData.name) && (
+                                <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500" />
+                              )}
                               {classData.name} (Grade {classData.grade})
                             </span>
                             <span className="text-sm font-medium text-red-600 dark:text-red-400">
@@ -393,9 +400,41 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                 </div>
               </CollapsibleContent>
             </Collapsible>
+            
+            <div className="mt-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4 shadow-sm">
+              <h4 className="font-medium text-purple-800 dark:text-purple-400 mb-3 text-sm flex items-center">
+                <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500" />
+                Your Classes
+              </h4>
+              <div className="space-y-2.5">
+                {teacherClasses
+                  .filter(className => className.includes(`Grade ${selectedGrade}`) || className.startsWith(`Class ${selectedGrade}`))
+                  .map((className, i) => (
+                    <div 
+                      key={i} 
+                      className="flex items-center justify-between cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900/30 p-2 rounded-md"
+                      onClick={() => {
+                        const classData = classPerformances.find(c => c.name === className);
+                        if (classData) {
+                          onClassSelect(classData.id);
+                        }
+                      }}
+                    >
+                      <span className="text-sm text-purple-700 dark:text-purple-300 font-medium flex items-center">
+                        <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500" />
+                        {className}
+                      </span>
+                      <span className="text-xs text-purple-600 dark:text-purple-400">
+                        View details →
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </div>
           </div>
         </div>
       </motion.div>
     </div>
   );
 };
+
