@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { School, ClassPerformance } from "@/types";
 import { motion } from "framer-motion";
 import { 
@@ -43,14 +43,17 @@ interface PerformanceOverviewProps {
   school: School;
   classPerformances: ClassPerformance[];
   onClassSelect: (classId: string) => void;
+  onGradeChange?: (grade: string) => void; // New prop for grade change handler
+  selectedGrade?: string; // New prop to track selected grade
 }
 
 export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({ 
   school, 
   classPerformances,
-  onClassSelect 
+  onClassSelect,
+  onGradeChange,
+  selectedGrade = "6" // Default to Grade 6 if not provided
 }) => {
-  const [selectedGrade, setSelectedGrade] = useState<string>("6"); // Default to Grade 6
   const { user } = useAuth();
   
   // Filter classes by grade
@@ -149,7 +152,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                 {grades.map(grade => (
                   <DropdownMenuItem 
                     key={grade}
-                    onClick={() => setSelectedGrade(grade)}
+                    onClick={() => onGradeChange?.(grade)}
                   >
                     Grade {grade}
                   </DropdownMenuItem>
@@ -437,4 +440,3 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
     </div>
   );
 };
-

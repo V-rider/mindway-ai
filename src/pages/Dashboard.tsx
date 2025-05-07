@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -736,6 +735,7 @@ const Dashboard = () => {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [showReportGenerator, setShowReportGenerator] = useState(false);
   const isMobile = useIsMobile();
+  const [selectedGrade, setSelectedGrade] = useState<string>("6"); // New state to track selected grade
   
   // Handle view changes
   const handleViewClass = (classId: string) => {
@@ -765,6 +765,11 @@ const Dashboard = () => {
 
   const handleViewMiscorrection = () => {
     setViewState("miscorrection");
+  };
+  
+  // New handler for grade changes
+  const handleGradeChange = (grade: string) => {
+    setSelectedGrade(grade);
   };
   
   // If the user isn't authenticated, redirect to login
@@ -875,6 +880,8 @@ const Dashboard = () => {
               school={mockSchool} 
               classPerformances={mockClassPerformances}
               onClassSelect={handleViewClass}
+              onGradeChange={handleGradeChange} // Pass the new handler
+              selectedGrade={selectedGrade} // Pass the selected grade
             />
             
             <PerformanceHeatmap 
@@ -885,6 +892,7 @@ const Dashboard = () => {
                   handleViewClass(classData.id);
                 }
               }}
+              selectedGrade={selectedGrade} // Pass the selected grade
             />
           </div>
         )}

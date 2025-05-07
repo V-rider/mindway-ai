@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { HeatmapData } from '@/types';
 import { 
   ResponsiveContainer, 
@@ -14,19 +14,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { 
-  DropdownMenu, 
-  DropdownMenuTrigger, 
-  DropdownMenuContent, 
-  DropdownMenuItem 
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { ChevronDown } from 'lucide-react';
 import { useAuth } from "@/context/AuthContext";
 
 interface PerformanceHeatmapProps {
   data: HeatmapData[];
   onClassSelect: (className: string) => void;
+  selectedGrade?: string; // New prop to receive selected grade
 }
 
 // Custom heatmap component using Recharts
@@ -181,12 +174,12 @@ const HeatMap = ({ data, onClassSelect, filteredGrade, teacherClasses }: Perform
   );
 };
 
-export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, onClassSelect }) => {
-  const [filteredGrade, setFilteredGrade] = useState<string>("6"); // Default to Grade 6
+export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ 
+  data, 
+  onClassSelect, 
+  selectedGrade = "6" // Default to Grade 6 if not provided
+}) => {
   const { user } = useAuth();
-  
-  // Extract all unique grades
-  const grades = Array.from(new Set(data.map(item => item.grade))).sort();
   
   // Updated teacher's classes - expanded to include classes in grades 3, 4, and 5
   const teacherClasses = ["Class 3A", "Class 3D", "Class 4B", "Class 5C", "Class 6B", "Class 6D"];
@@ -201,6 +194,9 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
   data.forEach(classData => {
     existingClasses.set(classData.className, classData);
   });
+  
+  // Extract all unique grades
+  const grades = Array.from(new Set(data.map(item => item.grade))).sort();
   
   // For each grade, ensure there are exactly 4 classes (A, B, C, D)
   grades.forEach(grade => {
@@ -241,33 +237,12 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
             Classes taught by you are highlighted in purple
           </p>
         </div>
-        
-        <div className="flex items-center gap-2 mt-2 sm:mt-0">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                Grade {filteredGrade}
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {grades.map(grade => (
-                <DropdownMenuItem 
-                  key={grade}
-                  onClick={() => setFilteredGrade(grade)}
-                >
-                  Grade {grade}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
       </div>
       <div className="overflow-x-auto">
         <HeatMap 
           data={standardizedData} 
           onClassSelect={onClassSelect} 
-          filteredGrade={filteredGrade} 
+          filteredGrade={selectedGrade} 
           teacherClasses={teacherClasses}
         />
       </div>
