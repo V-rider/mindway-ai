@@ -1,43 +1,73 @@
 
-import React from "react";
-import { NavLink } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
-import { cn } from "@/lib/utils";
-import { MenuItem } from "@/types";
+import React from 'react';
+import { useLocation, Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 
-interface SidebarMenuProps {
-  items: MenuItem[];
-  currentYear?: number;
-}
+type SidebarMenuItemProps = {
+  to: string;
+  label: string;
+  icon?: React.ReactNode;
+  onClick?: () => void;
+};
 
-export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items = [], currentYear = 2023 }) => {
-  const { isAdmin } = useAuth();
+type SidebarMenuProps = {
+  items?: SidebarMenuItemProps[];
+};
 
+const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({ 
+  to, 
+  label, 
+  icon, 
+  onClick 
+}) => {
+  const location = useLocation();
+  const isActive = location.pathname === to;
+  
   return (
-    <div className="mt-6">
-      <nav>
-        <ul className="space-y-1">
-          {items?.map((item, index) => (
-            <li key={index}>
-              <NavLink
-                to={item.path}
-                className={({ isActive }) =>
-                  cn(
-                    "flex items-center p-3 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 group transition-colors",
-                    isActive && "bg-gray-100 dark:bg-gray-800 text-blue-600 dark:text-blue-400 font-medium"
-                  )
-                }
-              >
-                {item.icon && React.createElement(item.icon, { 
-                  className: "w-5 h-5 mr-3", 
-                  "aria-hidden": "true" 
-                })}
-                <span>{item.title}</span>
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </div>
+    <Link
+      to={to}
+      onClick={onClick}
+      className={cn(
+        'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors relative',
+        isActive 
+          ? 'text-primary-foreground bg-primary' 
+          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+      )}
+    >
+      {icon && (
+        <span className="w-5 h-5">
+          {React.cloneElement(icon as React.ReactElement, { 
+            // Use proper TypeScript approach for passing className
+            className: "w-5 h-5" 
+          })}
+        </span>
+      )}
+      <span>{label}</span>
+      {isActive && (
+        <motion.div
+          layoutId="sidebar-indicator"
+          className="absolute left-0 top-0 bottom-0 w-1 bg-primary-foreground rounded-full"
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        />
+      )}
+    </Link>
   );
 };
+
+export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items = [] }) => {
+  const { isAuthenticated, isAdmin } = useAuth();
+
+  if (!isAuthenticated) return null;
+
+  return (
+    <nav className="space-y-1 py-2">
+      {items.map((item, i) => (
+        <SidebarMenuItem key={i} {...item} />
+      ))}
+    </nav>
+  );
+};
+
+export default SidebarMenu;

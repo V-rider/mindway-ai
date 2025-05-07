@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { HeatmapData } from '@/types';
 import { 
@@ -219,56 +218,7 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
   
   // Add additional sample class data directly with more varied performance values for specific grades
   // Only add if they don't already exist
-  const additionalSamples = [
-    {
-      className: "Class 3G",
-      grade: "3",
-      topics: data[0].topics.map(topic => ({
-        name: topic.name,
-        performance: Math.floor(Math.random() * 15) + 80 // Higher performance (80-95%)
-      }))
-    },
-    {
-      className: "Class 3H",
-      grade: "3",
-      topics: data[0].topics.map(topic => ({
-        name: topic.name,
-        performance: Math.floor(Math.random() * 20) + 70 // Good performance (70-90%)
-      }))
-    },
-    {
-      className: "Class 4G",
-      grade: "4",
-      topics: data[0].topics.map(topic => ({
-        name: topic.name,
-        performance: Math.floor(Math.random() * 25) + 65 // Above average (65-90%)
-      }))
-    },
-    {
-      className: "Class 4H",
-      grade: "4",
-      topics: data[0].topics.map(topic => ({
-        name: topic.name,
-        performance: Math.floor(Math.random() * 15) + 50 // Lower performance (50-65%)
-      }))
-    },
-    {
-      className: "Class 5G",
-      grade: "5",
-      topics: data[0].topics.map(topic => ({
-        name: topic.name,
-        performance: Math.floor(Math.random() * 20) + 75 // Good performance (75-95%)
-      }))
-    },
-    {
-      className: "Class 5H",
-      grade: "5",
-      topics: data[0].topics.map(topic => ({
-        name: topic.name,
-        performance: Math.floor(Math.random() * 30) + 55 // Mixed performance (55-85%)
-      }))
-    }
-  ];
+  const additionalSamples: any[] = [];
   
   additionalSamples.forEach(sample => {
     if (!existingClasses.has(sample.className)) {
