@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { HeatmapData } from '@/types';
 import { 
@@ -179,52 +180,41 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
   // Mock data for teacher's classes - in a real app, this would come from user data
   const teacherClasses = ["Class 3A", "Class 6B", "Class 6D"];
   
-  // Create four classes for each grade
-  const enhancedData = [...data];
+  // Prepare the data with exactly 4 classes (A, B, C, D) for each grade
+  const standardizedData: HeatmapData[] = [];
   
   // Create a set to track existing class names
-  const existingClasses = new Set(data.map(item => item.className));
+  const existingClasses = new Map<string, HeatmapData>();
   
-  // For each grade, ensure there are at least 4 classes (A, B, C, D)
+  // First, add all existing classes to the map
+  data.forEach(classData => {
+    existingClasses.set(classData.className, classData);
+  });
+  
+  // For each grade, ensure there are exactly 4 classes (A, B, C, D)
   grades.forEach(grade => {
-    // Add more class letters for grades 3, 4, and 5
-    const classLetters = grade === "3" || grade === "4" || grade === "5" 
-      ? ['A', 'B', 'C', 'D', 'E', 'F'] // More samples for grades 3, 4, and 5
-      : ['A', 'B', 'C', 'D'];
+    const classLetters = ['A', 'B', 'C', 'D'];
     
-    // Check if we need to add any classes for this grade
     classLetters.forEach(letter => {
       const className = `Class ${grade}${letter}`;
       
-      // Only add if this class doesn't already exist
-      if (!existingClasses.has(className)) {
+      // Check if this class already exists in the data
+      if (existingClasses.has(className)) {
+        standardizedData.push(existingClasses.get(className)!);
+      } else {
         // Generate random performance data for the new class
         const topics = data[0].topics.map(topic => ({
           name: topic.name,
           performance: Math.floor(Math.random() * 35) + 60 // Random performance between 60-95%
         }));
         
-        enhancedData.push({
+        standardizedData.push({
           className,
           grade,
           topics
         });
-        
-        // Add to tracking set
-        existingClasses.add(className);
       }
     });
-  });
-  
-  // Add additional sample class data directly with more varied performance values for specific grades
-  // Only add if they don't already exist
-  const additionalSamples: any[] = [];
-  
-  additionalSamples.forEach(sample => {
-    if (!existingClasses.has(sample.className)) {
-      enhancedData.push(sample);
-      existingClasses.add(sample.className);
-    }
   });
   
   return (
@@ -262,7 +252,7 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
       </div>
       <div className="overflow-x-auto">
         <HeatMap 
-          data={enhancedData} 
+          data={standardizedData} 
           onClassSelect={onClassSelect} 
           filteredGrade={filteredGrade} 
           teacherClasses={teacherClasses}
