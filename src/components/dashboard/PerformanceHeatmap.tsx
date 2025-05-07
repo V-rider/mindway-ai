@@ -180,6 +180,40 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
   // Mock data for teacher's classes - in a real app, this would come from user data
   const teacherClasses = ["Class 3A", "Class 6B", "Class 6D"];
   
+  // Create four classes for each grade
+  const enhancedData = [...data];
+  
+  // Create a set to track existing class names
+  const existingClasses = new Set(data.map(item => item.className));
+  
+  // For each grade, ensure there are at least 4 classes (A, B, C, D)
+  grades.forEach(grade => {
+    const classLetters = ['A', 'B', 'C', 'D'];
+    
+    // Check if we need to add any classes for this grade
+    classLetters.forEach(letter => {
+      const className = `Class ${grade}${letter}`;
+      
+      // Only add if this class doesn't already exist
+      if (!existingClasses.has(className)) {
+        // Generate random performance data for the new class
+        const topics = data[0].topics.map(topic => ({
+          name: topic.name,
+          performance: Math.floor(Math.random() * 35) + 60 // Random performance between 60-95%
+        }));
+        
+        enhancedData.push({
+          className,
+          grade,
+          topics
+        });
+        
+        // Add to tracking set
+        existingClasses.add(className);
+      }
+    });
+  });
+  
   return (
     <div className="glass-card rounded-xl p-6">
       <div className="flex flex-wrap items-center justify-between mb-6">
@@ -215,7 +249,7 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
       </div>
       <div className="overflow-x-auto">
         <HeatMap 
-          data={data} 
+          data={enhancedData} 
           onClassSelect={onClassSelect} 
           filteredGrade={filteredGrade} 
           teacherClasses={teacherClasses}

@@ -28,7 +28,10 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items = [], currentYea
                   )
                 }
               >
-                {item.icon && React.createElement(item.icon, { className: "w-5 h-5 mr-3", "aria-hidden": "true" })}
+                {item.icon && React.createElement(item.icon, { 
+                  className: "w-5 h-5 mr-3", 
+                  "aria-hidden": "true" 
+                })}
                 <span>{item.title}</span>
               </NavLink>
             </li>
