@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -36,12 +37,21 @@ const mockSchool: School = {
   name: "Riverdale Elementary",
   classes: [
     { id: "class-1", name: "Class 3A", grade: "3", studentCount: 24 },
-    { id: "class-2", name: "Class 4B", grade: "4", studentCount: 22 },
-    { id: "class-3", name: "Class 5C", grade: "5", studentCount: 20 },
-    { id: "class-4", name: "Class 6A", grade: "6", studentCount: 25 },
-    { id: "class-5", name: "Class 6B", grade: "6", studentCount: 23 },
-    { id: "class-6", name: "Class 6C", grade: "6", studentCount: 24 },
-    { id: "class-7", name: "Class 6D", grade: "6", studentCount: 26 },
+    { id: "class-2", name: "Class 3B", grade: "3", studentCount: 22 },
+    { id: "class-3", name: "Class 3C", grade: "3", studentCount: 23 },
+    { id: "class-4", name: "Class 3D", grade: "3", studentCount: 25 },
+    { id: "class-5", name: "Class 4A", grade: "4", studentCount: 26 },
+    { id: "class-6", name: "Class 4B", grade: "4", studentCount: 22 },
+    { id: "class-7", name: "Class 4C", grade: "4", studentCount: 24 },
+    { id: "class-8", name: "Class 4D", grade: "4", studentCount: 23 },
+    { id: "class-9", name: "Class 5A", grade: "5", studentCount: 25 },
+    { id: "class-10", name: "Class 5B", grade: "5", studentCount: 24 },
+    { id: "class-11", name: "Class 5C", grade: "5", studentCount: 20 },
+    { id: "class-12", name: "Class 5D", grade: "5", studentCount: 22 },
+    { id: "class-13", name: "Class 6A", grade: "6", studentCount: 25 },
+    { id: "class-14", name: "Class 6B", grade: "6", studentCount: 23 },
+    { id: "class-15", name: "Class 6C", grade: "6", studentCount: 24 },
+    { id: "class-16", name: "Class 6D", grade: "6", studentCount: 26 },
   ]
 };
 
@@ -66,6 +76,79 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-2",
+    name: "Class 3B",
+    grade: "3",
+    averageScore: 76,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 88 },
+      { topic: "Multiplication", mastery: 80 },
+      { topic: "Division", mastery: 70 },
+      { topic: "Fractions", mastery: 65 },
+      { topic: "Geometry", mastery: 78 },
+    ],
+    errorPatterns: [
+      { pattern: "Improper fraction simplification", percentage: 40 },
+      { pattern: "Division calculation errors", percentage: 35 },
+      { pattern: "Geometry concept misunderstanding", percentage: 28 },
+    ]
+  },
+  {
+    id: "class-3",
+    name: "Class 3C",
+    grade: "3",
+    averageScore: 68,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 80 },
+      { topic: "Multiplication", mastery: 72 },
+      { topic: "Division", mastery: 60 },
+      { topic: "Fractions", mastery: 55 },
+      { topic: "Geometry", mastery: 70 },
+    ],
+    errorPatterns: [
+      { pattern: "Division calculation errors", percentage: 48 },
+      { pattern: "Improper fraction simplification", percentage: 42 },
+      { pattern: "Word problem interpretation", percentage: 35 },
+    ]
+  },
+  {
+    id: "class-4",
+    name: "Class 3D",
+    grade: "3",
+    averageScore: 81,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 92 },
+      { topic: "Multiplication", mastery: 85 },
+      { topic: "Division", mastery: 75 },
+      { topic: "Fractions", mastery: 72 },
+      { topic: "Geometry", mastery: 82 },
+    ],
+    errorPatterns: [
+      { pattern: "Fraction operations", percentage: 35 },
+      { pattern: "Complex word problems", percentage: 30 },
+      { pattern: "Division with remainders", percentage: 25 },
+    ]
+  },
+  {
+    id: "class-5",
+    name: "Class 4A",
+    grade: "4",
+    averageScore: 75,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 92 },
+      { topic: "Multiplication", mastery: 84 },
+      { topic: "Division", mastery: 76 },
+      { topic: "Fractions", mastery: 65 },
+      { topic: "Decimals", mastery: 60 },
+      { topic: "Geometry", mastery: 72 },
+    ],
+    errorPatterns: [
+      { pattern: "Decimal place value confusion", percentage: 45 },
+      { pattern: "Improper fraction simplification", percentage: 38 },
+      { pattern: "Geometry concept misunderstanding", percentage: 30 },
+    ]
+  },
+  {
+    id: "class-6",
     name: "Class 4B",
     grade: "4",
     averageScore: 68,
@@ -84,7 +167,85 @@ const mockClassPerformances: ClassPerformance[] = [
     ]
   },
   {
-    id: "class-3",
+    id: "class-7",
+    name: "Class 4C",
+    grade: "4",
+    averageScore: 82,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 95 },
+      { topic: "Multiplication", mastery: 88 },
+      { topic: "Division", mastery: 80 },
+      { topic: "Fractions", mastery: 75 },
+      { topic: "Decimals", mastery: 70 },
+      { topic: "Geometry", mastery: 85 },
+    ],
+    errorPatterns: [
+      { pattern: "Complex fraction operations", percentage: 35 },
+      { pattern: "Decimal calculations", percentage: 32 },
+      { pattern: "Word problem interpretation", percentage: 25 },
+    ]
+  },
+  {
+    id: "class-8",
+    name: "Class 4D",
+    grade: "4",
+    averageScore: 71,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 88 },
+      { topic: "Multiplication", mastery: 78 },
+      { topic: "Division", mastery: 68 },
+      { topic: "Fractions", mastery: 62 },
+      { topic: "Decimals", mastery: 58 },
+      { topic: "Geometry", mastery: 70 },
+    ],
+    errorPatterns: [
+      { pattern: "Decimal operations", percentage: 45 },
+      { pattern: "Fraction to decimal conversion", percentage: 40 },
+      { pattern: "Word problem comprehension", percentage: 32 },
+    ]
+  },
+  {
+    id: "class-9",
+    name: "Class 5A",
+    grade: "5",
+    averageScore: 84,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 96 },
+      { topic: "Multiplication", mastery: 92 },
+      { topic: "Division", mastery: 85 },
+      { topic: "Fractions", mastery: 80 },
+      { topic: "Decimals", mastery: 75 },
+      { topic: "Percentages", mastery: 72 },
+      { topic: "Geometry", mastery: 88 },
+    ],
+    errorPatterns: [
+      { pattern: "Percentage calculation errors", percentage: 30 },
+      { pattern: "Complex fraction operations", percentage: 25 },
+      { pattern: "Word problem interpretation", percentage: 20 },
+    ]
+  },
+  {
+    id: "class-10",
+    name: "Class 5B",
+    grade: "5",
+    averageScore: 74,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 90 },
+      { topic: "Multiplication", mastery: 85 },
+      { topic: "Division", mastery: 78 },
+      { topic: "Fractions", mastery: 72 },
+      { topic: "Decimals", mastery: 68 },
+      { topic: "Percentages", mastery: 63 },
+      { topic: "Geometry", mastery: 75 },
+    ],
+    errorPatterns: [
+      { pattern: "Percentage calculations", percentage: 42 },
+      { pattern: "Complex fraction operations", percentage: 35 },
+      { pattern: "Multi-step problems", percentage: 30 },
+    ]
+  },
+  {
+    id: "class-11",
     name: "Class 5C",
     grade: "5",
     averageScore: 78,
@@ -104,7 +265,27 @@ const mockClassPerformances: ClassPerformance[] = [
     ]
   },
   {
-    id: "class-4",
+    id: "class-12",
+    name: "Class 5D",
+    grade: "5",
+    averageScore: 80,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 95 },
+      { topic: "Multiplication", mastery: 90 },
+      { topic: "Division", mastery: 84 },
+      { topic: "Fractions", mastery: 78 },
+      { topic: "Decimals", mastery: 72 },
+      { topic: "Percentages", mastery: 70 },
+      { topic: "Geometry", mastery: 82 },
+    ],
+    errorPatterns: [
+      { pattern: "Percentage word problems", percentage: 32 },
+      { pattern: "Mixed operations", percentage: 28 },
+      { pattern: "Geometry applications", percentage: 24 },
+    ]
+  },
+  {
+    id: "class-13",
     name: "Class 6A",
     grade: "6",
     averageScore: 83,
@@ -125,7 +306,7 @@ const mockClassPerformances: ClassPerformance[] = [
     ]
   },
   {
-    id: "class-5",
+    id: "class-14",
     name: "Class 6B",
     grade: "6",
     averageScore: 75,
@@ -146,7 +327,7 @@ const mockClassPerformances: ClassPerformance[] = [
     ]
   },
   {
-    id: "class-6",
+    id: "class-15",
     name: "Class 6C",
     grade: "6",
     averageScore: 79,
@@ -167,7 +348,7 @@ const mockClassPerformances: ClassPerformance[] = [
     ]
   },
   {
-    id: "class-7",
+    id: "class-16",
     name: "Class 6D",
     grade: "6",
     averageScore: 81,
@@ -316,6 +497,51 @@ const mockHeatmapData: HeatmapData[] = [
     ],
   },
   {
+    className: "Class 3B",
+    grade: "3",
+    topics: [
+      { name: "Addition & Subtraction", performance: 88 },
+      { name: "Multiplication", performance: 80 },
+      { name: "Division", performance: 70 },
+      { name: "Fractions", performance: 65 },
+      { name: "Geometry", performance: 78 },
+    ],
+  },
+  {
+    className: "Class 3C",
+    grade: "3",
+    topics: [
+      { name: "Addition & Subtraction", performance: 80 },
+      { name: "Multiplication", performance: 72 },
+      { name: "Division", performance: 60 },
+      { name: "Fractions", performance: 55 },
+      { name: "Geometry", performance: 70 },
+    ],
+  },
+  {
+    className: "Class 3D",
+    grade: "3",
+    topics: [
+      { name: "Addition & Subtraction", performance: 92 },
+      { name: "Multiplication", performance: 85 },
+      { name: "Division", performance: 75 },
+      { name: "Fractions", performance: 72 },
+      { name: "Geometry", performance: 82 },
+    ],
+  },
+  {
+    className: "Class 4A",
+    grade: "4",
+    topics: [
+      { name: "Addition & Subtraction", performance: 92 },
+      { name: "Multiplication", performance: 84 },
+      { name: "Division", performance: 76 },
+      { name: "Fractions", performance: 65 },
+      { name: "Decimals", performance: 60 },
+      { name: "Geometry", performance: 72 },
+    ],
+  },
+  {
     className: "Class 4B",
     grade: "4",
     topics: [
@@ -325,6 +551,56 @@ const mockHeatmapData: HeatmapData[] = [
       { name: "Fractions", performance: 60 },
       { name: "Decimals", performance: 55 },
       { name: "Geometry", performance: 65 },
+    ],
+  },
+  {
+    className: "Class 4C",
+    grade: "4",
+    topics: [
+      { name: "Addition & Subtraction", performance: 95 },
+      { name: "Multiplication", performance: 88 },
+      { name: "Division", performance: 80 },
+      { name: "Fractions", performance: 75 },
+      { name: "Decimals", performance: 70 },
+      { name: "Geometry", performance: 85 },
+    ],
+  },
+  {
+    className: "Class 4D",
+    grade: "4",
+    topics: [
+      { name: "Addition & Subtraction", performance: 88 },
+      { name: "Multiplication", performance: 78 },
+      { name: "Division", performance: 68 },
+      { name: "Fractions", performance: 62 },
+      { name: "Decimals", performance: 58 },
+      { name: "Geometry", performance: 70 },
+    ],
+  },
+  {
+    className: "Class 5A",
+    grade: "5",
+    topics: [
+      { name: "Addition & Subtraction", performance: 96 },
+      { name: "Multiplication", performance: 92 },
+      { name: "Division", performance: 85 },
+      { name: "Fractions", performance: 80 },
+      { name: "Decimals", performance: 75 },
+      { name: "Percentages", performance: 72 },
+      { name: "Geometry", performance: 88 },
+    ],
+  },
+  {
+    className: "Class 5B",
+    grade: "5",
+    topics: [
+      { name: "Addition & Subtraction", performance: 90 },
+      { name: "Multiplication", performance: 85 },
+      { name: "Division", performance: 78 },
+      { name: "Fractions", performance: 72 },
+      { name: "Decimals", performance: 68 },
+      { name: "Percentages", performance: 63 },
+      { name: "Geometry", performance: 75 },
     ],
   },
   {
@@ -338,6 +614,19 @@ const mockHeatmapData: HeatmapData[] = [
       { name: "Decimals", performance: 70 },
       { name: "Percentages", performance: 68 },
       { name: "Geometry", performance: 80 },
+    ],
+  },
+  {
+    className: "Class 5D",
+    grade: "5",
+    topics: [
+      { name: "Addition & Subtraction", performance: 95 },
+      { name: "Multiplication", performance: 90 },
+      { name: "Division", performance: 84 },
+      { name: "Fractions", performance: 78 },
+      { name: "Decimals", performance: 72 },
+      { name: "Percentages", performance: 70 },
+      { name: "Geometry", performance: 82 },
     ],
   },
   {
