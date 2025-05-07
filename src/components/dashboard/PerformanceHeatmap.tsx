@@ -9,7 +9,7 @@ import {
   CartesianGrid
 } from 'recharts';
 import { customTooltips } from '@/components/ui/custom-tooltips';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, School, Book } from 'lucide-react';
 import { 
   Collapsible,
   CollapsibleContent,
@@ -111,8 +111,13 @@ const HeatMap = ({ data, onClassSelect, filteredGrade, teacherClasses }: Perform
                   : 'text-gray-800 dark:text-gray-200'
               }`}>
                 <div>
-                  <div>{rowData.name}</div>
-                  <div className="text-xs text-gray-500">Grade {rowData.grade}</div>
+                  <div className="flex items-center">
+                    {isTeacherClass(rowData.name) && (
+                      <School className="h-4 w-4 mr-1.5 text-purple-500" />
+                    )}
+                    <span>{rowData.name}</span>
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Grade {rowData.grade}</div>
                 </div>
               </div>
               
@@ -149,21 +154,28 @@ const HeatMap = ({ data, onClassSelect, filteredGrade, teacherClasses }: Perform
       </div>
       
       {/* Color legend */}
-      <div className="flex justify-end items-center gap-4 mt-4">
-        <div className="text-xs text-gray-500 dark:text-gray-400">
-          Performance:
+      <div className="flex justify-between items-center gap-4 mt-4 flex-wrap">
+        <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-900/20 px-3 py-1.5 rounded-full border border-purple-200 dark:border-purple-800">
+          <School className="h-4 w-4 text-purple-500" />
+          <span className="text-xs text-purple-700 dark:text-purple-300 font-medium">Your Classes</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-red-500"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">Needs Improvement (&lt;65%)</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-yellow-500"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">Average (65-79%)</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-green-500"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">Excellent (≥80%)</span>
+        
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            Performance:
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded bg-red-500"></div>
+            <span className="text-xs text-gray-600 dark:text-gray-400">Needs Improvement (&lt;65%)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded bg-yellow-500"></div>
+            <span className="text-xs text-gray-600 dark:text-gray-400">Average (65-79%)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded bg-green-500"></div>
+            <span className="text-xs text-gray-600 dark:text-gray-400">Excellent (≥80%)</span>
+          </div>
         </div>
       </div>
     </div>
@@ -177,7 +189,8 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
   // Extract all unique grades
   const grades = Array.from(new Set(data.map(item => item.grade))).sort();
   
-  // Mock data for teacher's classes - in a real app, this would come from user data
+  // Teacher's classes (for highlighting)
+  // In a real app, this would come from the user profile or API
   const teacherClasses = ["Class 3A", "Class 6B", "Class 6D"];
   
   // Prepare the data with exactly 4 classes (A, B, C, D) for each grade
@@ -221,10 +234,12 @@ export const PerformanceHeatmap: React.FC<PerformanceHeatmapProps> = ({ data, on
     <div className="glass-card rounded-xl p-6">
       <div className="flex flex-wrap items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 flex items-center">
+            <Book className="w-5 h-5 mr-2 text-purple-500" />
             Performance Heatmap by Topic
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center mt-1">
+            <School className="h-4 w-4 mr-1.5 text-purple-500" />
             Classes taught by you are highlighted in purple
           </p>
         </div>
