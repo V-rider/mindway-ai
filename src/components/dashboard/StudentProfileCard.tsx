@@ -18,6 +18,7 @@ import {
   Cell,
 } from 'recharts';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface StudentProfileCardProps {
   student: StudentProfile;
@@ -144,38 +145,60 @@ export const StudentProfileCard: React.FC<StudentProfileCardProps> = ({
             </div>
           </div>
           
-          {/* Mistake Breakdown */}
+          {/* Mistake Breakdown - Fixed with ScrollArea and better responsive handling */}
           <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
             <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-4">
               Mistake Breakdown
             </h4>
-            <div className="h-64 flex flex-col justify-center items-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={student.mistakeBreakdown}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ type, percentage }) => `${type}: ${percentage}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="percentage"
-                    nameKey="type"
-                  >
-                    {student.mistakeBreakdown.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={COLORS[index % COLORS.length]} 
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    formatter={(value: number) => [`${value}%`, 'Percentage']}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <ScrollArea className="h-64">
+              <div className="flex flex-col justify-center items-center h-full">
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
+                    <Pie
+                      data={student.mistakeBreakdown}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="percentage"
+                      nameKey="type"
+                    >
+                      {student.mistakeBreakdown.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={COLORS[index % COLORS.length]} 
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: number) => [`${value}%`, 'Percentage']}
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload;
+                          return (
+                            <div className="bg-white dark:bg-gray-800 p-2 border border-gray-200 dark:border-gray-700 rounded shadow-md">
+                              <p className="text-sm font-medium">{data.type}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{`${data.percentage}%`}</p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Legend 
+                      layout="vertical"
+                      align="right"
+                      verticalAlign="middle"
+                      wrapperStyle={{ fontSize: '12px' }}
+                      formatter={(value) => {
+                        return <span className="text-xs">{value}</span>;
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </ScrollArea>
           </div>
         </div>
       </motion.div>
