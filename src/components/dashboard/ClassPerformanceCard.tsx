@@ -3,6 +3,16 @@ import React from 'react';
 import { ClassPerformance, StudentPerformance } from '@/types';
 import { motion } from 'framer-motion';
 import { User, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  LabelList
+} from 'recharts';
 
 interface ClassPerformanceCardProps {
   classData: ClassPerformance;
@@ -57,41 +67,39 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
           Topic Mastery Overview
         </h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {classData.topicMastery.map((topic, index) => (
-            <div 
-              key={index} 
-              className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700"
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              layout="vertical"
+              data={classData.topicMastery}
+              margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
             >
-              <div className="flex justify-between items-start mb-3">
-                <h4 className="font-medium text-gray-800 dark:text-gray-200">
-                  {topic.topic}
-                </h4>
-                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  topic.mastery >= 75 
-                    ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400" 
-                    : topic.mastery >= 60
-                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
-                    : "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                }`}>
-                  {topic.mastery}% mastery
-                </div>
-              </div>
-              
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div 
-                  className={`h-2 rounded-full ${
-                    topic.mastery >= 75 
-                      ? "bg-green-500" 
-                      : topic.mastery >= 60
-                      ? "bg-yellow-500"
-                      : "bg-red-500"
-                  }`} 
-                  style={{ width: `${topic.mastery}%` }}
+              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+              <XAxis type="number" domain={[0, 100]} />
+              <YAxis 
+                dataKey="topic" 
+                type="category" 
+                tick={{ fontSize: 14 }} 
+                width={120}
+              />
+              <Tooltip 
+                formatter={(value) => [`${value}%`, 'Mastery']}
+              />
+              <Bar 
+                dataKey="mastery" 
+                fill="#4CD4CF"
+                radius={[0, 4, 4, 0]}
+              >
+                <LabelList 
+                  dataKey="mastery" 
+                  position="right" 
+                  formatter={(value) => `${value}%`}
+                  style={{ fill: '#666', fontSize: '12px', fontWeight: 'bold' }}
+                  offset={10}
                 />
-              </div>
-            </div>
-          ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </motion.div>
       
