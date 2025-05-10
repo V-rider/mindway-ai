@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ClassPerformance, StudentPerformance } from '@/types';
 import { motion } from 'framer-motion';
@@ -147,7 +146,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
             </div>
           </div>
           
-          {/* Common Error Patterns - Now a donut chart */}
+          {/* Common Error Patterns - Now a full pie chart instead of donut */}
           <div className="lg:col-span-1">
             <h4 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">
               Common Error Patterns
@@ -159,7 +158,6 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     data={errorChartData}
                     cx="50%"
                     cy="40%"
-                    innerRadius={60}
                     outerRadius={80}
                     paddingAngle={2}
                     dataKey="value"
