@@ -41,10 +41,12 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
     color: "#f87171"
   }));
   
-  // Transform concepts for radar chart
+  // Transform concepts for radar chart - adding a mean value for stacked bar display
   const conceptData = result.concepts.map(concept => ({
     subject: concept.name,
-    A: concept.percentage,
+    performance: concept.percentage * 0.6, // First part of the bar (light color)
+    mean: concept.percentage * 0.4, // Second part of the bar (darker color)
+    total: concept.percentage, // Total value for tooltip
   }));
   
   const handlePieClick = (entry: any) => {
@@ -149,7 +151,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
         </motion.div>
       </div>
       
-      {/* Radar Chart - Concept Mastery */}
+      {/* Stacked Bar Chart - Concept Mastery (replacing the radar chart) */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -162,20 +164,31 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
         
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={conceptData}>
-              <PolarGrid opacity={0.5} />
-              <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12 }} />
-              <PolarRadiusAxis angle={30} domain={[0, 100]} />
-              <Radar
-                name="Performance (%)"
-                dataKey="A"
-                stroke="#8b5cf6"
-                fill="#8b5cf6"
-                fillOpacity={0.6}
+            <BarChart
+              data={conceptData}
+              layout="horizontal"
+              margin={{ top: 5, right: 30, left: 20, bottom: 30 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+              <XAxis dataKey="subject" tick={{ fontSize: 12 }} />
+              <YAxis domain={[0, 100]} />
+              <Tooltip 
+                formatter={(value: number, name: string) => {
+                  if (name === "performance") return ["Performance", `${value.toFixed(1)}%`];
+                  if (name === "mean") return ["Mean", `${value.toFixed(1)}%`];
+                  return [name, `${value}%`];
+                }}
+                labelFormatter={(label) => `${label}`}
               />
-              <Tooltip formatter={(value: number) => [`${value}%`, 'Performance']} />
-              <Legend />
-            </RadarChart>
+              <Legend 
+                payload={[
+                  { value: 'Performance', type: 'rect', color: '#4adeeb' },
+                  { value: 'Mean', type: 'rect', color: '#1a89b8' }
+                ]}
+              />
+              <Bar dataKey="performance" name="Performance" stackId="a" fill="#4adeeb" />
+              <Bar dataKey="mean" name="Mean" stackId="a" fill="#1a89b8" />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </motion.div>
