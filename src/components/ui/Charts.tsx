@@ -57,15 +57,6 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
     };
   });
   
-  // Mean data for topics - this would typically come from your data source
-  // Creating mean data separately for the new chart
-  const meanTopicData = result.concepts.map(concept => ({
-    subject: concept.name,
-    mean: 72, // Example mean value - would ideally be unique per concept
-    classAverage: 68, // Example class average
-    overallAverage: 65, // Example overall average
-  }));
-  
   const handlePieClick = (entry: any) => {
     setSelectedPieSegment(entry.name === selectedPieSegment ? null : entry.name);
   };
@@ -253,116 +244,6 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
                   position="insideRight" 
                   formatter={(value) => `${value}%`}
                   style={{ fill: '#ffffff', fontSize: '12px', fontWeight: 'bold' }}
-                />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </motion.div>
-      
-      {/* NEW SECTION: Mean Topic Analysis Bar Chart */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.6 }}
-        className="glass-card rounded-xl p-6"
-      >
-        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4 text-center">
-          Topic Mean Analysis
-        </h3>
-        
-        <div className="h-96">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={meanTopicData}
-              layout="vertical"
-              margin={{ top: 5, right: 60, left: 130, bottom: 5 }}
-              barGap={8}
-              barSize={16}
-            >
-              <CartesianGrid 
-                strokeDasharray="3 3" 
-                horizontal={true} 
-                vertical={false}
-                opacity={0.3}
-              />
-              <XAxis 
-                type="number" 
-                domain={[0, 100]} 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12 }}
-              />
-              <YAxis 
-                dataKey="subject" 
-                type="category" 
-                tick={{ fontSize: 13 }}
-                width={120}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip 
-                formatter={(value, name) => {
-                  switch(name) {
-                    case 'mean':
-                      return [`${value}%`, 'Topic Mean'];
-                    case 'classAverage':
-                      return [`${value}%`, 'Class Average'];
-                    case 'overallAverage':
-                      return [`${value}%`, 'Overall Average'];
-                    default:
-                      return [`${value}%`, name];
-                  }
-                }}
-                cursor={{ fill: 'transparent' }}
-              />
-              <Legend verticalAlign="top" height={36} />
-              
-              {/* Mean bar */}
-              <Bar 
-                dataKey="mean" 
-                name="Topic Mean" 
-                fill="#8B5CF6" // Vivid Purple
-                radius={[0, 4, 4, 0]}
-              >
-                <LabelList 
-                  dataKey="mean" 
-                  position="right" 
-                  formatter={(value) => `${value}%`}
-                  style={{ fill: '#666', fontSize: '12px', fontWeight: 'bold' }}
-                  offset={10}
-                />
-              </Bar>
-              
-              {/* Class Average bar */}
-              <Bar 
-                dataKey="classAverage" 
-                name="Class Average" 
-                fill="#0EA5E9" // Ocean Blue
-                radius={[0, 4, 4, 0]}
-              >
-                <LabelList 
-                  dataKey="classAverage" 
-                  position="right" 
-                  formatter={(value) => `${value}%`}
-                  style={{ fill: '#666', fontSize: '12px', fontWeight: 'bold' }}
-                  offset={10}
-                />
-              </Bar>
-              
-              {/* Overall Average bar */}
-              <Bar 
-                dataKey="overallAverage" 
-                name="Overall Average" 
-                fill="#10b981" // Green
-                radius={[0, 4, 4, 0]}
-              >
-                <LabelList 
-                  dataKey="overallAverage" 
-                  position="right" 
-                  formatter={(value) => `${value}%`}
-                  style={{ fill: '#666', fontSize: '12px', fontWeight: 'bold' }}
-                  offset={10}
                 />
               </Bar>
             </BarChart>

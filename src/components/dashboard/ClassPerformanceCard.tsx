@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ClassPerformance, StudentPerformance } from '@/types';
 import { motion } from 'framer-motion';
@@ -22,14 +21,12 @@ interface ClassPerformanceCardProps {
   classData: ClassPerformance;
   students: StudentPerformance[];
   onStudentSelect: (studentId: string) => void;
-  onClassSelect: (classId: string) => void; // Added this prop
 }
 
 export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   classData,
   students,
   onStudentSelect,
-  onClassSelect, // Added this prop
 }) => {
   // Sort students by average score descending
   const sortedStudents = [...students].sort((a, b) => b.averageScore - a.averageScore);
@@ -47,15 +44,11 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   
   return (
     <div className="space-y-6">
-      {/* Class Header - Now clickable to go to class dashboard */}
-      <div 
-        className="flex flex-col md:flex-row md:items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/20 p-4 rounded-lg -m-4"
-        onClick={() => onClassSelect(classData.id)}
-      >
+      {/* Class Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
             {classData.name}
-            <ChevronRight className="ml-2 h-5 w-5 text-purple-500" />
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Grade {classData.grade} • {students.length} students
