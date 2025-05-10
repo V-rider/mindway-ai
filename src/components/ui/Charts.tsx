@@ -182,12 +182,12 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
               />
               <Legend 
                 payload={[
-                  { value: 'Performance', type: 'rect', color: '#4adeeb' },
-                  { value: 'Mean', type: 'rect', color: '#1a89b8' }
+                  { value: 'Performance', type: 'rect', color: '#0EA5E9' },
+                  { value: 'Mean', type: 'rect', color: '#8B5CF6' }
                 ]}
               />
-              <Bar dataKey="performance" name="Performance" stackId="a" fill="#4adeeb" />
-              <Bar dataKey="mean" name="Mean" stackId="a" fill="#1a89b8" />
+              <Bar dataKey="performance" name="Performance" stackId="a" fill="#0EA5E9" />
+              <Bar dataKey="mean" name="Mean" stackId="a" fill="#8B5CF6" />
             </BarChart>
           </ResponsiveContainer>
         </div>
