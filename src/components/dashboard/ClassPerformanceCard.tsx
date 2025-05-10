@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ClassPerformance, StudentPerformance } from '@/types';
 import { motion } from 'framer-motion';
@@ -85,7 +84,22 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
               <YAxis 
                 dataKey="topic" 
                 type="category" 
-                tick={{ fontSize: 14 }} 
+                tick={(props) => {
+                  // Custom tick renderer to prevent line breaks in the topic names
+                  const topic = props.payload.value;
+                  return (
+                    <text 
+                      x={props.x} 
+                      y={props.y} 
+                      dy={4} 
+                      textAnchor="end" 
+                      fill="#666"
+                      fontSize={14}
+                    >
+                      {topic}
+                    </text>
+                  );
+                }}
                 width={120}
                 interval={0} // Ensure all ticks are shown
                 tickMargin={10} // Add margin to ticks
