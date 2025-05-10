@@ -170,7 +170,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value) => [`${value}%`, 'of students']}
+                    formatter={(value) => [`${value}%`, `${errorChartData.find(item => item.value === value)?.subject || 'Error'}`]}
                     labelFormatter={(label) => `${label}`} // This will display the subject name
                   />
                 </PieChart>
