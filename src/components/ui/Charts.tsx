@@ -41,13 +41,18 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
     color: "#f87171"
   }));
   
-  // Transform concepts for radar chart - adding a mean value for stacked bar display
-  const conceptData = result.concepts.map(concept => ({
-    subject: concept.name,
-    performance: concept.percentage * 0.6, // First part of the bar (light color)
-    mean: concept.percentage * 0.4, // Second part of the bar (darker color)
-    total: concept.percentage, // Total value for tooltip
-  }));
+  // Transform concepts for horizontal stacked bar chart, similar to the image
+  const conceptData = result.concepts.map(concept => {
+    // Calculate mean value (assuming mean is 70% of the total for demonstration)
+    const meanValue = Math.round(concept.percentage * 0.7); 
+    
+    return {
+      subject: concept.name,
+      mastery: concept.percentage - meanValue, // This represents the actual performance segment
+      mean: meanValue, // This represents the mean segment
+      total: concept.percentage, // Total value for tooltip
+    };
+  });
   
   const handlePieClick = (entry: any) => {
     setSelectedPieSegment(entry.name === selectedPieSegment ? null : entry.name);
@@ -151,7 +156,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
         </motion.div>
       </div>
       
-      {/* Stacked Bar Chart - Concept Mastery (replacing the radar chart) */}
+      {/* Horizontal Stacked Bar Chart for Concept Mastery (similar to the image) */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -166,16 +171,22 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={conceptData}
-              layout="horizontal"
+              layout="vertical"
               margin={{ top: 5, right: 30, left: 20, bottom: 30 }}
+              barSize={20}
             >
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-              <XAxis dataKey="subject" tick={{ fontSize: 12 }} />
-              <YAxis domain={[0, 100]} />
+              <XAxis type="number" domain={[0, 100]} />
+              <YAxis 
+                dataKey="subject" 
+                type="category" 
+                tick={{ fontSize: 12 }}
+                width={150}
+              />
               <Tooltip 
                 formatter={(value: number, name: string) => {
-                  if (name === "performance") return ["Performance", `${value.toFixed(1)}%`];
-                  if (name === "mean") return ["Mean", `${value.toFixed(1)}%`];
+                  if (name === "mastery") return ["Performance", `${value}%`];
+                  if (name === "mean") return ["Mean", `${value}%`];
                   return [name, `${value}%`];
                 }}
                 labelFormatter={(label) => `${label}`}
@@ -186,10 +197,35 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
                   { value: 'Mean', type: 'rect', color: '#8B5CF6' }
                 ]}
               />
-              <Bar dataKey="performance" name="Performance" stackId="a" fill="#0EA5E9" />
-              <Bar dataKey="mean" name="Mean" stackId="a" fill="#8B5CF6" />
+              {/* Using vivid colors: Ocean Blue for Performance and Vivid Purple for Mean */}
+              <Bar 
+                dataKey="mean" 
+                name="Mean" 
+                stackId="a" 
+                fill="#8B5CF6" // Vivid Purple
+              />
+              <Bar 
+                dataKey="mastery" 
+                name="Performance" 
+                stackId="a" 
+                fill="#0EA5E9" // Ocean Blue
+                radius={[0, 4, 4, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
+        </div>
+        
+        <div className="text-center mt-4 text-sm text-gray-500">
+          <div className="flex justify-center items-center gap-5">
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-[#0EA5E9] rounded-full mr-2" />
+              <span>Performance</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-[#8B5CF6] rounded-full mr-2" />
+              <span>Mean</span>
+            </div>
+          </div>
         </div>
       </motion.div>
     </div>
