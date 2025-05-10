@@ -34,10 +34,11 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   // Sort topic mastery data from highest to lowest percentage
   const sortedTopicMastery = [...classData.topicMastery].sort((a, b) => b.mastery - a.mastery);
   
-  // Prepare data for the error patterns donut chart
+  // Prepare data for the error patterns pie chart with subject names
   const errorChartData = classData.errorPatterns.map((error, index) => ({
     name: error.pattern,
     value: error.percentage,
+    subject: error.pattern, // Adding subject field which contains the pattern name
     fill: ['#FF6B81', '#FF9F43', '#FFCC29'][index % 3] // Pink, Orange, Yellow colors similar to the image
   }));
   
@@ -161,7 +162,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     outerRadius={80}
                     paddingAngle={2}
                     dataKey="value"
-                    nameKey="name"
+                    nameKey="subject" // Changed from "name" to "subject" to display pattern names
                     label={false}
                   >
                     {errorChartData.map((entry, index) => (
@@ -170,6 +171,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                   </Pie>
                   <Tooltip 
                     formatter={(value) => [`${value}%`, 'of students']}
+                    labelFormatter={(label) => `${label}`} // This will display the subject name
                   />
                 </PieChart>
               </ResponsiveContainer>
