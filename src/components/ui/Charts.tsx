@@ -42,16 +42,15 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
     color: "#f87171"
   }));
   
-  // Transform concepts for horizontal bar chart with colors like the reference image
+  // Transform concepts for horizontal bar chart with mean representation
   const conceptData = result.concepts.map(concept => {
-    // For the reference image style, we'll show the full mastery as the main bar
-    // and use a grey background to represent the "remaining" percentage
+    const mean = 72; // Example mean value - this would ideally come from your data source
     
     return {
       subject: concept.name,
       mastery: concept.percentage,
-      remaining: 100 - concept.percentage, // This represents the grey background area
-      // Color the bar based on performance tier (like in the reference image)
+      mean: mean, // Add mean data point
+      // Color the bar based on performance tier
       color: concept.percentage >= 75 ? "#10b981" : // Green for ≥75%
              concept.percentage >= 65 ? "#facc15" : // Yellow for 65-74%
              "#ef4444" // Red for <65%
@@ -160,7 +159,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
         </motion.div>
       </div>
       
-      {/* Horizontal Bar Chart for Topic Mastery Overview (matching the reference image) */}
+      {/* Horizontal Bar Chart for Topic Mastery Overview with Mean comparison */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -176,9 +175,9 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
             <BarChart
               data={conceptData}
               layout="vertical"
-              margin={{ top: 5, right: 30, left: 150, bottom: 5 }}
-              barGap={2}
-              barSize={18}
+              margin={{ top: 5, right: 80, left: 130, bottom: 5 }}
+              barGap={0}
+              barSize={16}
             >
               <CartesianGrid 
                 strokeDasharray="3 3" 
@@ -197,41 +196,54 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
                 dataKey="subject" 
                 type="category" 
                 tick={{ fontSize: 13 }}
-                width={150}
+                width={120}
                 axisLine={false}
                 tickLine={false}
               />
               <Tooltip 
-                formatter={(value, name, props) => {
+                formatter={(value, name) => {
                   if (name === "mastery") {
-                    return [`${value}%`, `Mastery`];
+                    return [`${value}%`, 'Performance'];
+                  }
+                  if (name === "mean") {
+                    return [`${value}%`, 'Mean'];
                   }
                   return [`${value}%`, name];
                 }}
                 cursor={{ fill: 'transparent' }}
               />
-              {/* Background "remainder" bar in light grey */}
-              <Bar 
-                dataKey="remaining" 
-                stackId="a"
-                fill="#e5e7eb" // Light grey color for the background
-                radius={[0, 4, 4, 0]}
-              />
-              {/* Mastery bar with dynamic colors */}
+              <Legend verticalAlign="top" height={36} />
+              
+              {/* Mastery bar */}
               <Bar 
                 dataKey="mastery" 
-                name="Mastery" 
+                name="Performance" 
                 stackId="a" 
+                fill="#0EA5E9" // Ocean Blue for performance as shown in the image
                 radius={[0, 4, 4, 0]}
               >
-                {conceptData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
                 <LabelList 
                   dataKey="mastery" 
                   position="right" 
                   formatter={(value) => `${value}%`}
                   style={{ fill: '#666', fontSize: '12px', fontWeight: 'bold' }}
+                  offset={15}
+                />
+              </Bar>
+              
+              {/* Mean bar */}
+              <Bar 
+                dataKey="mean" 
+                name="Mean" 
+                stackId="b" 
+                fill="#8B5CF6" // Vivid Purple for mean as shown in the image
+                radius={[0, 4, 4, 0]}
+              >
+                <LabelList 
+                  dataKey="mean" 
+                  position="insideRight" 
+                  formatter={(value) => `${value}%`}
+                  style={{ fill: '#ffffff', fontSize: '12px', fontWeight: 'bold' }}
                 />
               </Bar>
             </BarChart>
