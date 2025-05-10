@@ -11,7 +11,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  LabelList
+  LabelList,
+  Cell
 } from 'recharts';
 
 interface ClassPerformanceCardProps {
@@ -27,6 +28,9 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
 }) => {
   // Sort students by average score descending
   const sortedStudents = [...students].sort((a, b) => b.averageScore - a.averageScore);
+  
+  // Sort topic mastery data from highest to lowest percentage
+  const sortedTopicMastery = [...classData.topicMastery].sort((a, b) => b.mastery - a.mastery);
   
   return (
     <div className="space-y-6">
@@ -71,8 +75,10 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               layout="vertical"
-              data={classData.topicMastery}
+              data={sortedTopicMastery}
               margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
+              barSize={20} // Reduced bar size for more spacing
+              barGap={10} // Added bar gap for better spacing
             >
               <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
               <XAxis type="number" domain={[0, 100]} />
@@ -87,9 +93,14 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
               />
               <Bar 
                 dataKey="mastery" 
-                fill="#4CD4CF"
                 radius={[0, 4, 4, 0]}
               >
+                {sortedTopicMastery.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={entry.mastery >= 70 ? "#4ade80" : "#f97316"} // Green for ≥70%, Orange for <70%
+                  />
+                ))}
                 <LabelList 
                   dataKey="mastery" 
                   position="right" 
