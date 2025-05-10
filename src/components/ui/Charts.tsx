@@ -18,6 +18,7 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
+  LabelList,
 } from "recharts";
 import { motion } from "framer-motion";
 
@@ -41,16 +42,19 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
     color: "#f87171"
   }));
   
-  // Transform concepts for horizontal stacked bar chart, similar to the image
+  // Transform concepts for horizontal bar chart with colors like the reference image
   const conceptData = result.concepts.map(concept => {
-    // Calculate mean value (assuming mean is 70% of the total for demonstration)
-    const meanValue = Math.round(concept.percentage * 0.7); 
+    // For the reference image style, we'll show the full mastery as the main bar
+    // and use a grey background to represent the "remaining" percentage
     
     return {
       subject: concept.name,
-      mastery: concept.percentage - meanValue, // This represents the actual performance segment
-      mean: meanValue, // This represents the mean segment
-      total: concept.percentage, // Total value for tooltip
+      mastery: concept.percentage,
+      remaining: 100 - concept.percentage, // This represents the grey background area
+      // Color the bar based on performance tier (like in the reference image)
+      color: concept.percentage >= 75 ? "#10b981" : // Green for ≥75%
+             concept.percentage >= 65 ? "#facc15" : // Yellow for 65-74%
+             "#ef4444" // Red for <65%
     };
   });
   
@@ -156,7 +160,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
         </motion.div>
       </div>
       
-      {/* Horizontal Stacked Bar Chart for Concept Mastery (similar to the image) */}
+      {/* Horizontal Bar Chart for Topic Mastery Overview (matching the reference image) */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -164,68 +168,74 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ result }) => {
         className="glass-card rounded-xl p-6"
       >
         <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4 text-center">
-          Concept Mastery Overview
+          Topic Mastery Overview
         </h3>
         
-        <div className="h-80">
+        <div className="h-96">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={conceptData}
               layout="vertical"
-              margin={{ top: 5, right: 30, left: 20, bottom: 30 }}
-              barSize={20}
+              margin={{ top: 5, right: 30, left: 150, bottom: 5 }}
+              barGap={2}
+              barSize={18}
             >
-              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-              <XAxis type="number" domain={[0, 100]} />
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                horizontal={true} 
+                vertical={false}
+                opacity={0.3}
+              />
+              <XAxis 
+                type="number" 
+                domain={[0, 100]} 
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12 }}
+              />
               <YAxis 
                 dataKey="subject" 
                 type="category" 
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 13 }}
                 width={150}
+                axisLine={false}
+                tickLine={false}
               />
               <Tooltip 
-                formatter={(value: number, name: string) => {
-                  if (name === "mastery") return ["Performance", `${value}%`];
-                  if (name === "mean") return ["Mean", `${value}%`];
-                  return [name, `${value}%`];
+                formatter={(value, name, props) => {
+                  if (name === "mastery") {
+                    return [`${value}%`, `Mastery`];
+                  }
+                  return [`${value}%`, name];
                 }}
-                labelFormatter={(label) => `${label}`}
+                cursor={{ fill: 'transparent' }}
               />
-              <Legend 
-                payload={[
-                  { value: 'Performance', type: 'rect', color: '#0EA5E9' },
-                  { value: 'Mean', type: 'rect', color: '#8B5CF6' }
-                ]}
-              />
-              {/* Using vivid colors: Ocean Blue for Performance and Vivid Purple for Mean */}
+              {/* Background "remainder" bar in light grey */}
               <Bar 
-                dataKey="mean" 
-                name="Mean" 
-                stackId="a" 
-                fill="#8B5CF6" // Vivid Purple
-              />
-              <Bar 
-                dataKey="mastery" 
-                name="Performance" 
-                stackId="a" 
-                fill="#0EA5E9" // Ocean Blue
+                dataKey="remaining" 
+                stackId="a"
+                fill="#e5e7eb" // Light grey color for the background
                 radius={[0, 4, 4, 0]}
               />
+              {/* Mastery bar with dynamic colors */}
+              <Bar 
+                dataKey="mastery" 
+                name="Mastery" 
+                stackId="a" 
+                radius={[0, 4, 4, 0]}
+              >
+                {conceptData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+                <LabelList 
+                  dataKey="mastery" 
+                  position="right" 
+                  formatter={(value) => `${value}%`}
+                  style={{ fill: '#666', fontSize: '12px', fontWeight: 'bold' }}
+                />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
-        </div>
-        
-        <div className="text-center mt-4 text-sm text-gray-500">
-          <div className="flex justify-center items-center gap-5">
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-[#0EA5E9] rounded-full mr-2" />
-              <span>Performance</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-[#8B5CF6] rounded-full mr-2" />
-              <span>Mean</span>
-            </div>
-          </div>
         </div>
       </motion.div>
     </div>
