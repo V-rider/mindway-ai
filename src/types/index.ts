@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   name: string;
@@ -31,6 +30,7 @@ export interface TestResult {
   createdAt: string;
   studentId?: string;
   studentName?: string;
+  timeSpent: number;
 }
 
 export interface Question {
@@ -43,16 +43,17 @@ export interface Question {
 }
 
 export interface ConceptResult {
+  id: string;
   name: string;
-  score: number;
-  total: number;
+  questions: number;
+  correct: number;
   percentage: number;
 }
 
 export interface ErrorTypeResult {
   type: string;
   count: number;
-  percentage: number;
+  examples: string[];
 }
 
 export interface LearningPath {
@@ -93,26 +94,49 @@ export interface ClassData {
 export interface StudentPerformance {
   id: string;
   name: string;
+  grade: string;
+  classId: string;
   avatar?: string;
   averageScore: number;
   improvement: number;
   strengths: string[];
   weaknesses: string[];
+  recentTests: {
+    id: string;
+    name: string;
+    score: number;
+    date: string;
+  }[];
 }
 
 export interface School {
   id: string;
   name: string;
-  classes: ClassData[];
+  district: string;
+  address: string;
+  principalName: string;
+  studentCount: number;
+  teacherCount: number;
+  gradeRange: string;
+  performanceRating: number;
 }
 
 export interface ClassPerformance {
   id: string;
   name: string;
   grade: string;
+  teacher: string;
+  studentCount?: number;
   averageScore: number;
-  topicMastery: TopicMastery[];
-  errorPatterns: ErrorPattern[];
+  improvement: number;
+  topicMastery: {
+    topic: string;
+    mastery: number;
+  }[];
+  errorPatterns: {
+    pattern: string;
+    percentage: number;
+  }[];
 }
 
 export interface TopicMastery {
