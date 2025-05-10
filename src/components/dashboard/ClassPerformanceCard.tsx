@@ -77,8 +77,8 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
               layout="vertical"
               data={sortedTopicMastery}
               margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
-              barSize={20} // Reduced bar size for more spacing
-              barGap={10} // Added bar gap for better spacing
+              barSize={18} // Further reduced bar size for more spacing
+              barGap={16} // Increased bar gap for better spacing
             >
               <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
               <XAxis type="number" domain={[0, 100]} />
@@ -87,6 +87,8 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                 type="category" 
                 tick={{ fontSize: 14 }} 
                 width={120}
+                interval={0} // Ensure all ticks are shown
+                tickMargin={10} // Add margin to ticks
               />
               <Tooltip 
                 formatter={(value) => [`${value}%`, 'Mastery']}
@@ -98,7 +100,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                 {sortedTopicMastery.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={entry.mastery >= 70 ? "#4ade80" : "#f97316"} // Green for ≥70%, Orange for <70%
+                    fill={entry.mastery >= 70 ? "#16a34a" : "#f97316"} // Dark green (#16a34a) for ≥70%, Orange for <70%
                   />
                 ))}
                 <LabelList 
