@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/context/AuthContext';
 
 interface StudentProfileCardProps {
   student: StudentProfile;
@@ -31,6 +32,8 @@ export const StudentProfileCard: React.FC<StudentProfileCardProps> = ({
   onBack,
   onGenerateReport,
 }) => {
+  const { isAdmin } = useAuth();
+  
   // Format dates for the chart
   const chartData = student.progressData.map(point => ({
     name: new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -263,62 +266,64 @@ export const StudentProfileCard: React.FC<StudentProfileCardProps> = ({
         </div>
       </motion.div>
       
-      {/* Recommended Exercises */}
-      <motion.div 
-        className="glass-card rounded-xl p-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 flex items-center">
-            <BookOpen className="w-5 h-5 text-purple-500 mr-2" />
-            Recommended Exercises
-          </h3>
-          
-          <Link 
-            to={`/learning-pathway?studentId=${student.id}`}
-            className="text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300"
-          >
-            View All
-          </Link>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {student.recommendedExercises.map((exercise, index) => (
-            <div 
-              key={index} 
-              className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700"
+      {/* Recommended Exercises - Only show for students (non-admin users) */}
+      {!isAdmin && (
+        <motion.div 
+          className="glass-card rounded-xl p-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 flex items-center">
+              <BookOpen className="w-5 h-5 text-purple-500 mr-2" />
+              Recommended Exercises
+            </h3>
+            
+            <Link 
+              to={`/learning-pathway?studentId=${student.id}`}
+              className="text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300"
             >
-              <h4 className="font-medium text-gray-800 dark:text-gray-200">
-                {exercise.title}
-              </h4>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {exercise.topic}
-              </p>
-              
-              <div className="mt-3 flex items-center justify-between">
-                <div className={`px-2 py-1 text-xs rounded-full ${
-                  exercise.difficulty === 'easy' 
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' 
-                    : exercise.difficulty === 'medium'
-                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-                    : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                }`}>
-                  {exercise.difficulty}
-                </div>
+              View All
+            </Link>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {student.recommendedExercises.map((exercise, index) => (
+              <div 
+                key={index} 
+                className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700"
+              >
+                <h4 className="font-medium text-gray-800 dark:text-gray-200">
+                  {exercise.title}
+                </h4>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  {exercise.topic}
+                </p>
                 
-                <Link
-                  to={`/learning-pathway?exercise=${exercise.id}`}
-                  className="text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300"
-                >
-                  Start
-                </Link>
+                <div className="mt-3 flex items-center justify-between">
+                  <div className={`px-2 py-1 text-xs rounded-full ${
+                    exercise.difficulty === 'easy' 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' 
+                      : exercise.difficulty === 'medium'
+                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                      : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                  }`}>
+                    {exercise.difficulty}
+                  </div>
+                  
+                  <Link
+                    to={`/learning-pathway?exercise=${exercise.id}`}
+                    className="text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300"
+                  >
+                    Start
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
       
       {/* Past Reports */}
       <motion.div 
