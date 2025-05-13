@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { motion } from "framer-motion";
@@ -10,7 +9,8 @@ import {
   Download,
   Users,
   X,
-  Calendar
+  Calendar,
+  ListFilter
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -22,6 +22,7 @@ const Reports = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<string>("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [viewAllTests, setViewAllTests] = useState(false);
   
   // List of available grades
   const grades = ["3", "4", "5", "6"];
@@ -42,6 +43,14 @@ const Reports = () => {
         { id: "g3-test-1", name: "Addition & Subtraction Test", date: "2023-10-15", performance: "Above Average", completionRate: "92%" },
         { id: "g3-test-2", name: "Shapes Quiz", date: "2023-09-28", performance: "Average", completionRate: "85%" },
         { id: "g3-test-3", name: "Word Problems Assessment", date: "2023-09-10", performance: "Above Average", completionRate: "88%" }
+      ],
+      allTests: [
+        { id: "g3-test-1", name: "Addition & Subtraction Test", date: "2023-10-15", performance: "Above Average", completionRate: "92%" },
+        { id: "g3-test-2", name: "Shapes Quiz", date: "2023-09-28", performance: "Average", completionRate: "85%" },
+        { id: "g3-test-3", name: "Word Problems Assessment", date: "2023-09-10", performance: "Above Average", completionRate: "88%" },
+        { id: "g3-test-4", name: "Math Fundamentals Quiz", date: "2023-08-20", performance: "Good", completionRate: "90%" },
+        { id: "g3-test-5", name: "Basic Fractions Test", date: "2023-08-05", performance: "Needs Improvement", completionRate: "78%" },
+        { id: "g3-test-6", name: "Number Operations Assessment", date: "2023-07-15", performance: "Excellent", completionRate: "95%" }
       ]
     },
     "4": {
@@ -58,6 +67,14 @@ const Reports = () => {
         { id: "g4-test-1", name: "Multiplication Test", date: "2023-10-18", performance: "Above Average", completionRate: "90%" },
         { id: "g4-test-2", name: "Fractions Quiz", date: "2023-10-01", performance: "Average", completionRate: "87%" },
         { id: "g4-test-3", name: "Geometry Basics", date: "2023-09-15", performance: "Below Average", completionRate: "78%" }
+      ],
+      allTests: [
+        { id: "g4-test-1", name: "Multiplication Test", date: "2023-10-18", performance: "Above Average", completionRate: "90%" },
+        { id: "g4-test-2", name: "Fractions Quiz", date: "2023-10-01", performance: "Average", completionRate: "87%" },
+        { id: "g4-test-3", name: "Geometry Basics", date: "2023-09-15", performance: "Below Average", completionRate: "78%" },
+        { id: "g4-test-4", name: "Measurement Unit Test", date: "2023-08-25", performance: "Good", completionRate: "89%" },
+        { id: "g4-test-5", name: "Division Challenge", date: "2023-08-10", performance: "Average", completionRate: "82%" },
+        { id: "g4-test-6", name: "Word Problems Test", date: "2023-07-20", performance: "Below Average", completionRate: "75%" }
       ]
     },
     "5": {
@@ -74,6 +91,14 @@ const Reports = () => {
         { id: "g5-test-1", name: "Decimal Operations", date: "2023-10-20", performance: "Above Average", completionRate: "95%" },
         { id: "g5-test-2", name: "Pre-Algebra Concepts", date: "2023-10-05", performance: "Above Average", completionRate: "92%" },
         { id: "g5-test-3", name: "Geometry & Measurement", date: "2023-09-22", performance: "Average", completionRate: "89%" }
+      ],
+      allTests: [
+        { id: "g5-test-1", name: "Decimal Operations", date: "2023-10-20", performance: "Above Average", completionRate: "95%" },
+        { id: "g5-test-2", name: "Pre-Algebra Concepts", date: "2023-10-05", performance: "Above Average", completionRate: "92%" },
+        { id: "g5-test-3", name: "Geometry & Measurement", date: "2023-09-22", performance: "Average", completionRate: "89%" },
+        { id: "g5-test-4", name: "Data Analysis Quiz", date: "2023-09-05", performance: "Excellent", completionRate: "97%" },
+        { id: "g5-test-5", name: "Fractions & Decimals Test", date: "2023-08-18", performance: "Good", completionRate: "91%" },
+        { id: "g5-test-6", name: "Word Problems Challenge", date: "2023-08-01", performance: "Average", completionRate: "86%" }
       ]
     },
     "6": {
@@ -90,6 +115,14 @@ const Reports = () => {
         { id: "g6-test-1", name: "Ratios & Proportions Quiz", date: "2023-10-25", performance: "Excellent", completionRate: "98%" },
         { id: "g6-test-2", name: "Algebra Basics Test", date: "2023-10-10", performance: "Above Average", completionRate: "94%" },
         { id: "g6-test-3", name: "Statistics & Data Analysis", date: "2023-09-27", performance: "Excellent", completionRate: "97%" }
+      ],
+      allTests: [
+        { id: "g6-test-1", name: "Ratios & Proportions Quiz", date: "2023-10-25", performance: "Excellent", completionRate: "98%" },
+        { id: "g6-test-2", name: "Algebra Basics Test", date: "2023-10-10", performance: "Above Average", completionRate: "94%" },
+        { id: "g6-test-3", name: "Statistics & Data Analysis", date: "2023-09-27", performance: "Excellent", completionRate: "97%" },
+        { id: "g6-test-4", name: "Geometric Formulas Assessment", date: "2023-09-12", performance: "Good", completionRate: "92%" },
+        { id: "g6-test-5", name: "Pre-Algebra Evaluation", date: "2023-08-29", performance: "Above Average", completionRate: "93%" },
+        { id: "g6-test-6", name: "Mathematical Reasoning Test", date: "2023-08-15", performance: "Excellent", completionRate: "96%" }
       ]
     }
   };
@@ -145,8 +178,13 @@ const Reports = () => {
     });
   };
 
-  // Filter recent tests based on search term
-  const filteredTests = currentGradeData.recentTests
+  // Get the appropriate tests list based on viewAllTests state
+  const testsToDisplay = viewAllTests 
+    ? currentGradeData.allTests 
+    : currentGradeData.recentTests;
+
+  // Filter tests based on search term
+  const filteredTests = testsToDisplay
     .filter(test => test.name.toLowerCase().includes(searchTerm.toLowerCase()));
   
   // Sort filtered tests
@@ -160,6 +198,11 @@ const Reports = () => {
       setSortField(field);
       setSortDirection("asc");
     }
+  };
+
+  // Toggle view all tests
+  const toggleViewAllTests = () => {
+    setViewAllTests(!viewAllTests);
   };
   
   return (
@@ -273,15 +316,24 @@ const Reports = () => {
           </div>
         </div>
         
-        {/* Recent Tests - Improved to use a proper table for better readability */}
+        {/* Recent Tests - with View All Tests button */}
         <div className="glass-card rounded-xl p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-              Recent Assessments
+              {viewAllTests ? "All Assessments" : "Recent Assessments"}
             </h2>
             
-            <div className="w-full sm:w-auto mt-4 sm:mt-0">
-              <div className="relative">
+            <div className="flex flex-col sm:flex-row gap-4 mt-4 sm:mt-0 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                onClick={toggleViewAllTests}
+                className="flex items-center gap-2 order-1 sm:order-none"
+              >
+                <ListFilter className="w-4 h-4" />
+                <span>{viewAllTests ? "Show Recent" : "View All Tests"}</span>
+              </Button>
+              
+              <div className="relative order-0 sm:order-none w-full sm:w-auto">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-4 w-4 text-gray-400" />
                 </div>
