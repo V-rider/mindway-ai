@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { motion } from "framer-motion";
 import { 
@@ -18,19 +18,31 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { useAuth } from "@/context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Reports = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   // Get user role from auth context
   const { isAdmin, user } = useAuth();
   
+  // Extract grade from query parameters
+  const queryParams = new URLSearchParams(location.search);
+  const gradeFromQuery = queryParams.get('grade');
+  
   // State for selected grade and search term
-  const [selectedGrade, setSelectedGrade] = useState<string>("6");
+  const [selectedGrade, setSelectedGrade] = useState<string>(gradeFromQuery || "6");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<string>("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [viewAllTests, setViewAllTests] = useState(false);
+  
+  // Update state when URL parameters change
+  useEffect(() => {
+    if (gradeFromQuery) {
+      setSelectedGrade(gradeFromQuery);
+    }
+  }, [gradeFromQuery]);
   
   // List of available grades
   const grades = ["3", "4", "5", "6"];
@@ -218,9 +230,26 @@ const Reports = () => {
     navigate("/analytics");
   };
   
+  // Navigate back to dashboard
+  const handleBackToDashboard = () => {
+    navigate("/dashboard");
+  };
+  
   // Navigate to individual test analytics
   const handleViewTestAnalytics = (testId: string) => {
     navigate(`/reports/${testId}`);
+  };
+
+  // Handle grade change
+  const handleGradeChange = (grade: string) => {
+    setSelectedGrade(grade);
+    // Update URL with new grade
+    const newSearchParams = new URLSearchParams(location.search);
+    newSearchParams.set('grade', grade);
+    navigate({
+      pathname: location.pathname,
+      search: newSearchParams.toString()
+    });
   };
   
   return (
@@ -239,6 +268,16 @@ const Reports = () => {
                 <span>Back to Analytics</span>
               </Button>
             )}
+            {isAdmin && (
+              <Button 
+                variant="ghost" 
+                onClick={handleBackToDashboard}
+                className="mb-2 -ml-2 flex items-center gap-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to Dashboard</span>
+              </Button>
+            )}
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
               {isAdmin ? `Grade ${selectedGrade} Reports` : 'Student Assessments'}
             </h1>
@@ -251,7 +290,7 @@ const Reports = () => {
           <div className="w-full sm:w-auto">
             <Select 
               value={selectedGrade} 
-              onValueChange={setSelectedGrade}
+              onValueChange={handleGradeChange}
             >
               <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Select Grade" />
