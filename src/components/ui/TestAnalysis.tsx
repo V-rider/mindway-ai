@@ -1,6 +1,6 @@
 
 import React from "react";
-import { TestResult } from "@/types";
+import { TestResult, ConceptResult, ErrorTypeResult } from "@/types";
 import { motion } from "framer-motion";
 import { AlertCircle, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -118,7 +118,7 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
               </div>
               
               <div className="text-xs text-gray-500 dark:text-gray-400">
-                {concept.score} {t('of')} {concept.total} {t('correct')}
+                {concept.percentage * concept.total / 100} {t('of')} {concept.total} {t('correct')}
               </div>
               
               <Link
@@ -159,16 +159,16 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
                   </h4>
                 </div>
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {error.count} {error.count === 1 ? t('error') : t('errors')} ({error.percentage}%)
+                  {error.count} {error.count === 1 ? t('error') : t('errors')} ({error.frequency}%)
                 </span>
               </div>
               
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                 <motion.div 
                   className="h-1.5 rounded-full bg-red-500"
-                  style={{ width: `${error.percentage}%` }}
+                  style={{ width: `${error.frequency}%` }}
                   initial={{ width: 0 }}
-                  animate={{ width: `${error.percentage}%` }}
+                  animate={{ width: `${error.frequency}%` }}
                   transition={{ duration: 0.8 }}
                 />
               </div>

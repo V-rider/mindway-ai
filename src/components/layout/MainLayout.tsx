@@ -16,41 +16,55 @@ import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 
 // Create a function to get menu items based on user role
-const getMenuItems = (isAdmin: boolean) => {
+const getMenuItems = (isAdmin: boolean, isStudent: boolean) => {
   const baseItems = [
     {
       title: "Dashboard",
       path: "/dashboard",
       icon: LayoutDashboard
-    },
-    {
-      title: "Upload Tests",
-      path: "/upload",
-      icon: Upload
-    },
-    {
-      title: "Reports",
-      path: "/reports",
-      icon: FileText
-    },
-    {
-      title: "Analytics",
-      path: "/analytics",
-      icon: BarChart3
-    },
-    {
-      title: "Learning Pathway",
-      path: "/learning-pathway",
-      icon: BookOpen
     }
   ];
   
+  // Admin-specific menu items
   if (isAdmin) {
-    baseItems.splice(2, 0, {
-      title: "Students",
-      path: "/students",
-      icon: Users
-    });
+    baseItems.push(
+      {
+        title: "Upload Tests",
+        path: "/upload",
+        icon: Upload
+      },
+      {
+        title: "Students",
+        path: "/students",
+        icon: Users
+      },
+      {
+        title: "Reports",
+        path: "/reports",
+        icon: FileText
+      }
+    );
+  }
+  
+  // Student-specific menu items
+  if (isStudent) {
+    baseItems.push(
+      {
+        title: "Analytics",
+        path: "/analytics",
+        icon: BarChart3
+      },
+      {
+        title: "Learning Pathway",
+        path: "/learning-pathway",
+        icon: BookOpen
+      },
+      {
+        title: "Reports",
+        path: "/reports",
+        icon: FileText
+      }
+    );
   }
   
   return baseItems;
@@ -66,7 +80,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   
-  const menuItems = getMenuItems(isAdmin);
+  // Determine if the user is a student (not an admin)
+  const isStudent = user && user.role === 'student';
+  
+  const menuItems = getMenuItems(isAdmin, isStudent);
   
   const handleLogout = () => {
     logout();

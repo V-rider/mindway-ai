@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,9 +21,18 @@ import Students from "./pages/Students";
 // Create a new QueryClient
 const queryClient = new QueryClient();
 
-// Protected route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+// Protected route component with role checking
+const ProtectedRoute = ({ 
+  children, 
+  requireAdmin = false,
+  requireStudent = false 
+}: { 
+  children: React.ReactNode;
+  requireAdmin?: boolean;
+  requireStudent?: boolean;
+}) => {
+  const { isAuthenticated, isLoading, isAdmin, user } = useAuth();
+  const isStudent = user?.role === 'student';
   
   if (isLoading) {
     return (
@@ -34,6 +44,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
+  }
+  
+  // Check if admin is required but user is not an admin
+  if (requireAdmin && !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  // Check if student is required but user is not a student
+  if (requireStudent && !isStudent) {
+    return <Navigate to="/dashboard" replace />;
   }
   
   return <>{children}</>;
@@ -57,7 +77,7 @@ const AppRoutes = () => {
         <Route 
           path="/upload" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requireAdmin>
               <Upload />
             </ProtectedRoute>
           } 
@@ -66,7 +86,7 @@ const AppRoutes = () => {
         <Route 
           path="/students" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requireAdmin>
               <Students />
             </ProtectedRoute>
           } 
@@ -93,7 +113,7 @@ const AppRoutes = () => {
         <Route 
           path="/analytics" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requireStudent>
               <Analytics />
             </ProtectedRoute>
           } 
@@ -102,7 +122,7 @@ const AppRoutes = () => {
         <Route 
           path="/learning-pathway" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requireStudent>
               <LearningPathway />
             </ProtectedRoute>
           } 
