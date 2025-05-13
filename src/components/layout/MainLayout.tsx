@@ -58,12 +58,8 @@ const getMenuItems = (isAdmin: boolean, isStudent: boolean) => {
         title: "Learning Pathway",
         path: "/learning-pathway",
         icon: BookOpen
-      },
-      {
-        title: "Reports",
-        path: "/reports",
-        icon: FileText
       }
+      // Reports removed from student menu
     );
   }
   
