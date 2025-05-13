@@ -1,4 +1,3 @@
-
 import React from "react";
 import { School, ClassPerformance } from "@/types";
 import { motion } from "framer-motion";
@@ -8,7 +7,8 @@ import {
   AlertTriangle, 
   Flag,
   ChevronDown,
-  School as SchoolIcon
+  School as SchoolIcon,
+  FileText
 } from "lucide-react";
 import {
   BarChart,
@@ -45,6 +45,7 @@ interface PerformanceOverviewProps {
   onClassSelect: (classId: string) => void;
   onGradeChange?: (grade: string) => void; // New prop for grade change handler
   selectedGrade?: string; // New prop to track selected grade
+  onDetailReport?: (grade: string) => void; // New prop for detail report handler
 }
 
 export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({ 
@@ -52,7 +53,8 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
   classPerformances,
   onClassSelect,
   onGradeChange,
-  selectedGrade = "6" // Default to Grade 6 if not provided
+  selectedGrade = "6", // Default to Grade 6 if not provided
+  onDetailReport
 }) => {
   const { user } = useAuth();
   
@@ -128,37 +130,52 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
         transition={{ duration: 0.5 }}
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
             <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
               <SchoolIcon className="h-6 w-6 mr-2 text-purple-500" />
               {school.name} Overview
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1 flex items-center">
-              <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500" />
-              Classes you teach are highlighted in purple
-            </p>
+            
+            {/* New Detail Report Button */}
+            {onDetailReport && (
+              <Button 
+                onClick={() => onDetailReport(selectedGrade)}
+                variant="outline" 
+                className="flex items-center gap-2 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+              >
+                <FileText className="h-4 w-4" />
+                Detail Report for Grade {selectedGrade}
+              </Button>
+            )}
           </div>
           
-          {/* Grade filter */}
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  Grade {selectedGrade}
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {grades.map(grade => (
-                  <DropdownMenuItem 
-                    key={grade}
-                    onClick={() => onGradeChange?.(grade)}
-                  >
-                    Grade {grade}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="flex items-center gap-2 ml-auto">
+            <p className="text-gray-600 dark:text-gray-400 text-sm hidden md:block">
+              <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500 inline" />
+              Classes you teach are highlighted in purple
+            </p>
+            
+            {/* Grade filter */}
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    Grade {selectedGrade}
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {grades.map(grade => (
+                    <DropdownMenuItem 
+                      key={grade}
+                      onClick={() => onGradeChange?.(grade)}
+                    >
+                      Grade {grade}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
         

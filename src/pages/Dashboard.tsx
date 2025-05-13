@@ -1,7 +1,8 @@
+
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import Analytics from "./Analytics";
 import { 
   School, 
@@ -730,6 +731,7 @@ type ViewState = "overview" | "class" | "student" | "miscorrection";
 
 const Dashboard = () => {
   const { isAuthenticated, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const [viewState, setViewState] = useState<ViewState>("overview");
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
@@ -770,6 +772,11 @@ const Dashboard = () => {
   // New handler for grade changes
   const handleGradeChange = (grade: string) => {
     setSelectedGrade(grade);
+  };
+
+  // New handler for detail report button click
+  const handleViewDetailReport = (grade: string) => {
+    navigate(`/reports?grade=${grade}`);
   };
   
   // If the user isn't authenticated, redirect to login
@@ -880,8 +887,9 @@ const Dashboard = () => {
               school={mockSchool} 
               classPerformances={mockClassPerformances}
               onClassSelect={handleViewClass}
-              onGradeChange={handleGradeChange} // Pass the new handler
-              selectedGrade={selectedGrade} // Pass the selected grade
+              onGradeChange={handleGradeChange}
+              selectedGrade={selectedGrade}
+              onDetailReport={handleViewDetailReport}
             />
             
             <PerformanceHeatmap 
@@ -892,7 +900,7 @@ const Dashboard = () => {
                   handleViewClass(classData.id);
                 }
               }}
-              selectedGrade={selectedGrade} // Pass the selected grade
+              selectedGrade={selectedGrade}
             />
           </div>
         )}
