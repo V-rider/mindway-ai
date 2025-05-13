@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +17,7 @@ import LearningPathway from "./pages/LearningPathway";
 import NotFound from "./pages/NotFound";
 import Students from "./pages/Students";
 import TestAnalytics from "./pages/TestAnalytics";
+import StudentProfile from "./pages/StudentProfile";
 
 // Create a new QueryClient
 const queryClient = new QueryClient();
@@ -32,7 +32,7 @@ const ProtectedRoute = ({
   children: React.ReactNode;
   requireAdmin?: boolean;
   requireStudent?: boolean;
-  allowFromNavigation?: boolean; // New prop to check if route should be accessible only through navigation
+  allowFromNavigation?: boolean; 
 }) => {
   const { isAuthenticated, isLoading, isAdmin, user } = useAuth();
   const isStudent = user?.role === 'student';
@@ -91,6 +91,15 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute requireAdmin>
               <Students />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/students/profile" 
+          element={
+            <ProtectedRoute>
+              <StudentProfile />
             </ProtectedRoute>
           } 
         />

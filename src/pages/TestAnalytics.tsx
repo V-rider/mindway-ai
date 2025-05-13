@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { motion } from "framer-motion";
-import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, BookOpen, Target, Download, Share } from "lucide-react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, FileText, BookOpen, Target, Download, Share, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TestAnalysis } from "@/components/ui/TestAnalysis";
 import { TestResult, ConceptResult, ErrorTypeResult } from "@/types";
@@ -11,10 +11,13 @@ import { TestResult, ConceptResult, ErrorTypeResult } from "@/types";
 const TestAnalytics = () => {
   const { testId } = useParams<{ testId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const studentId = searchParams.get('studentId');
   const [isLoading, setIsLoading] = useState(true);
   const [testData, setTestData] = useState<{
     result: TestResult;
     testName: string;
+    studentName?: string;
   } | null>(null);
   
   // Mock fetch test data - in a real app, this would call an API
@@ -26,54 +29,67 @@ const TestAnalytics = () => {
         const mockTestResults: Record<string, {
           result: TestResult;
           testName: string;
+          studentName?: string;
         }> = {
           "g3-test-1": {
             testName: "Addition & Subtraction Test",
-            result: getMockTestResult("g3-test-1", "Addition & Subtraction", 78)
+            result: getMockTestResult("g3-test-1", "Addition & Subtraction", 78),
+            studentName: studentId ? "Emma Johnson" : undefined
           },
           "g3-test-2": {
             testName: "Shapes Quiz",
-            result: getMockTestResult("g3-test-2", "Shapes & Geometry", 65)
+            result: getMockTestResult("g3-test-2", "Shapes & Geometry", 65),
+            studentName: studentId ? "Emma Johnson" : undefined
           },
           "g3-test-3": {
             testName: "Word Problems Assessment",
-            result: getMockTestResult("g3-test-3", "Word Problems", 70)
+            result: getMockTestResult("g3-test-3", "Word Problems", 70),
+            studentName: studentId ? "Emma Johnson" : undefined
           },
           "g4-test-1": {
             testName: "Multiplication Test",
-            result: getMockTestResult("g4-test-1", "Multiplication", 80)
+            result: getMockTestResult("g4-test-1", "Multiplication", 80),
+            studentName: studentId ? "John Smith" : undefined
           },
           "g4-test-2": {
             testName: "Fractions Quiz",
-            result: getMockTestResult("g4-test-2", "Fractions", 68)
+            result: getMockTestResult("g4-test-2", "Fractions", 68),
+            studentName: studentId ? "John Smith" : undefined
           },
           "g4-test-3": {
             testName: "Geometry Basics",
-            result: getMockTestResult("g4-test-3", "Geometry", 62)
+            result: getMockTestResult("g4-test-3", "Geometry", 62),
+            studentName: studentId ? "John Smith" : undefined
           },
           "g5-test-1": {
             testName: "Decimal Operations",
-            result: getMockTestResult("g5-test-1", "Decimals", 85)
+            result: getMockTestResult("g5-test-1", "Decimals", 85),
+            studentName: studentId ? "Alice Brown" : undefined
           },
           "g5-test-2": {
             testName: "Pre-Algebra Concepts",
-            result: getMockTestResult("g5-test-2", "Pre-Algebra", 72)
+            result: getMockTestResult("g5-test-2", "Pre-Algebra", 72),
+            studentName: studentId ? "Alice Brown" : undefined
           },
           "g5-test-3": {
             testName: "Geometry & Measurement",
-            result: getMockTestResult("g5-test-3", "Geometry & Measurement", 78)
+            result: getMockTestResult("g5-test-3", "Geometry & Measurement", 78),
+            studentName: studentId ? "Alice Brown" : undefined
           },
           "g6-test-1": {
             testName: "Ratios & Proportions Quiz",
-            result: getMockTestResult("g6-test-1", "Ratios & Proportions", 88)
+            result: getMockTestResult("g6-test-1", "Ratios & Proportions", 88),
+            studentName: studentId ? "Michael Wilson" : undefined
           },
           "g6-test-2": {
             testName: "Algebra Basics Test",
-            result: getMockTestResult("g6-test-2", "Algebra Basics", 75)
+            result: getMockTestResult("g6-test-2", "Algebra Basics", 75),
+            studentName: studentId ? "Michael Wilson" : undefined
           },
           "g6-test-3": {
             testName: "Statistics & Data Analysis",
-            result: getMockTestResult("g6-test-3", "Statistics", 92)
+            result: getMockTestResult("g6-test-3", "Statistics", 92),
+            studentName: studentId ? "Michael Wilson" : undefined
           }
         };
         
@@ -83,7 +99,8 @@ const TestAnalytics = () => {
           // Default fallback data if test ID doesn't match
           setTestData({
             testName: "Math Assessment",
-            result: getMockTestResult("default", "Math Skills", 75)
+            result: getMockTestResult("default", "Math Skills", 75),
+            studentName: studentId ? "Student" : undefined
           });
         }
         
@@ -92,10 +109,16 @@ const TestAnalytics = () => {
     };
     
     fetchTestData();
-  }, [testId]);
+  }, [testId, studentId]);
   
-  const handleBackToReports = () => {
-    navigate("/reports");
+  const handleBackNavigation = () => {
+    if (studentId) {
+      // Navigate back to student profile
+      navigate(`/students/profile?studentId=${studentId}`);
+    } else {
+      // Navigate back to reports as fallback
+      navigate("/reports");
+    }
   };
   
   // Helper function to generate mock test result data
@@ -180,12 +203,24 @@ const TestAnalytics = () => {
               <div>
                 <Button 
                   variant="ghost" 
-                  onClick={handleBackToReports}
+                  onClick={handleBackNavigation}
                   className="mb-2 -ml-2 flex items-center gap-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Assessments</span>
+                  <span>{studentId ? `Back to Student Profile` : `Back to Assessments`}</span>
                 </Button>
+                
+                {studentId && testData?.studentName && (
+                  <div className="mb-3 flex items-center">
+                    <div className="w-10 h-10 rounded-full mr-3 bg-purple-100 dark:bg-gray-700 flex items-center justify-center">
+                      <User className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100">{testData.studentName}</h2>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Class {id => id === "s-1" ? "3A" : "4B"}</p>
+                    </div>
+                  </div>
+                )}
                 
                 <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
                   Test Analytics
