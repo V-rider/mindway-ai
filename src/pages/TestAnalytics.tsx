@@ -1,259 +1,173 @@
-
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { motion } from "framer-motion";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, FileText, BookOpen, Target, Download, Share, User } from "lucide-react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { ArrowLeft, FileText, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TestAnalysis } from "@/components/ui/TestAnalysis";
-import { TestResult, ConceptResult, ErrorTypeResult } from "@/types";
+import { motion, AnimatePresence } from "framer-motion";
 
 const TestAnalytics = () => {
-  const { testId } = useParams<{ testId: string }>();
   const navigate = useNavigate();
+  const { testId } = useParams();
   const [searchParams] = useSearchParams();
   const studentId = searchParams.get('studentId');
-  const [isLoading, setIsLoading] = useState(true);
-  const [testData, setTestData] = useState<{
-    result: TestResult;
-    testName: string;
-    studentName?: string;
-  } | null>(null);
-  
-  // Mock fetch test data - in a real app, this would call an API
+  const [loading, setLoading] = useState(true);
+  const [testData, setTestData] = useState(null);
+
+  // Get class name based on ID
+  const getClassName = (id: string): string => {
+    // In a real app, this would be fetched from an API
+    return id === "1" ? "3A" : "4B";
+  };
+
+  // Effect to fetch test data
   useEffect(() => {
+    // In a real app, this would be an API call
     const fetchTestData = () => {
-      // Simulating API call delay
+      // Simulate API delay
       setTimeout(() => {
-        // Mock data for different tests
-        const mockTestResults: Record<string, {
-          result: TestResult;
-          testName: string;
-          studentName?: string;
-        }> = {
-          "g3-test-1": {
-            testName: "Addition & Subtraction Test",
-            result: getMockTestResult("g3-test-1", "Addition & Subtraction", 78),
-            studentName: studentId ? "Emma Johnson" : undefined
-          },
-          "g3-test-2": {
-            testName: "Shapes Quiz",
-            result: getMockTestResult("g3-test-2", "Shapes & Geometry", 65),
-            studentName: studentId ? "Emma Johnson" : undefined
-          },
-          "g3-test-3": {
-            testName: "Word Problems Assessment",
-            result: getMockTestResult("g3-test-3", "Word Problems", 70),
-            studentName: studentId ? "Emma Johnson" : undefined
-          },
-          "g4-test-1": {
-            testName: "Multiplication Test",
-            result: getMockTestResult("g4-test-1", "Multiplication", 80),
-            studentName: studentId ? "John Smith" : undefined
-          },
-          "g4-test-2": {
-            testName: "Fractions Quiz",
-            result: getMockTestResult("g4-test-2", "Fractions", 68),
-            studentName: studentId ? "John Smith" : undefined
-          },
-          "g4-test-3": {
-            testName: "Geometry Basics",
-            result: getMockTestResult("g4-test-3", "Geometry", 62),
-            studentName: studentId ? "John Smith" : undefined
-          },
-          "g5-test-1": {
-            testName: "Decimal Operations",
-            result: getMockTestResult("g5-test-1", "Decimals", 85),
-            studentName: studentId ? "Alice Brown" : undefined
-          },
-          "g5-test-2": {
-            testName: "Pre-Algebra Concepts",
-            result: getMockTestResult("g5-test-2", "Pre-Algebra", 72),
-            studentName: studentId ? "Alice Brown" : undefined
-          },
-          "g5-test-3": {
-            testName: "Geometry & Measurement",
-            result: getMockTestResult("g5-test-3", "Geometry & Measurement", 78),
-            studentName: studentId ? "Alice Brown" : undefined
-          },
-          "g6-test-1": {
-            testName: "Ratios & Proportions Quiz",
-            result: getMockTestResult("g6-test-1", "Ratios & Proportions", 88),
-            studentName: studentId ? "Michael Wilson" : undefined
-          },
-          "g6-test-2": {
-            testName: "Algebra Basics Test",
-            result: getMockTestResult("g6-test-2", "Algebra Basics", 75),
-            studentName: studentId ? "Michael Wilson" : undefined
-          },
-          "g6-test-3": {
-            testName: "Statistics & Data Analysis",
-            result: getMockTestResult("g6-test-3", "Statistics", 92),
-            studentName: studentId ? "Michael Wilson" : undefined
-          }
+        // Mock data
+        const data = {
+          id: testId || "",
+          name: "Math Fundamentals Assessment",
+          date: "2023-11-15",
+          averageScore: 78,
+          highestScore: 95,
+          lowestScore: 45,
+          questionStats: [
+            {
+              questionNumber: 1,
+              topic: "Addition",
+              difficulty: "Easy",
+              correctPercentage: 92
+            },
+            {
+              questionNumber: 2,
+              topic: "Subtraction",
+              difficulty: "Easy",
+              correctPercentage: 88
+            },
+            {
+              questionNumber: 3,
+              topic: "Multiplication",
+              difficulty: "Medium",
+              correctPercentage: 75
+            },
+            {
+              questionNumber: 4,
+              topic: "Division",
+              difficulty: "Medium",
+              correctPercentage: 68
+            },
+            {
+              questionNumber: 5,
+              topic: "Fractions",
+              difficulty: "Hard",
+              correctPercentage: 45
+            }
+          ],
+          studentResults: [
+            {
+              studentId: "s-1",
+              name: "Emma Johnson",
+              score: 85,
+              areas: ["Excellent at addition and subtraction", "Needs work on fractions"]
+            },
+            {
+              studentId: "s-2",
+              name: "Noah Smith",
+              score: 75,
+              areas: ["Strong in multiplication", "Struggles with word problems"]
+            },
+            {
+              studentId: "s-3",
+              name: "Olivia Brown",
+              score: 90,
+              areas: ["Excellent across all areas", "Sometimes makes calculation errors"]
+            },
+            {
+              studentId: "s-4",
+              name: "William Davis",
+              score: 65,
+              areas: ["Good at basic operations", "Needs help with fractions and decimals"]
+            },
+            {
+              studentId: "s-5",
+              name: "Ava Wilson",
+              score: 80,
+              areas: ["Strong problem solver", "Occasionally makes careless mistakes"]
+            }
+          ]
         };
         
-        if (testId && mockTestResults[testId]) {
-          setTestData(mockTestResults[testId]);
-        } else {
-          // Default fallback data if test ID doesn't match
-          setTestData({
-            testName: "Math Assessment",
-            result: getMockTestResult("default", "Math Skills", 75),
-            studentName: studentId ? "Student" : undefined
-          });
-        }
-        
-        setIsLoading(false);
-      }, 800); // simulate loading delay
+        setTestData(data);
+        setLoading(false);
+      }, 800);
     };
     
     fetchTestData();
-  }, [testId, studentId]);
-  
-  const handleBackNavigation = () => {
+  }, [testId]);
+
+  const handleBackClick = () => {
     if (studentId) {
-      // Navigate back to student profile
+      // Navigate back to student profile if student ID exists
       navigate(`/students/profile?studentId=${studentId}`);
     } else {
-      // Navigate back to reports as fallback
-      navigate("/reports");
+      // Otherwise go back to reports page
+      navigate('/reports');
     }
   };
-  
-  // Helper function to generate mock test result data
-  function getMockTestResult(id: string, topic: string, score: number): TestResult {
-    const totalQuestions = 20 + Math.floor(Math.random() * 10);
-    const correctAnswers = Math.floor((score / 100) * totalQuestions);
-    const incorrectAnswers = totalQuestions - correctAnswers;
-    
-    const concepts: ConceptResult[] = [
-      { 
-        name: `${topic} - Basic`, 
-        score: Math.floor(score * 1.1), 
-        total: 10, 
-        percentage: Math.min(100, Math.floor(score * 1.1)) 
-      },
-      { 
-        name: `${topic} - Advanced`, 
-        score: Math.floor(score * 0.9), 
-        total: 8, 
-        percentage: Math.floor(score * 0.9) 
-      },
-      { 
-        name: `${topic} - Applied`, 
-        score: Math.floor(score * 0.85), 
-        total: 7, 
-        percentage: Math.floor(score * 0.85) 
-      }
-    ];
-    
-    const errorTypes: ErrorTypeResult[] = [
-      { 
-        type: "Calculation Errors", 
-        count: Math.floor(incorrectAnswers * 0.4), 
-        percentage: Math.floor(40) 
-      },
-      { 
-        type: "Conceptual Misunderstanding", 
-        count: Math.floor(incorrectAnswers * 0.35), 
-        percentage: Math.floor(35) 
-      },
-      { 
-        type: "Careless Mistakes", 
-        count: Math.floor(incorrectAnswers * 0.25), 
-        percentage: Math.floor(25) 
-      }
-    ];
-    
-    const recommendations = [
-      `Practice ${topic} fundamentals to strengthen your understanding`,
-      `Review ${topic} problem-solving techniques`,
-      `Focus on understanding common errors in ${topic} problems`,
-      `Try more advanced ${topic} exercises to challenge yourself`
-    ];
-    
-    return {
-      id: `result-${id}`,
-      testId: id,
-      score,
-      totalQuestions,
-      correctAnswers,
-      incorrectAnswers,
-      concepts,
-      errorTypes,
-      recommendations,
-      createdAt: new Date().toISOString(),
-      studentId: "student-1",
-      studentName: "John Doe"
-    };
-  }
-  
+
   return (
     <MainLayout>
-      <div className="space-y-8">
-        {isLoading ? (
+      <div className="space-y-6">
+        {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="w-16 h-16 rounded-full border-4 border-purple-200 border-t-purple-600 animate-spin"></div>
           </div>
         ) : (
-          <>
-            {/* Page Header */}
-            <div className="flex items-start justify-between">
-              <div>
-                <Button 
-                  variant="ghost" 
-                  onClick={handleBackNavigation}
-                  className="mb-2 -ml-2 flex items-center gap-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>{studentId ? `Back to Student Profile` : `Back to Assessments`}</span>
-                </Button>
-                
-                {studentId && testData?.studentName && (
-                  <div className="mb-3 flex items-center">
-                    <div className="w-10 h-10 rounded-full mr-3 bg-purple-100 dark:bg-gray-700 flex items-center justify-center">
-                      <User className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100">{testData.studentName}</h2>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Class {id => id === "s-1" ? "3A" : "4B"}</p>
-                    </div>
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <Button
+                      variant="ghost"
+                      onClick={handleBackClick}
+                      className="-ml-2 flex items-center gap-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      <span>
+                        {studentId ? "Back to Student Profile" : "Back to Reports"}
+                      </span>
+                    </Button>
+                    
+                    <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-2">
+                      Test Analytics
+                    </h1>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Comprehensive analysis of test results and performance metrics
+                    </p>
                   </div>
-                )}
-                
-                <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-                  Test Analytics
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-1">
-                  Detailed analysis of your performance on this assessment
-                </p>
+                  
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    Export Results
+                  </Button>
+                </div>
               </div>
               
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export PDF
-                </Button>
-                <Button
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium"
-                >
-                  <Share className="w-4 h-4 mr-2" />
-                  Share Results
-                </Button>
-              </div>
-            </div>
-            
-            {testData && (
-              <TestAnalysis 
-                result={testData.result} 
-                testName={testData.testName} 
-              />
-            )}
-          </>
+              {testData && <TestAnalysis testData={testData} />}
+            </motion.div>
+          </AnimatePresence>
         )}
       </div>
     </MainLayout>
