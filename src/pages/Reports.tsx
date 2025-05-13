@@ -11,14 +11,17 @@ import {
   Users,
   X,
   Calendar,
-  ListFilter
+  ListFilter,
+  ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Reports = () => {
+  const navigate = useNavigate();
   // Get user role from auth context
   const { isAdmin, user } = useAuth();
   
@@ -210,12 +213,27 @@ const Reports = () => {
     setViewAllTests(!viewAllTests);
   };
   
+  // Navigate back to analytics
+  const handleBackToAnalytics = () => {
+    navigate("/analytics");
+  };
+  
   return (
     <MainLayout>
       <div className="space-y-8">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
+            {!isAdmin && (
+              <Button 
+                variant="ghost" 
+                onClick={handleBackToAnalytics}
+                className="mb-2 -ml-2 flex items-center gap-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to Analytics</span>
+              </Button>
+            )}
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
               {isAdmin ? `Grade ${selectedGrade} Reports` : 'Student Assessments'}
             </h1>
