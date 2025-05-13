@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { motion } from "framer-motion";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, FileText, BookOpen, Target, Download, Share } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TestAnalysis } from "@/components/ui/TestAnalysis";
@@ -11,11 +11,16 @@ import { TestResult, ConceptResult, ErrorTypeResult } from "@/types";
 const TestAnalytics = () => {
   const { testId } = useParams<{ testId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [testData, setTestData] = useState<{
     result: TestResult;
     testName: string;
   } | null>(null);
+  
+  // Get studentId from query parameters
+  const queryParams = new URLSearchParams(location.search);
+  const studentId = queryParams.get('studentId');
   
   // Mock fetch test data - in a real app, this would call an API
   useEffect(() => {
@@ -96,6 +101,16 @@ const TestAnalytics = () => {
   
   const handleBackToReports = () => {
     navigate("/reports");
+  };
+  
+  const handleBackToStudentProfile = () => {
+    if (studentId) {
+      // Navigate back to the student profile
+      navigate(`/students?studentId=${studentId}`);
+    } else {
+      // If no studentId is provided, go back to reports
+      navigate("/reports");
+    }
   };
   
   // Helper function to generate mock test result data
@@ -180,11 +195,13 @@ const TestAnalytics = () => {
               <div>
                 <Button 
                   variant="ghost" 
-                  onClick={handleBackToReports}
+                  onClick={studentId ? handleBackToStudentProfile : handleBackToReports}
                   className="mb-2 -ml-2 flex items-center gap-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Assessments</span>
+                  <span>
+                    {studentId ? "Back to Student Profile" : "Back to Assessments"}
+                  </span>
                 </Button>
                 
                 <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
