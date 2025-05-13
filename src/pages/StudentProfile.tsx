@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { motion } from "framer-motion";
@@ -27,6 +28,7 @@ const StudentProfile = () => {
           grade: "3", // Changed from number to string to fix type error
           className: "Class 3A",
           avatar: "",
+          averageScore: 82, // Added the missing averageScore property
           progressData: [
             { date: "2023-09-05", score: 75, testId: "g3-test-1", testName: "Math Fundamentals Quiz" },
             { date: "2023-09-18", score: 77, testId: "g3-test-2", testName: "Shapes & Geometry" },

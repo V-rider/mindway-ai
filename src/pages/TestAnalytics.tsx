@@ -165,7 +165,7 @@ const TestAnalytics = () => {
                 </div>
               </div>
               
-              {testData && <TestAnalysis testData={testData} />}
+              {testData && <TestAnalysis result={testData} testName={testData.name} />}
             </motion.div>
           </AnimatePresence>
         )}
