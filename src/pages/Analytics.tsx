@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   BarChart3,
   Calendar,
@@ -40,6 +41,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Analytics = () => {
+  const navigate = useNavigate();
   const [timeRange, setTimeRange] = useState<"week" | "month" | "year">("month");
   const [activeTab, setActiveTab] = useState<"overview" | "analysis">("overview");
   
@@ -141,6 +143,11 @@ const Analytics = () => {
   
   // Get performance data based on selected time range
   const currentPerformanceData = performanceData[timeRange];
+  
+  // Function to navigate to reports page
+  const handleViewAllTests = () => {
+    navigate('/reports');
+  };
   
   return (
     <MainLayout>
@@ -488,7 +495,7 @@ const Analytics = () => {
                 <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
                   Recent Test Analysis
                 </h2>
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleViewAllTests}>
                   View All Tests
                 </Button>
               </div>
