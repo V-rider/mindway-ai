@@ -17,6 +17,7 @@ import Analytics from "./pages/Analytics";
 import LearningPathway from "./pages/LearningPathway";
 import NotFound from "./pages/NotFound";
 import Students from "./pages/Students";
+import TestAnalytics from "./pages/TestAnalytics";
 
 // Create a new QueryClient
 const queryClient = new QueryClient();
@@ -107,7 +108,7 @@ const AppRoutes = () => {
           path="/reports/:testId" 
           element={
             <ProtectedRoute>
-              <Reports />
+              <TestAnalytics />
             </ProtectedRoute>
           } 
         />

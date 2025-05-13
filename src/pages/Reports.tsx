@@ -218,6 +218,11 @@ const Reports = () => {
     navigate("/analytics");
   };
   
+  // Navigate to individual test analytics
+  const handleViewTestAnalytics = (testId: string) => {
+    navigate(`/reports/${testId}`);
+  };
+  
   return (
     <MainLayout>
       <div className="space-y-8">
@@ -436,7 +441,8 @@ const Reports = () => {
                   {sortedAndFilteredTests.map((test) => (
                     <TableRow 
                       key={test.id}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors cursor-pointer"
+                      onClick={() => handleViewTestAnalytics(test.id)}
                     >
                       <TableCell>
                         <div className="flex items-center">
@@ -460,6 +466,10 @@ const Reports = () => {
                           variant="ghost" 
                           size="sm" 
                           className="rounded-full p-2 h-auto w-auto"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewTestAnalytics(test.id);
+                          }}
                         >
                           <ChevronRight className="w-5 h-5 text-gray-500" />
                         </Button>
