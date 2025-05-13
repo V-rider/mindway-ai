@@ -37,11 +37,6 @@ const getMenuItems = (isAdmin: boolean, isStudent: boolean) => {
         title: "Students",
         path: "/students",
         icon: Users
-      },
-      {
-        title: "Reports",
-        path: "/reports",
-        icon: FileText
       }
     );
   }
@@ -50,19 +45,9 @@ const getMenuItems = (isAdmin: boolean, isStudent: boolean) => {
   if (isStudent) {
     baseItems.push(
       {
-        title: "Analytics",
-        path: "/analytics",
-        icon: BarChart3
-      },
-      {
         title: "Learning Pathway",
         path: "/learning-pathway",
         icon: BookOpen
-      },
-      {
-        title: "Reports",
-        path: "/reports",
-        icon: FileText
       }
     );
   }

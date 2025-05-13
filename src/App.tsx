@@ -25,11 +25,13 @@ const queryClient = new QueryClient();
 const ProtectedRoute = ({ 
   children, 
   requireAdmin = false,
-  requireStudent = false 
+  requireStudent = false,
+  allowFromNavigation = false
 }: { 
   children: React.ReactNode;
   requireAdmin?: boolean;
   requireStudent?: boolean;
+  allowFromNavigation?: boolean; // New prop to check if route should be accessible only through navigation
 }) => {
   const { isAuthenticated, isLoading, isAdmin, user } = useAuth();
   const isStudent = user?.role === 'student';
