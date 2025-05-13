@@ -159,16 +159,16 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
                   </h4>
                 </div>
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {error.count} {error.count === 1 ? t('error') : t('errors')} ({error.frequency}%)
+                  {error.count} {error.count === 1 ? t('error') : t('errors')} ({error.percentage}%)
                 </span>
               </div>
               
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                 <motion.div 
                   className="h-1.5 rounded-full bg-red-500"
-                  style={{ width: `${error.frequency}%` }}
+                  style={{ width: `${error.percentage}%` }}
                   initial={{ width: 0 }}
-                  animate={{ width: `${error.frequency}%` }}
+                  animate={{ width: `${error.percentage}%` }}
                   transition={{ duration: 0.8 }}
                 />
               </div>
