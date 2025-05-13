@@ -95,7 +95,7 @@ const AppRoutes = () => {
         <Route 
           path="/reports" 
           element={
-            <ProtectedRoute requireAdmin>
+            <ProtectedRoute>
               <Reports />
             </ProtectedRoute>
           } 
@@ -104,7 +104,7 @@ const AppRoutes = () => {
         <Route 
           path="/reports/:testId" 
           element={
-            <ProtectedRoute requireAdmin>
+            <ProtectedRoute>
               <Reports />
             </ProtectedRoute>
           } 
