@@ -36,6 +36,9 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
     show: { opacity: 1, y: 0 }
   };
   
+  // Sort concepts from highest to lowest percentage
+  const sortedConcepts = [...result.concepts].sort((a, b) => b.percentage - a.percentage);
+  
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -86,7 +89,7 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
         </h3>
         
         <div className="glass-card rounded-xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {result.concepts.map((concept, index) => (
+          {sortedConcepts.map((concept, index) => (
             <motion.div 
               key={concept.name} 
               variants={item}
