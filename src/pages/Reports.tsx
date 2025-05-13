@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { motion } from "framer-motion";
@@ -15,8 +16,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { useAuth } from "@/context/AuthContext";
 
 const Reports = () => {
+  // Get user role from auth context
+  const { isAdmin, user } = useAuth();
+  
   // State for selected grade and search term
   const [selectedGrade, setSelectedGrade] = useState<string>("6");
   const [searchTerm, setSearchTerm] = useState("");
@@ -212,10 +217,10 @@ const Reports = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-              Grade {selectedGrade} Reports
+              {isAdmin ? `Grade ${selectedGrade} Reports` : 'Student Assessments'}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Overall class performance and recent assessments
+              {isAdmin ? 'Overall class performance and recent assessments' : 'Overall performance and recent assessments'}
             </p>
           </div>
           
@@ -239,82 +244,86 @@ const Reports = () => {
           </div>
         </div>
         
-        {/* Performance Overview */}
-        <div className="glass-card rounded-xl p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-              Performance Overview
-            </h2>
-            <div className="flex items-center mt-2 sm:mt-0">
-              <Users className="w-5 h-5 text-purple-600 dark:text-purple-400 mr-2" />
-              <span className="font-medium text-gray-800 dark:text-gray-100">Grade {selectedGrade} Classes</span>
+        {/* Performance Overview - Only shown for admin users */}
+        {isAdmin && (
+          <div className="glass-card rounded-xl p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+                Performance Overview
+              </h2>
+              <div className="flex items-center mt-2 sm:mt-0">
+                <Users className="w-5 h-5 text-purple-600 dark:text-purple-400 mr-2" />
+                <span className="font-medium text-gray-800 dark:text-gray-100">Grade {selectedGrade} Classes</span>
+              </div>
             </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex flex-col">
-              <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">Overall Performance</span>
-              <div className="flex items-center">
-                <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-3">
-                  <span className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                    {currentGradeData.averageScore}%
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">Overall Performance</span>
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-3">
+                    <span className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                      {currentGradeData.averageScore}%
+                    </span>
+                  </div>
+                  <span className="font-medium text-gray-800 dark:text-gray-100">
+                    {currentGradeData.averageScore >= 80 ? "Excellent" : 
+                    currentGradeData.averageScore >= 70 ? "Good" : 
+                    currentGradeData.averageScore >= 60 ? "Average" : "Needs Improvement"}
                   </span>
                 </div>
-                <span className="font-medium text-gray-800 dark:text-gray-100">
-                  {currentGradeData.averageScore >= 80 ? "Excellent" : 
-                   currentGradeData.averageScore >= 70 ? "Good" : 
-                   currentGradeData.averageScore >= 60 ? "Average" : "Needs Improvement"}
-                </span>
               </div>
-            </div>
-            
-            <div className="flex flex-col">
-              <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">Highest Performing Area</span>
-              <div className="flex items-center">
-                <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-3">
-                  <span className="text-lg font-bold text-green-600 dark:text-green-400">✓</span>
+              
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">Highest Performing Area</span>
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-3">
+                    <span className="text-lg font-bold text-green-600 dark:text-green-400">✓</span>
+                  </div>
+                  <span className="font-medium text-gray-800 dark:text-gray-100">
+                    {currentGradeData.highestPerforming}
+                  </span>
                 </div>
-                <span className="font-medium text-gray-800 dark:text-gray-100">
-                  {currentGradeData.highestPerforming}
-                </span>
               </div>
-            </div>
-            
-            <div className="flex flex-col">
-              <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">Needs Most Support</span>
-              <div className="flex items-center">
-                <div className="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mr-3">
-                  <span className="text-lg font-bold text-yellow-600 dark:text-yellow-400">!</span>
+              
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">Needs Most Support</span>
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mr-3">
+                    <span className="text-lg font-bold text-yellow-600 dark:text-yellow-400">!</span>
+                  </div>
+                  <span className="font-medium text-gray-800 dark:text-gray-100">
+                    {currentGradeData.mostChallenging}
+                  </span>
                 </div>
-                <span className="font-medium text-gray-800 dark:text-gray-100">
-                  {currentGradeData.mostChallenging}
-                </span>
               </div>
             </div>
           </div>
-        </div>
+        )}
         
-        {/* Subject Performance */}
-        <div className="glass-card rounded-xl p-6">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-6">
-            Subject Performance
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {currentGradeData.subjectPerformance.map((subject, index) => (
-              <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-medium text-gray-800 dark:text-gray-100">
-                    {subject.subject}
-                  </h3>
-                  <span className={subject.color}>
-                    {subject.performance}
-                  </span>
+        {/* Subject Performance - Only shown for admin users */}
+        {isAdmin && (
+          <div className="glass-card rounded-xl p-6">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-6">
+              Subject Performance
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {currentGradeData.subjectPerformance.map((subject, index) => (
+                <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium text-gray-800 dark:text-gray-100">
+                      {subject.subject}
+                    </h3>
+                    <span className={subject.color}>
+                      {subject.performance}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
         
         {/* Recent Tests - with View All Tests button */}
         <div className="glass-card rounded-xl p-6">

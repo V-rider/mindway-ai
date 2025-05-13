@@ -59,10 +59,11 @@ const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
 };
 
 export const SidebarMenu: React.FC<SidebarMenuProps> = ({ items = [] }) => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) return null;
 
+  // Display only the menu items that user should see
   return (
     <nav className="space-y-1 py-2">
       {items.map((item, i) => {
