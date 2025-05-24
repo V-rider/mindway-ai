@@ -16,6 +16,7 @@ import Reports from "./pages/Reports";
 import Analytics from "./pages/Analytics";
 import LearningPathway from "./pages/LearningPathway";
 import ELearning from "./pages/ELearning";
+import MathChallenge from "./pages/MathChallenge";
 import NotFound from "./pages/NotFound";
 import Students from "./pages/Students";
 import TestAnalytics from "./pages/TestAnalytics";
@@ -147,6 +148,15 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute requireStudent>
               <ELearning />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/math-challenge" 
+          element={
+            <ProtectedRoute requireStudent>
+              <MathChallenge />
             </ProtectedRoute>
           } 
         />

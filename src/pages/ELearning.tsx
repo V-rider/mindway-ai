@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { motion, AnimatePresence } from "framer-motion";
@@ -31,10 +30,11 @@ import { Card } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, ComposedChart } from "recharts";
 import { LearningPath } from "@/types";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 const ELearning = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const selectedConcept = searchParams.get("concept") || undefined;
   
   const [activeStrand, setActiveStrand] = useState<string>("Number");
@@ -155,6 +155,10 @@ const ELearning = () => {
 
   const handleStartExercise = (exerciseId: string) => {
     console.log(`Starting exercise: ${exerciseId}`);
+  };
+
+  const handleAcceptChallenge = (challengerName: string) => {
+    navigate(`/math-challenge?challenger=${encodeURIComponent(challengerName)}`);
   };
 
   return (
@@ -494,7 +498,11 @@ const ELearning = () => {
                         <p className="text-xs text-gray-500">{invite.subject} • {invite.time}</p>
                       </div>
                     </div>
-                    <Button size="sm" className="bg-primary hover:bg-primary/90">
+                    <Button 
+                      size="sm" 
+                      className="bg-primary hover:bg-primary/90"
+                      onClick={() => handleAcceptChallenge(invite.name)}
+                    >
                       Accept
                     </Button>
                   </div>
