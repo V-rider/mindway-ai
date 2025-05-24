@@ -21,10 +21,15 @@ import {
   Zap,
   Crown,
   Medal,
-  ArrowRight
+  ArrowRight,
+  Timer,
+  Brain,
+  TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, ComposedChart } from "recharts";
 import { LearningPath } from "@/types";
 import { useSearchParams } from "react-router-dom";
 
@@ -112,18 +117,32 @@ const ELearning = () => {
   const currentLevel = Math.floor(overallProgress / 25) + 1;
   const coinsEarned = completedExercises.length * 10;
 
-  const todaysSchedule = [
-    { time: "12:45", activity: "Vocabulary Test", type: "test", color: "bg-blue-500" },
-    { time: "2:30", activity: "Speaking Session", type: "session", color: "bg-green-500" },
-    { time: "4:50", activity: "Learning Games", type: "game", color: "bg-pink-500" }
+  // Monthly progress data for chart
+  const monthlyProgressData = [
+    { month: 'Apr', progress: 45, exercises: 23 },
+    { month: 'May', progress: 62, exercises: 31 },
+    { month: 'Jun', progress: 58, exercises: 29 },
+    { month: 'Jul', progress: 71, exercises: 36 },
+    { month: 'Aug', progress: overallProgress, exercises: completedExercises.length }
   ];
 
   const levels = [
-    { level: 1, name: "Beginner", color: "from-purple-400 to-purple-600", icon: "🛡️", unlocked: currentLevel >= 1 },
-    { level: 2, name: "Explorer", color: "from-orange-400 to-red-600", icon: "⚔️", unlocked: currentLevel >= 2 },
-    { level: 3, name: "Master", color: "from-pink-400 to-purple-600", icon: "👑", unlocked: currentLevel >= 3 },
+    { level: 1, name: "Beginner", color: "from-blue-400 to-blue-600", icon: "🛡️", unlocked: currentLevel >= 1 },
+    { level: 2, name: "Explorer", color: "from-green-400 to-green-600", icon: "⚔️", unlocked: currentLevel >= 2 },
+    { level: 3, name: "Master", color: "from-purple-400 to-purple-600", icon: "👑", unlocked: currentLevel >= 3 },
     { level: 4, name: "Champion", color: "from-yellow-400 to-orange-500", icon: "🏆", unlocked: currentLevel >= 4 }
   ];
+
+  const chartConfig = {
+    progress: {
+      label: "Progress",
+      color: "hsl(var(--primary))",
+    },
+    exercises: {
+      label: "Exercises",
+      color: "hsl(var(--muted-foreground))",
+    },
+  };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -142,7 +161,7 @@ const ELearning = () => {
     <MainLayout>
       <div className="space-y-8 max-w-7xl mx-auto">
         {/* Header with Greeting */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 p-8 text-white">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-purple-500 to-blue-500 p-8 text-white">
           <div className="relative z-10">
             <p className="text-sm opacity-90 mb-2">GOOD MORNING, STUDENT</p>
             <h1 className="text-4xl font-bold mb-4">
@@ -163,52 +182,64 @@ const ELearning = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Progress Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Monthly Progress */}
-              <Card className="p-6 bg-gradient-to-br from-pink-100 to-pink-200 dark:from-pink-900/30 dark:to-pink-800/30 border-0">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <p className="text-sm text-pink-600 dark:text-pink-400 font-medium">Be up to date</p>
-                    <h3 className="text-lg font-bold text-pink-900 dark:text-pink-100">Monthly Progress</h3>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-pink-600 dark:text-pink-400">+{overallProgress}%</p>
-                  </div>
+              {/* Monthly Progress Chart */}
+              <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 border-0">
+                <div className="mb-4">
+                  <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">Track your journey</p>
+                  <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">Monthly Progress</h3>
                 </div>
-                <div className="space-y-2">
-                  {['Apr', 'May', 'Jun', 'Jul', 'Aug'].map((month, i) => (
-                    <div key={month} className="flex items-center justify-between text-xs">
-                      <span className="text-pink-700 dark:text-pink-300">{month}</span>
-                      <div className="w-16 h-1 bg-pink-300 dark:bg-pink-700 rounded">
-                        <div 
-                          className="h-1 bg-pink-600 dark:bg-pink-400 rounded"
-                          style={{ width: `${Math.random() * 100}%` }}
+                <div className="h-40">
+                  <ChartContainer config={chartConfig}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={monthlyProgressData}>
+                        <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                        <XAxis 
+                          dataKey="month" 
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 12 }}
                         />
-                      </div>
-                    </div>
-                  ))}
+                        <YAxis hide />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Bar 
+                          dataKey="progress" 
+                          fill="hsl(var(--primary))" 
+                          radius={[4, 4, 0, 0]}
+                          fillOpacity={0.8}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="progress" 
+                          stroke="hsl(var(--primary))" 
+                          strokeWidth={3}
+                          dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 4 }}
+                        />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
                 </div>
-                <Button size="sm" className="mt-4 bg-white text-pink-600 hover:bg-pink-50 w-8 h-8 rounded-full p-0">
+                <Button size="sm" className="mt-4 bg-white text-blue-600 hover:bg-blue-50 w-8 h-8 rounded-full p-0">
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Card>
 
               {/* Rewards */}
-              <Card className="p-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-0">
+              <Card className="p-6 bg-gradient-to-br from-primary to-purple-600 text-white border-0">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-indigo-200 text-sm">See achievements</p>
+                    <p className="text-primary-foreground/80 text-sm">See achievements</p>
                     <h3 className="text-lg font-bold">Your Rewards</h3>
                   </div>
                   <div className="relative">
                     <Trophy className="w-12 h-12 text-yellow-300" />
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-300 rounded-full flex items-center justify-center">
-                      <Star className="w-2 h-2 text-indigo-600" />
+                      <Star className="w-2 h-2 text-primary" />
                     </div>
                   </div>
                 </div>
                 <div className="flex gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className={`w-4 h-4 ${i < 3 ? 'text-yellow-300 fill-current' : 'text-indigo-300'}`} />
+                    <Star key={i} className={`w-4 h-4 ${i < 3 ? 'text-yellow-300 fill-current' : 'text-primary-foreground/50'}`} />
                   ))}
                 </div>
               </Card>
@@ -217,7 +248,7 @@ const ELearning = () => {
             {/* Level Progress */}
             <Card className="p-6">
               <h3 className="text-xl font-bold mb-6 flex items-center">
-                <Crown className="w-6 h-6 text-yellow-500 mr-2" />
+                <Crown className="w-6 h-6 text-primary mr-2" />
                 Your Learning Journey
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -251,12 +282,12 @@ const ELearning = () => {
             </Card>
 
             {/* Challenge Game */}
-            <Card className="p-6 bg-gradient-to-br from-yellow-400 to-orange-500 text-white border-0">
+            <Card className="p-6 bg-gradient-to-br from-green-400 to-blue-500 text-white border-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-100 text-sm mb-1">Challenge friends</p>
+                  <p className="text-green-100 text-sm mb-1">Challenge friends</p>
                   <h3 className="text-xl font-bold mb-2">Start Game</h3>
-                  <Button className="bg-white text-orange-500 hover:bg-orange-50">
+                  <Button className="bg-white text-green-600 hover:bg-green-50">
                     <Rocket className="w-4 h-4 mr-2" />
                     Launch Challenge
                   </Button>
@@ -278,8 +309,8 @@ const ELearning = () => {
                     onClick={() => setActiveStrand(path.strand)}
                     className={`${
                       activeStrand === path.strand 
-                        ? "bg-purple-600 hover:bg-purple-700" 
-                        : "hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                        ? "bg-primary hover:bg-primary/90" 
+                        : "hover:bg-primary/10"
                     }`}
                   >
                     {path.strand}
@@ -301,17 +332,17 @@ const ELearning = () => {
                       <div key={topic.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center">
-                            <BookOpen className="w-5 h-5 text-purple-600 mr-3" />
+                            <BookOpen className="w-5 h-5 text-primary mr-3" />
                             <div>
                               <h4 className="font-medium">{topic.name}</h4>
                               <p className="text-sm text-gray-600 dark:text-gray-400">{topic.description}</p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm font-medium text-purple-600">{topic.progress}%</div>
+                            <div className="text-sm font-medium text-primary">{topic.progress}%</div>
                             <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                               <div 
-                                className="h-2 rounded-full bg-purple-600"
+                                className="h-2 rounded-full bg-primary"
                                 style={{ width: `${topic.progress}%` }}
                               />
                             </div>
@@ -356,61 +387,88 @@ const ELearning = () => {
             </Card>
           </div>
 
-          {/* Right Column - Schedule & Activity */}
+          {/* Right Column - Enhanced Stats & Activity */}
           <div className="space-y-6">
-            {/* Today's Schedule */}
+            {/* Enhanced Quick Stats */}
             <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold">Today's Schedule</h3>
-                <Calendar className="w-5 h-5 text-gray-400" />
-              </div>
-              <p className="text-sm text-gray-500 mb-4">13 May</p>
-              
-              <div className="space-y-3">
-                {todaysSchedule.map((item, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="text-sm font-medium text-gray-500 w-12">{item.time}</div>
-                    <div className={`w-2 h-2 rounded-full ${item.color}`} />
-                    <div className="flex-1 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-                      <p className="text-sm font-medium">{item.activity}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            {/* Quick Stats */}
-            <Card className="p-6">
-              <h3 className="font-bold mb-4">Quick Stats</h3>
+              <h3 className="font-bold mb-4 flex items-center">
+                <BarChart3 className="w-5 h-5 mr-2 text-primary" />
+                Learning Analytics
+              </h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3">
-                      <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3">
+                      <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
                     </div>
-                    <span className="text-sm">Completed Today</span>
+                    <div>
+                      <span className="text-sm font-medium">Completed Today</span>
+                      <p className="text-xs text-gray-500">+2 from yesterday</p>
+                    </div>
                   </div>
-                  <span className="font-bold">5</span>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-green-600">5</span>
+                  </div>
                 </div>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mr-3">
-                      <Zap className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                    <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mr-3">
+                      <Zap className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                     </div>
-                    <span className="text-sm">Streak Days</span>
+                    <div>
+                      <span className="text-sm font-medium">Streak Days</span>
+                      <p className="text-xs text-gray-500">Keep it up!</p>
+                    </div>
                   </div>
-                  <span className="font-bold">12</span>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-yellow-600">12</span>
+                  </div>
                 </div>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mr-3">
-                      <Trophy className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mr-3">
+                      <Timer className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <span className="text-sm">Current Level</span>
+                    <div>
+                      <span className="text-sm font-medium">Online Time</span>
+                      <p className="text-xs text-gray-500">This week</p>
+                    </div>
                   </div>
-                  <span className="font-bold">{currentLevel}</span>
+                  <div className="text-right">
+                    <span className="text-lg font-bold text-blue-600">2h 45m</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mr-3">
+                      <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium">Exercise Time</span>
+                      <p className="text-xs text-gray-500">Average per day</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-lg font-bold text-purple-600">35 min</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mr-3">
+                      <TrendingUp className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium">Accuracy Rate</span>
+                      <p className="text-xs text-gray-500">Last 10 exercises</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-lg font-bold text-orange-600">87%</span>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -418,29 +476,57 @@ const ELearning = () => {
             {/* Challenge Invitations */}
             <Card className="p-6">
               <h3 className="font-bold mb-4 flex items-center">
-                <Users className="w-5 h-5 mr-2" />
+                <Users className="w-5 h-5 mr-2 text-primary" />
                 Challenge Invitations
               </h3>
               <div className="space-y-3">
                 {[
-                  { name: "Sarah Chen", avatar: "👩", time: "2 min ago" },
-                  { name: "Mike Johnson", avatar: "👨", time: "5 min ago" }
+                  { name: "Sarah Chen", avatar: "👩", time: "2 min ago", subject: "Math Quiz" },
+                  { name: "Mike Johnson", avatar: "👨", time: "5 min ago", subject: "Vocabulary" }
                 ].map((invite, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-3 bg-primary/5 dark:bg-primary/10 rounded-lg">
                     <div className="flex items-center">
-                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white mr-3">
+                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white mr-3">
                         {invite.avatar}
                       </div>
                       <div>
                         <p className="text-sm font-medium">{invite.name}</p>
-                        <p className="text-xs text-gray-500">{invite.time}</p>
+                        <p className="text-xs text-gray-500">{invite.subject} • {invite.time}</p>
                       </div>
                     </div>
-                    <Button size="sm" className="bg-blue-500 hover:bg-blue-600">
+                    <Button size="sm" className="bg-primary hover:bg-primary/90">
                       Accept
                     </Button>
                   </div>
                 ))}
+              </div>
+            </Card>
+
+            {/* Study Goals */}
+            <Card className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20">
+              <h3 className="font-bold mb-4 flex items-center">
+                <Target className="w-5 h-5 mr-2 text-primary" />
+                Weekly Goals
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Complete 15 exercises</span>
+                    <span className="text-primary font-medium">12/15</span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="bg-primary h-2 rounded-full" style={{ width: '80%' }}></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Study 5 hours</span>
+                    <span className="text-primary font-medium">3.2/5h</span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="bg-primary h-2 rounded-full" style={{ width: '64%' }}></div>
+                  </div>
+                </div>
               </div>
             </Card>
           </div>
