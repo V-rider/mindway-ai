@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +15,7 @@ import Upload from "./pages/Upload";
 import Reports from "./pages/Reports";
 import Analytics from "./pages/Analytics";
 import LearningPathway from "./pages/LearningPathway";
+import ELearning from "./pages/ELearning";
 import NotFound from "./pages/NotFound";
 import Students from "./pages/Students";
 import TestAnalytics from "./pages/TestAnalytics";
@@ -136,6 +138,15 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute requireStudent>
               <LearningPathway />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/e-learning" 
+          element={
+            <ProtectedRoute requireStudent>
+              <ELearning />
             </ProtectedRoute>
           } 
         />

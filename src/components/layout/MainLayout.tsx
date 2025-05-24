@@ -9,7 +9,8 @@ import {
   FileText, 
   BarChart3, 
   BookOpen, 
-  Users
+  Users,
+  GraduationCap
 } from "lucide-react";
 import { MenuItem } from "@/types";
 import { Header } from "./Header";
@@ -44,6 +45,11 @@ const getMenuItems = (isAdmin: boolean, isStudent: boolean) => {
   // Student-specific menu items
   if (isStudent) {
     baseItems.push(
+      {
+        title: "E-Learning",
+        path: "/e-learning",
+        icon: GraduationCap
+      },
       {
         title: "Learning Pathway",
         path: "/learning-pathway",
