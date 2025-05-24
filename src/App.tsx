@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import Students from "./pages/Students";
 import TestAnalytics from "./pages/TestAnalytics";
 import StudentProfile from "./pages/StudentProfile";
+import Achievements from "./pages/Achievements";
 
 // Create a new QueryClient
 const queryClient = new QueryClient();
@@ -148,6 +148,15 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute requireStudent>
               <ELearning />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/achievements" 
+          element={
+            <ProtectedRoute requireStudent>
+              <Achievements />
             </ProtectedRoute>
           } 
         />

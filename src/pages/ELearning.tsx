@@ -35,7 +35,6 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 const ELearning = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const selectedConcept = searchParams.get("concept") || undefined;
   
   const [activeStrand, setActiveStrand] = useState<string>("Number");
   const [completedExercises, setCompletedExercises] = useState<string[]>([
@@ -227,8 +226,11 @@ const ELearning = () => {
                 </Button>
               </Card>
 
-              {/* Rewards */}
-              <Card className="p-6 bg-gradient-to-br from-primary to-purple-600 text-white border-0">
+              {/* Rewards - Make it clickable */}
+              <Card 
+                className="p-6 bg-gradient-to-br from-primary to-purple-600 text-white border-0 cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105"
+                onClick={() => navigate('/achievements')}
+              >
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <p className="text-primary-foreground/80 text-sm">See achievements</p>
