@@ -127,18 +127,18 @@ const ELearning = () => {
   ];
 
   const levels = [
-    { level: 1, name: "Number Operations", color: "from-blue-400 to-blue-600", icon: "🔢", unlocked: currentLevel >= 1 },
-    { level: 3, name: "Fractions", color: "from-orange-400 to-orange-600", icon: "½", unlocked: currentLevel >= 3 },
-    { level: 2, name: "Decimals", color: "from-cyan-400 to-cyan-600", icon: "🔸", unlocked: currentLevel >= 2 },
-    { level: 4, name: "Measures Strand", color: "from-green-400 to-green-600", icon: "📏", unlocked: currentLevel >= 4 },
-    { level: 1, name: "Length & Weight", color: "from-emerald-400 to-emerald-600", icon: "⚖️", unlocked: currentLevel >= 1 },
-    { level: 3, name: "Area & Perimeter", color: "from-teal-400 to-teal-600", icon: "📐", unlocked: currentLevel >= 3 },
-    { level: 2, name: "Shape and Space", color: "from-purple-400 to-purple-600", icon: "🔺", unlocked: currentLevel >= 2 },
-    { level: 4, name: "2D & 3D Shapes", color: "from-violet-400 to-violet-600", icon: "🎲", unlocked: currentLevel >= 4 },
-    { level: 1, name: "Angles", color: "from-indigo-400 to-indigo-600", icon: "📐", unlocked: currentLevel >= 1 },
-    { level: 3, name: "Data Handling", color: "from-yellow-400 to-orange-500", icon: "📊", unlocked: currentLevel >= 3 },
-    { level: 2, name: "Statistics", color: "from-pink-400 to-pink-600", icon: "📈", unlocked: currentLevel >= 2 },
-    { level: 4, name: "Algebra", color: "from-red-400 to-red-600", icon: "🧮", unlocked: currentLevel >= 4 }
+    { level: 1, name: "Number Operations", color: "from-green-400 to-green-600", icon: "🔢", unlocked: currentLevel >= 1 },
+    { level: 3, name: "Fractions", color: "from-red-400 to-red-600", icon: "½", unlocked: currentLevel >= 3 },
+    { level: 2, name: "Decimals", color: "from-blue-400 to-blue-600", icon: "🔸", unlocked: currentLevel >= 2 },
+    { level: 4, name: "Measures Strand", color: "from-yellow-400 to-yellow-600", icon: "📏", unlocked: currentLevel >= 4 },
+    { level: 1, name: "Length & Weight", color: "from-green-400 to-green-600", icon: "⚖️", unlocked: currentLevel >= 1 },
+    { level: 3, name: "Area & Perimeter", color: "from-red-400 to-red-600", icon: "📐", unlocked: currentLevel >= 3 },
+    { level: 2, name: "Shape and Space", color: "from-blue-400 to-blue-600", icon: "🔺", unlocked: currentLevel >= 2 },
+    { level: 4, name: "2D & 3D Shapes", color: "from-yellow-400 to-yellow-600", icon: "🎲", unlocked: currentLevel >= 4 },
+    { level: 1, name: "Angles", color: "from-green-400 to-green-600", icon: "📐", unlocked: currentLevel >= 1 },
+    { level: 3, name: "Data Handling", color: "from-red-400 to-red-600", icon: "📊", unlocked: currentLevel >= 3 },
+    { level: 2, name: "Statistics", color: "from-blue-400 to-blue-600", icon: "📈", unlocked: currentLevel >= 2 },
+    { level: 4, name: "Algebra", color: "from-yellow-400 to-yellow-600", icon: "🧮", unlocked: currentLevel >= 4 }
   ];
 
   const chartConfig = {
@@ -172,8 +172,8 @@ const ELearning = () => {
   const levelDescriptions = [
     { level: 1, title: "Beginner", description: "Start your journey with basic concepts", icon: "🌱", color: "text-green-600" },
     { level: 2, title: "Intermediate", description: "Build upon foundational knowledge", icon: "📚", color: "text-blue-600" },
-    { level: 3, title: "Advanced", description: "Master complex problem-solving", icon: "🎯", color: "text-orange-600" },
-    { level: 4, title: "Master", description: "Expert-level understanding", icon: "👑", color: "text-purple-600" }
+    { level: 3, title: "Advanced", description: "Master complex problem-solving", icon: "🎯", color: "text-red-600" },
+    { level: "Gold", title: "Master", description: "Expert-level understanding", icon: "👑", color: "text-yellow-600" }
   ];
 
   return (
