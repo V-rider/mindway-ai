@@ -82,7 +82,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
   
   return (
-    <div className="flex-1 transition-all duration-300" style={{ marginLeft: sidebarOpen ? '16rem' : '0' }}>
+    <div className="min-h-screen flex w-full bg-gray-50">
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -91,25 +91,27 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         onLogout={handleLogout}
       />
       
-      <Header
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        userName={user?.name}
-      />
-      
-      <main className="p-6 w-full">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            {children}
-          </motion.div>
-        </AnimatePresence>
-      </main>
+      <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}>
+        <Header
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          userName={user?.name}
+        />
+        
+        <main className="p-6 w-full">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
     </div>
   );
 };

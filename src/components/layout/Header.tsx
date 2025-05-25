@@ -3,6 +3,7 @@ import React from "react";
 import { Menu } from "lucide-react";
 import { useTranslation } from '@/hooks/use-translation';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -20,15 +21,16 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm">
       <div className="flex items-center justify-between px-4 py-3">
-        {!sidebarOpen && (
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-            aria-label="Open sidebar"
-          >
-            <Menu className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          </button>
-        )}
+        {/* Sidebar Toggle Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="h-8 w-8"
+          aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+        >
+          <Menu className="h-4 w-4" />
+        </Button>
         
         <div className="ml-auto flex items-center gap-4">
           <LanguageSwitcher />
