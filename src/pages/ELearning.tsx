@@ -292,7 +292,7 @@ const ELearning = () => {
               <Carousel className="w-full">
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {levels.map((levelData, index) => (
-                    <CarouselItem key={index} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <CarouselItem key={index} className="pl-2 md:pl-4 basis-1/4">
                       <motion.div
                         className={`relative p-3 rounded-xl text-center h-32 ${
                           levelData.unlocked 
