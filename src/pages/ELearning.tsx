@@ -23,7 +23,10 @@ import {
   ArrowRight,
   Timer,
   Brain,
-  TrendingUp
+  TrendingUp,
+  ChevronLeft,
+  PanelLeftClose,
+  PanelLeftOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -37,11 +40,11 @@ const ELearning = () => {
   const navigate = useNavigate();
   
   const [activeStrand, setActiveStrand] = useState<string>("Number");
+  const [leftColumnVisible, setLeftColumnVisible] = useState<boolean>(true);
   const [completedExercises, setCompletedExercises] = useState<string[]>([
     "ex-1", "ex-2", "ex-4", "ex-5", "ex-8", "ex-9", "ex-11", "ex-12", "ex-18", "ex-19", "ex-21", "ex-24", "ex-27", "ex-30", "ex-33"
   ]);
 
-  // Mock data for learning paths
   const learningPaths: LearningPath[] = [
     {
       strand: "Number",
@@ -116,7 +119,6 @@ const ELearning = () => {
   const currentLevel = Math.floor(overallProgress / 25) + 1;
   const coinsEarned = completedExercises.length * 10;
 
-  // Monthly progress data for chart
   const monthlyProgressData = [
     { month: 'Apr', progress: 45, exercises: 23 },
     { month: 'May', progress: 62, exercises: 31 },
@@ -180,9 +182,23 @@ const ELearning = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative">
+          {/* Toggle Button */}
+          <Button
+            variant="outline"
+            size="icon"
+            className="fixed top-1/2 z-50 bg-white shadow-lg hover:shadow-xl transition-all duration-300"
+            style={{
+              left: leftColumnVisible ? '24rem' : '1rem',
+              transform: 'translateY(-50%)'
+            }}
+            onClick={() => setLeftColumnVisible(!leftColumnVisible)}
+          >
+            {leftColumnVisible ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4" />}
+          </Button>
+
           {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className={`${leftColumnVisible ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6 transition-all duration-300`}>
             {/* Progress Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Monthly Progress Chart */}
@@ -394,152 +410,162 @@ const ELearning = () => {
           </div>
 
           {/* Right Column - Enhanced Stats & Activity */}
-          <div className="space-y-6">
-            {/* Enhanced Quick Stats */}
-            <Card className="p-6">
-              <h3 className="font-bold mb-4 flex items-center">
-                <BarChart3 className="w-5 h-5 mr-2 text-primary" />
-                Learning Analytics
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3">
-                      <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium">Completed Today</span>
-                      <p className="text-xs text-gray-500">+2 from yesterday</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-2xl font-bold text-green-600">5</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mr-3">
-                      <Zap className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium">Streak Days</span>
-                      <p className="text-xs text-gray-500">Keep it up!</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-2xl font-bold text-yellow-600">12</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mr-3">
-                      <Timer className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium">Online Time</span>
-                      <p className="text-xs text-gray-500">This week</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-lg font-bold text-blue-600">2h 45m</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mr-3">
-                      <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium">Exercise Time</span>
-                      <p className="text-xs text-gray-500">Average per day</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-lg font-bold text-purple-600">35 min</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mr-3">
-                      <TrendingUp className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium">Accuracy Rate</span>
-                      <p className="text-xs text-gray-500">Last 10 exercises</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-lg font-bold text-orange-600">87%</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Challenge Invitations */}
-            <Card className="p-6">
-              <h3 className="font-bold mb-4 flex items-center">
-                <Users className="w-5 h-5 mr-2 text-primary" />
-                Challenge Invitations
-              </h3>
-              <div className="space-y-3">
-                {[
-                  { name: "Sarah Chen", avatar: "👩", time: "2 min ago", subject: "Math Quiz" },
-                  { name: "Mike Johnson", avatar: "👨", time: "5 min ago", subject: "Vocabulary" }
-                ].map((invite, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-primary/5 dark:bg-primary/10 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white mr-3">
-                        {invite.avatar}
+          <AnimatePresence>
+            {leftColumnVisible && (
+              <motion.div 
+                className="space-y-6"
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 100 }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* Enhanced Quick Stats */}
+                <Card className="p-6">
+                  <h3 className="font-bold mb-4 flex items-center">
+                    <BarChart3 className="w-5 h-5 mr-2 text-primary" />
+                    Learning Analytics
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3">
+                          <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium">Completed Today</span>
+                          <p className="text-xs text-gray-500">+2 from yesterday</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{invite.name}</p>
-                        <p className="text-xs text-gray-500">{invite.subject} • {invite.time}</p>
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-green-600">5</span>
                       </div>
                     </div>
-                    <Button 
-                      size="sm" 
-                      className="bg-primary hover:bg-primary/90"
-                      onClick={() => handleAcceptChallenge(invite.name)}
-                    >
-                      Accept
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </Card>
+                    
+                    <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mr-3">
+                          <Zap className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium">Streak Days</span>
+                          <p className="text-xs text-gray-500">Keep it up!</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-yellow-600">12</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mr-3">
+                          <Timer className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium">Online Time</span>
+                          <p className="text-xs text-gray-500">This week</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-lg font-bold text-blue-600">2h 45m</span>
+                      </div>
+                    </div>
 
-            {/* Study Goals */}
-            <Card className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20">
-              <h3 className="font-bold mb-4 flex items-center">
-                <Target className="w-5 h-5 mr-2 text-primary" />
-                Weekly Goals
-              </h3>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Complete 15 exercises</span>
-                    <span className="text-primary font-medium">12/15</span>
+                    <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mr-3">
+                          <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium">Exercise Time</span>
+                          <p className="text-xs text-gray-500">Average per day</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-lg font-bold text-purple-600">35 min</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mr-3">
+                          <TrendingUp className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium">Accuracy Rate</span>
+                          <p className="text-xs text-gray-500">Last 10 exercises</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-lg font-bold text-orange-600">87%</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div className="bg-primary h-2 rounded-full" style={{ width: '80%' }}></div>
+                </Card>
+
+                {/* Challenge Invitations */}
+                <Card className="p-6">
+                  <h3 className="font-bold mb-4 flex items-center">
+                    <Users className="w-5 h-5 mr-2 text-primary" />
+                    Challenge Invitations
+                  </h3>
+                  <div className="space-y-3">
+                    {[
+                      { name: "Sarah Chen", avatar: "👩", time: "2 min ago", subject: "Math Quiz" },
+                      { name: "Mike Johnson", avatar: "👨", time: "5 min ago", subject: "Vocabulary" }
+                    ].map((invite, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-primary/5 dark:bg-primary/10 rounded-lg">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white mr-3">
+                            {invite.avatar}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">{invite.name}</p>
+                            <p className="text-xs text-gray-500">{invite.subject} • {invite.time}</p>
+                          </div>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          className="bg-primary hover:bg-primary/90"
+                          onClick={() => handleAcceptChallenge(invite.name)}
+                        >
+                          Accept
+                        </Button>
+                      </div>
+                    ))}
                   </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Study 5 hours</span>
-                    <span className="text-primary font-medium">3.2/5h</span>
+                </Card>
+
+                {/* Study Goals */}
+                <Card className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20">
+                  <h3 className="font-bold mb-4 flex items-center">
+                    <Target className="w-5 h-5 mr-2 text-primary" />
+                    Weekly Goals
+                  </h3>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Complete 15 exercises</span>
+                        <span className="text-primary font-medium">12/15</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div className="bg-primary h-2 rounded-full" style={{ width: '80%' }}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Study 5 hours</span>
+                        <span className="text-primary font-medium">3.2/5h</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div className="bg-primary h-2 rounded-full" style={{ width: '64%' }}></div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div className="bg-primary h-2 rounded-full" style={{ width: '64%' }}></div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </MainLayout>
