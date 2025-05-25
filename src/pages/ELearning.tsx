@@ -127,18 +127,18 @@ const ELearning = () => {
   ];
 
   const levels = [
-    { level: 1, name: "Number Operations", color: "from-blue-400 to-blue-600", icon: "🔢", unlocked: currentLevel >= 1 },
-    { level: 3, name: "Fractions", color: "from-orange-400 to-orange-600", icon: "½", unlocked: currentLevel >= 3 },
-    { level: 2, name: "Decimals", color: "from-cyan-400 to-cyan-600", icon: "🔸", unlocked: currentLevel >= 2 },
-    { level: 4, name: "Measures Strand", color: "from-green-400 to-green-600", icon: "📏", unlocked: currentLevel >= 4 },
-    { level: 1, name: "Length & Weight", color: "from-emerald-400 to-emerald-600", icon: "⚖️", unlocked: currentLevel >= 1 },
-    { level: 3, name: "Area & Perimeter", color: "from-teal-400 to-teal-600", icon: "📐", unlocked: currentLevel >= 3 },
-    { level: 2, name: "Shape and Space", color: "from-purple-400 to-purple-600", icon: "🔺", unlocked: currentLevel >= 2 },
-    { level: 4, name: "2D & 3D Shapes", color: "from-violet-400 to-violet-600", icon: "🎲", unlocked: currentLevel >= 4 },
-    { level: 1, name: "Angles", color: "from-indigo-400 to-indigo-600", icon: "📐", unlocked: currentLevel >= 1 },
-    { level: 3, name: "Data Handling", color: "from-yellow-400 to-orange-500", icon: "📊", unlocked: currentLevel >= 3 },
-    { level: 2, name: "Statistics", color: "from-pink-400 to-pink-600", icon: "📈", unlocked: currentLevel >= 2 },
-    { level: 4, name: "Algebra", color: "from-red-400 to-red-600", icon: "🧮", unlocked: currentLevel >= 4 }
+    { level: 2, name: "Number Operations", color: "from-blue-400 to-blue-600", icon: "🔢", unlocked: currentLevel >= 2 },
+    { level: 1, name: "Fractions", color: "from-green-400 to-green-600", icon: "½", unlocked: currentLevel >= 1 },
+    { level: 3, name: "Decimals", color: "from-red-400 to-red-600", icon: "🔸", unlocked: currentLevel >= 3 },
+    { level: 4, name: "Measures Strand", color: "from-yellow-400 to-yellow-600", icon: "📏", unlocked: currentLevel >= 4 },
+    { level: 1, name: "Length & Weight", color: "from-green-400 to-green-600", icon: "⚖️", unlocked: currentLevel >= 1 },
+    { level: 2, name: "Area & Perimeter", color: "from-blue-400 to-blue-600", icon: "📐", unlocked: currentLevel >= 2 },
+    { level: 3, name: "Shape and Space", color: "from-red-400 to-red-600", icon: "🔺", unlocked: currentLevel >= 3 },
+    { level: 4, name: "2D & 3D Shapes", color: "from-yellow-400 to-yellow-600", icon: "🎲", unlocked: currentLevel >= 4 },
+    { level: 1, name: "Angles", color: "from-green-400 to-green-600", icon: "📐", unlocked: currentLevel >= 1 },
+    { level: 2, name: "Data Handling", color: "from-blue-400 to-blue-600", icon: "📊", unlocked: currentLevel >= 2 },
+    { level: 3, name: "Statistics", color: "from-red-400 to-red-600", icon: "📈", unlocked: currentLevel >= 3 },
+    { level: 4, name: "Algebra", color: "from-yellow-400 to-yellow-600", icon: "🧮", unlocked: currentLevel >= 4 }
   ];
 
   const chartConfig = {
@@ -170,10 +170,10 @@ const ELearning = () => {
   };
 
   const levelDescriptions = [
-    { level: 1, title: "Beginner", description: "Start your journey with basic concepts", icon: "🌱", color: "text-green-600" },
-    { level: 2, title: "Intermediate", description: "Build upon foundational knowledge", icon: "📚", color: "text-blue-600" },
-    { level: 3, title: "Advanced", description: "Master complex problem-solving", icon: "🎯", color: "text-orange-600" },
-    { level: 4, title: "Master", description: "Expert-level understanding", icon: "👑", color: "text-purple-600" }
+    { level: 1, title: "Number Strand", description: "Start your journey with basic concepts", icon: "🌱", color: "text-green-600" },
+    { level: 2, title: "Measures Strand", description: "Build upon foundational knowledge", icon: "📚", color: "text-blue-600" },
+    { level: 3, title: "Shape and Space Strand", description: "Master complex problem-solving", icon: "🎯", color: "text-red-600" },
+    { level: 4, title: "Data Handling Strand", description: "Expert-level understanding", icon: "👑", color: "text-yellow-600" }
   ];
 
   return (
@@ -277,14 +277,30 @@ const ELearning = () => {
               {/* Level Description */}
               <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
-                  {levelDescriptions.map((desc) => (
-                    <div key={desc.level} className="flex flex-col items-center">
-                      <div className="text-2xl mb-1">{desc.icon}</div>
-                      <div className={`text-sm font-bold ${desc.color}`}>Level {desc.level}</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{desc.title}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-500 text-center leading-tight">{desc.description}</div>
-                    </div>
-                  ))}
+                  <div className="flex flex-col items-center">
+                    <div className="text-2xl mb-1">🌱</div>
+                    <div className="text-sm font-bold text-green-600">Level 1</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">Number Strand</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-500 text-center leading-tight">Start your journey with basic concepts</div>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="text-2xl mb-1">📚</div>
+                    <div className="text-sm font-bold text-blue-600">Level 2</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">Measures Strand</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-500 text-center leading-tight">Build upon foundational knowledge</div>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="text-2xl mb-1">🎯</div>
+                    <div className="text-sm font-bold text-red-600">Level 3</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">Shape and Space Strand</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-500 text-center leading-tight">Master complex problem-solving</div>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="text-2xl mb-1">👑</div>
+                    <div className="text-sm font-bold text-yellow-600">Gold</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">Data Handling Strand</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-500 text-center leading-tight">Expert-level understanding</div>
+                  </div>
                 </div>
               </div>
 
@@ -303,7 +319,7 @@ const ELearning = () => {
                         whileTap={levelData.unlocked ? { scale: 0.95 } : {}}
                       >
                         <div className="text-2xl mb-1">{levelData.icon}</div>
-                        <p className="font-bold text-xs">Level {levelData.level}</p>
+                        <p className="font-bold text-xs">{levelData.level === 4 ? 'Gold' : `Level ${levelData.level}`}</p>
                         <p className="text-xs opacity-90 leading-tight mb-2">{levelData.name}</p>
                         {levelData.unlocked && (
                           <Button size="sm" className="mt-1 bg-white/20 hover:bg-white/30 text-white text-xs h-6 px-2">
@@ -324,7 +340,6 @@ const ELearning = () => {
               </Carousel>
             </Card>
 
-            
             {/* Challenge Game */}
             <Card className="p-6 bg-gradient-to-br from-green-400 to-blue-500 text-white border-0">
               <div className="flex items-center justify-between">
