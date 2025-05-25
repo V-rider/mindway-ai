@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { motion, AnimatePresence } from "framer-motion";
@@ -126,10 +127,10 @@ const ELearning = () => {
   ];
 
   const levels = [
-    { level: 1, name: "Beginner", color: "from-blue-400 to-blue-600", icon: "🛡️", unlocked: currentLevel >= 1 },
-    { level: 2, name: "Explorer", color: "from-green-400 to-green-600", icon: "⚔️", unlocked: currentLevel >= 2 },
-    { level: 3, name: "Master", color: "from-purple-400 to-purple-600", icon: "👑", unlocked: currentLevel >= 3 },
-    { level: 4, name: "Champion", color: "from-yellow-400 to-orange-500", icon: "🏆", unlocked: currentLevel >= 4 }
+    { level: 1, name: "Number Strand", color: "from-blue-400 to-blue-600", icon: "🔢", unlocked: currentLevel >= 1 },
+    { level: 2, name: "Measures Strand", color: "from-green-400 to-green-600", icon: "📏", unlocked: currentLevel >= 2 },
+    { level: 3, name: "Shape and Space Strand", color: "from-purple-400 to-purple-600", icon: "📐", unlocked: currentLevel >= 3 },
+    { level: 4, name: "Data Handling Strand", color: "from-yellow-400 to-orange-500", icon: "📊", unlocked: currentLevel >= 4 }
   ];
 
   const chartConfig = {
