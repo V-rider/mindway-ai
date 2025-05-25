@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, ComposedChart } from "recharts";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { LearningPath } from "@/types";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
@@ -168,6 +169,13 @@ const ELearning = () => {
     navigate(`/math-challenge?challenger=${encodeURIComponent(challengerName)}`);
   };
 
+  const levelDescriptions = [
+    { level: 1, title: "Beginner", description: "Start your journey with basic concepts", icon: "🌱", color: "text-green-600" },
+    { level: 2, title: "Intermediate", description: "Build upon foundational knowledge", icon: "📚", color: "text-blue-600" },
+    { level: 3, title: "Advanced", description: "Master complex problem-solving", icon: "🎯", color: "text-orange-600" },
+    { level: 4, title: "Master", description: "Expert-level understanding", icon: "👑", color: "text-purple-600" }
+  ];
+
   return (
     <MainLayout>
       <div className="space-y-8 max-w-7xl mx-auto">
@@ -261,38 +269,59 @@ const ELearning = () => {
 
             {/* Level Progress */}
             <Card className="p-6">
-              <h3 className="text-xl font-bold mb-6 flex items-center">
+              <h3 className="text-xl font-bold mb-4 flex items-center">
                 <Crown className="w-6 h-6 text-primary mr-2" />
                 Your Learning Journey
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {levels.map((levelData, index) => (
-                  <motion.div
-                    key={index}
-                    className={`relative p-3 rounded-xl text-center ${
-                      levelData.unlocked 
-                        ? `bg-gradient-to-br ${levelData.color} text-white shadow-lg` 
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
-                    }`}
-                    whileHover={levelData.unlocked ? { scale: 1.05 } : {}}
-                    whileTap={levelData.unlocked ? { scale: 0.95 } : {}}
-                  >
-                    <div className="text-2xl mb-1">{levelData.icon}</div>
-                    <p className="font-bold text-xs">Level {levelData.level}</p>
-                    <p className="text-xs opacity-90 leading-tight">{levelData.name}</p>
-                    {levelData.unlocked && (
-                      <Button size="sm" className="mt-2 bg-white/20 hover:bg-white/30 text-white text-xs h-6 px-2">
-                        Start
-                      </Button>
-                    )}
-                    {!levelData.unlocked && (
-                      <div className="absolute inset-0 bg-gray-900/50 rounded-xl flex items-center justify-center">
-                        <div className="w-4 h-4 border-2 border-gray-400 rounded border-dashed" />
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
+              
+              {/* Level Description */}
+              <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                  {levelDescriptions.map((desc) => (
+                    <div key={desc.level} className="flex flex-col items-center">
+                      <div className="text-2xl mb-1">{desc.icon}</div>
+                      <div className={`text-sm font-bold ${desc.color}`}>Level {desc.level}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{desc.title}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-500 text-center leading-tight">{desc.description}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
+
+              {/* Carousel for Learning Journey Items */}
+              <Carousel className="w-full">
+                <CarouselContent className="-ml-2 md:-ml-4">
+                  {levels.map((levelData, index) => (
+                    <CarouselItem key={index} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
+                      <motion.div
+                        className={`relative p-3 rounded-xl text-center h-32 ${
+                          levelData.unlocked 
+                            ? `bg-gradient-to-br ${levelData.color} text-white shadow-lg` 
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                        }`}
+                        whileHover={levelData.unlocked ? { scale: 1.05 } : {}}
+                        whileTap={levelData.unlocked ? { scale: 0.95 } : {}}
+                      >
+                        <div className="text-2xl mb-1">{levelData.icon}</div>
+                        <p className="font-bold text-xs">Level {levelData.level}</p>
+                        <p className="text-xs opacity-90 leading-tight mb-2">{levelData.name}</p>
+                        {levelData.unlocked && (
+                          <Button size="sm" className="mt-1 bg-white/20 hover:bg-white/30 text-white text-xs h-6 px-2">
+                            Start
+                          </Button>
+                        )}
+                        {!levelData.unlocked && (
+                          <div className="absolute inset-0 bg-gray-900/50 rounded-xl flex items-center justify-center">
+                            <div className="w-4 h-4 border-2 border-gray-400 rounded border-dashed" />
+                          </div>
+                        )}
+                      </motion.div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="hidden md:flex" />
+                <CarouselNext className="hidden md:flex" />
+              </Carousel>
             </Card>
 
             
