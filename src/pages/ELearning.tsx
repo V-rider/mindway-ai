@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { motion, AnimatePresence } from "framer-motion";
@@ -127,10 +126,18 @@ const ELearning = () => {
   ];
 
   const levels = [
-    { level: 1, name: "Number Strand", color: "from-blue-400 to-blue-600", icon: "🔢", unlocked: currentLevel >= 1 },
-    { level: 2, name: "Measures Strand", color: "from-green-400 to-green-600", icon: "📏", unlocked: currentLevel >= 2 },
-    { level: 3, name: "Shape and Space Strand", color: "from-purple-400 to-purple-600", icon: "📐", unlocked: currentLevel >= 3 },
-    { level: 4, name: "Data Handling Strand", color: "from-yellow-400 to-orange-500", icon: "📊", unlocked: currentLevel >= 4 }
+    { level: 1, name: "Number Operations", color: "from-blue-400 to-blue-600", icon: "🔢", unlocked: currentLevel >= 1 },
+    { level: 3, name: "Fractions", color: "from-orange-400 to-orange-600", icon: "½", unlocked: currentLevel >= 3 },
+    { level: 2, name: "Decimals", color: "from-cyan-400 to-cyan-600", icon: "🔸", unlocked: currentLevel >= 2 },
+    { level: 4, name: "Measures Strand", color: "from-green-400 to-green-600", icon: "📏", unlocked: currentLevel >= 4 },
+    { level: 1, name: "Length & Weight", color: "from-emerald-400 to-emerald-600", icon: "⚖️", unlocked: currentLevel >= 1 },
+    { level: 3, name: "Area & Perimeter", color: "from-teal-400 to-teal-600", icon: "📐", unlocked: currentLevel >= 3 },
+    { level: 2, name: "Shape and Space", color: "from-purple-400 to-purple-600", icon: "🔺", unlocked: currentLevel >= 2 },
+    { level: 4, name: "2D & 3D Shapes", color: "from-violet-400 to-violet-600", icon: "🎲", unlocked: currentLevel >= 4 },
+    { level: 1, name: "Angles", color: "from-indigo-400 to-indigo-600", icon: "📐", unlocked: currentLevel >= 1 },
+    { level: 3, name: "Data Handling", color: "from-yellow-400 to-orange-500", icon: "📊", unlocked: currentLevel >= 3 },
+    { level: 2, name: "Statistics", color: "from-pink-400 to-pink-600", icon: "📈", unlocked: currentLevel >= 2 },
+    { level: 4, name: "Algebra", color: "from-red-400 to-red-600", icon: "🧮", unlocked: currentLevel >= 4 }
   ];
 
   const chartConfig = {
@@ -258,11 +265,11 @@ const ELearning = () => {
                 <Crown className="w-6 h-6 text-primary mr-2" />
                 Your Learning Journey
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {levels.map((levelData) => (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {levels.map((levelData, index) => (
                   <motion.div
-                    key={levelData.level}
-                    className={`relative p-4 rounded-xl text-center ${
+                    key={index}
+                    className={`relative p-3 rounded-xl text-center ${
                       levelData.unlocked 
                         ? `bg-gradient-to-br ${levelData.color} text-white shadow-lg` 
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
@@ -270,17 +277,17 @@ const ELearning = () => {
                     whileHover={levelData.unlocked ? { scale: 1.05 } : {}}
                     whileTap={levelData.unlocked ? { scale: 0.95 } : {}}
                   >
-                    <div className="text-3xl mb-2">{levelData.icon}</div>
-                    <p className="font-bold text-sm">Level {levelData.level}</p>
-                    <p className="text-xs opacity-90">{levelData.name}</p>
+                    <div className="text-2xl mb-1">{levelData.icon}</div>
+                    <p className="font-bold text-xs">Level {levelData.level}</p>
+                    <p className="text-xs opacity-90 leading-tight">{levelData.name}</p>
                     {levelData.unlocked && (
-                      <Button size="sm" className="mt-2 bg-white/20 hover:bg-white/30 text-white text-xs">
-                        Continue
+                      <Button size="sm" className="mt-2 bg-white/20 hover:bg-white/30 text-white text-xs h-6 px-2">
+                        Start
                       </Button>
                     )}
                     {!levelData.unlocked && (
                       <div className="absolute inset-0 bg-gray-900/50 rounded-xl flex items-center justify-center">
-                        <div className="w-6 h-6 border-2 border-gray-400 rounded border-dashed" />
+                        <div className="w-4 h-4 border-2 border-gray-400 rounded border-dashed" />
                       </div>
                     )}
                   </motion.div>
@@ -288,6 +295,7 @@ const ELearning = () => {
               </div>
             </Card>
 
+            
             {/* Challenge Game */}
             <Card className="p-6 bg-gradient-to-br from-green-400 to-blue-500 text-white border-0">
               <div className="flex items-center justify-between">
@@ -394,6 +402,7 @@ const ELearning = () => {
             </Card>
           </div>
 
+          
           {/* Right Column - Enhanced Stats & Activity */}
           <div className="space-y-6">
             {/* Enhanced Quick Stats */}
