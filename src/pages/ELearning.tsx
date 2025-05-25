@@ -32,6 +32,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineCh
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { LearningPath } from "@/types";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import MathQuiz from "@/components/quiz/MathQuiz";
 
 const ELearning = () => {
   const [searchParams] = useSearchParams();
@@ -41,8 +42,8 @@ const ELearning = () => {
   const [completedExercises, setCompletedExercises] = useState<string[]>([
     "ex-1", "ex-2", "ex-4", "ex-5", "ex-8", "ex-9", "ex-11", "ex-12", "ex-18", "ex-19", "ex-21", "ex-24", "ex-27", "ex-30", "ex-33"
   ]);
+  const [activeQuiz, setActiveQuiz] = useState<{ topic: string; level: number } | null>(null);
 
-  // Mock data for learning paths
   const learningPaths: LearningPath[] = [
     {
       strand: "Number",
@@ -169,12 +170,41 @@ const ELearning = () => {
     navigate(`/math-challenge?challenger=${encodeURIComponent(challengerName)}`);
   };
 
+  const handleStartQuiz = (topicName: string, level: number) => {
+    setActiveQuiz({ topic: topicName, level });
+  };
+
+  const handleQuizComplete = (score: number, timeSpent: number) => {
+    console.log(`Quiz completed: Score ${score}%, Time: ${timeSpent}ms`);
+    // Here you could update progress, save results, etc.
+  };
+
+  const handleCloseQuiz = () => {
+    setActiveQuiz(null);
+  };
+
   const levelDescriptions = [
     { level: 1, title: "Beginner", description: "Start your journey with basic concepts", icon: "🌱", color: "text-green-600" },
     { level: 2, title: "Intermediate", description: "Build upon foundational knowledge", icon: "📚", color: "text-blue-600" },
     { level: 3, title: "Advanced", description: "Master complex problem-solving", icon: "🎯", color: "text-red-600" },
     { level: "Gold", title: "Master", description: "Expert-level understanding", icon: "👑", color: "text-yellow-600" }
   ];
+
+  // Show quiz if active
+  if (activeQuiz) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen py-8">
+          <MathQuiz
+            topic={activeQuiz.topic}
+            level={activeQuiz.level}
+            onClose={handleCloseQuiz}
+            onComplete={handleQuizComplete}
+          />
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -306,7 +336,11 @@ const ELearning = () => {
                         <p className="font-bold text-xs">Level {levelData.level}</p>
                         <p className="text-xs opacity-90 leading-tight mb-2">{levelData.name}</p>
                         {levelData.unlocked && (
-                          <Button size="sm" className="mt-1 bg-white/20 hover:bg-white/30 text-white text-xs h-6 px-2">
+                          <Button 
+                            size="sm" 
+                            className="mt-1 bg-white/20 hover:bg-white/30 text-white text-xs h-6 px-2"
+                            onClick={() => handleStartQuiz(levelData.name, levelData.level)}
+                          >
                             Start
                           </Button>
                         )}
@@ -324,7 +358,6 @@ const ELearning = () => {
               </Carousel>
             </Card>
 
-            
             {/* Challenge Game */}
             <Card className="p-6 bg-gradient-to-br from-green-400 to-blue-500 text-white border-0">
               <div className="flex items-center justify-between">
@@ -431,7 +464,6 @@ const ELearning = () => {
             </Card>
           </div>
 
-          
           {/* Right Column - Enhanced Stats & Activity */}
           <div className="space-y-6">
             {/* Enhanced Quick Stats */}
