@@ -30,6 +30,7 @@ import { Card } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, ComposedChart } from "recharts";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LearningPath } from "@/types";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MathQuiz from "@/components/quiz/MathQuiz";
@@ -39,6 +40,7 @@ const ELearning = () => {
   const navigate = useNavigate();
   
   const [activeStrand, setActiveStrand] = useState<string>("Number");
+  const [selectedLevel, setSelectedLevel] = useState<string>("all");
   const [completedExercises, setCompletedExercises] = useState<string[]>([
     "ex-1", "ex-2", "ex-4", "ex-5", "ex-8", "ex-9", "ex-11", "ex-12", "ex-18", "ex-19", "ex-21", "ex-24", "ex-27", "ex-30", "ex-33"
   ]);
@@ -141,6 +143,12 @@ const ELearning = () => {
     { level: 2, name: "Statistics", color: "from-blue-400 to-blue-600", icon: "📈", unlocked: currentLevel >= 2 },
     { level: 4, name: "Algebra", color: "from-yellow-400 to-yellow-600", icon: "🧮", unlocked: currentLevel >= 4 }
   ];
+
+  // Filter levels based on selected level
+  const filteredLevels = useMemo(() => {
+    if (selectedLevel === "all") return levels;
+    return levels.filter(level => level.level.toString() === selectedLevel);
+  }, [levels, selectedLevel]);
 
   const chartConfig = {
     progress: {
@@ -327,10 +335,24 @@ const ELearning = () => {
 
             {/* Level Progress */}
             <Card className="p-6">
-              <h3 className="text-xl font-bold mb-4 flex items-center">
-                <Crown className="w-6 h-6 text-primary mr-2" />
-                Your Learning Journey
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold flex items-center">
+                  <Crown className="w-6 h-6 text-primary mr-2" />
+                  Your Learning Journey
+                </h3>
+                <Select value={selectedLevel} onValueChange={setSelectedLevel}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Levels</SelectItem>
+                    <SelectItem value="1">Level 1</SelectItem>
+                    <SelectItem value="2">Level 2</SelectItem>
+                    <SelectItem value="3">Level 3</SelectItem>
+                    <SelectItem value="4">Level 4</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               
               {/* Level Description */}
               <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
@@ -352,7 +374,7 @@ const ELearning = () => {
               {/* Carousel for Learning Journey Items */}
               <Carousel className="w-full">
                 <CarouselContent className="-ml-2 md:-ml-4">
-                  {levels.map((levelData, index) => (
+                  {filteredLevels.map((levelData, index) => (
                     <CarouselItem key={index} className="pl-2 md:pl-4 basis-1/4">
                       <motion.div
                         className={`relative p-3 rounded-xl text-center h-32 ${
