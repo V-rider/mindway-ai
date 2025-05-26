@@ -187,7 +187,7 @@ const ELearning = () => {
     { level: 1, title: "Beginner", description: "Start your journey with basic concepts", icon: "🌱", color: "text-green-600" },
     { level: 2, title: "Intermediate", description: "Build upon foundational knowledge", icon: "📚", color: "text-blue-600" },
     { level: 3, title: "Advanced", description: "Master complex problem-solving", icon: "🎯", color: "text-red-600" },
-    { level: "Gold", title: "Master", description: "Expert-level understanding", icon: "👑", color: "text-yellow-600" }
+    { level: 4, title: "Master", description: "Expert-level understanding", icon: "👑", color: "text-yellow-600" }
   ];
 
   // Show quiz if active
