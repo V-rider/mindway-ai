@@ -184,10 +184,38 @@ const ELearning = () => {
   };
 
   const levelDescriptions = [
-    { level: 1, title: "Beginner", description: "Start your journey with basic concepts", icon: "🌱", color: "text-green-600" },
-    { level: 2, title: "Intermediate", description: "Build upon foundational knowledge", icon: "📚", color: "text-blue-600" },
-    { level: 3, title: "Advanced", description: "Master complex problem-solving", icon: "🎯", color: "text-red-600" },
-    { level: 4, title: "Master", description: "Expert-level understanding", icon: "👑", color: "text-yellow-600" }
+    { 
+      level: 1, 
+      title: "Beginner", 
+      description: "Start your journey with basic concepts", 
+      achievement: "You beat 40% of your friends",
+      icon: "🌱", 
+      color: "text-green-600" 
+    },
+    { 
+      level: 2, 
+      title: "Intermediate", 
+      description: "Build upon foundational knowledge", 
+      achievement: "You beat 60% of your friends",
+      icon: "📚", 
+      color: "text-blue-600" 
+    },
+    { 
+      level: 3, 
+      title: "Advanced", 
+      description: "Master complex problem-solving", 
+      achievement: "You beat 80% of your friends",
+      icon: "🎯", 
+      color: "text-red-600" 
+    },
+    { 
+      level: 4, 
+      title: "Master", 
+      description: "Expert-level understanding", 
+      achievement: "You beat 95% of your friends",
+      icon: "👑", 
+      color: "text-yellow-600" 
+    }
   ];
 
   // Show quiz if active
@@ -312,7 +340,8 @@ const ELearning = () => {
                       <div className="text-2xl mb-1">{desc.icon}</div>
                       <div className={`text-sm font-bold ${desc.color}`}>Level {desc.level}</div>
                       <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{desc.title}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-500 text-center leading-tight">{desc.description}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-500 text-center leading-tight mb-1">{desc.description}</div>
+                      <div className="text-xs text-primary font-semibold text-center leading-tight">{desc.achievement}</div>
                     </div>
                   ))}
                 </div>
