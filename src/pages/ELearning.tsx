@@ -336,11 +336,13 @@ const ELearning = () => {
               <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
                   {levelDescriptions.map((desc) => (
-                    <div key={desc.level} className="flex flex-col items-center">
-                      <div className="text-2xl mb-1">{desc.icon}</div>
-                      <div className={`text-sm font-bold ${desc.color}`}>Level {desc.level}</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{desc.title}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-500 text-center leading-tight mb-1">{desc.description}</div>
+                    <div key={desc.level} className="flex flex-col items-center h-32 justify-between">
+                      <div className="flex flex-col items-center">
+                        <div className="text-2xl mb-1">{desc.icon}</div>
+                        <div className={`text-sm font-bold ${desc.color}`}>Level {desc.level}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{desc.title}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-500 text-center leading-tight">{desc.description}</div>
+                      </div>
                       <div className="text-xs text-primary font-semibold text-center leading-tight">{desc.achievement}</div>
                     </div>
                   ))}
