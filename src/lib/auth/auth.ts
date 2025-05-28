@@ -1,6 +1,8 @@
 import { supabase } from '../supabase/client';
 import { userApi } from '../api/users';
-import type { User } from '@/types/database';
+import type { Database } from '@/types/database';
+
+type User = Database['public']['Tables']['users']['Row'];
 
 export const auth = {
   // Sign up with email and password
@@ -97,4 +99,4 @@ export const auth = {
     if (error) throw error;
     return data;
   }
-}; 
+};
