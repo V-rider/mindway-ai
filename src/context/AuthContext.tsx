@@ -1,184 +1,155 @@
+
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { auth } from '@/lib/auth/auth';
-import { mockAuth } from '@/lib/auth/mockAuth';
+import { User } from "@/types";
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, userData?: { full_name?: string }) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  students: User[];
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  isLoading: true,
+  login: async () => {},
+  logout: () => {},
+  isAuthenticated: false,
+  isAdmin: false,
+  students: []
+});
+
+// Mock student data
+const mockStudents: User[] = [
+  {
+    id: "3",
+    name: "Alex Chen",
+    email: "alex@example.com",
+    role: "student",
+    avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
+    classId: "class-1"
+  },
+  {
+    id: "4",
+    name: "Sarah Wong",
+    email: "sarah@example.com",
+    role: "student",
+    avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
+    classId: "class-1"
+  },
+  {
+    id: "5",
+    name: "Michael Lee",
+    email: "michael@example.com",
+    role: "student",
+    avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
+    classId: "class-1"
+  },
+  {
+    id: "6",
+    name: "Emily Tan",
+    email: "emily@example.com",
+    role: "student",
+    avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
+    classId: "class-2"
+  }
+];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [students, setStudents] = useState<User[]>([]);
 
   useEffect(() => {
-    // Check for mock user first
-    const mockUser = localStorage.getItem('mockUser');
-    if (mockUser) {
-      const userData = JSON.parse(mockUser);
-      // Create a mock User object that matches Supabase's User interface
-      const mockUserObj: User = {
-        id: userData.id,
-        email: userData.email,
-        user_metadata: { role: userData.role, full_name: userData.full_name },
-        app_metadata: { role: userData.role },
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-        role: 'authenticated',
-        updated_at: new Date().toISOString(),
-        confirmation_sent_at: null,
-        confirmed_at: null,
-        email_confirmed_at: null,
-        invited_at: null,
-        last_sign_in_at: null,
-        phone: null,
-        recovery_sent_at: null
-      };
-      setUser(mockUserObj);
-      setIsLoading(false);
-      return;
-    }
-
-    // Set up auth state listener for real Supabase auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('Auth state changed:', event, session);
-        setSession(session);
-        setUser(session?.user ?? null);
-        setIsLoading(false);
+    // Check if user is stored in localStorage
+    const storedUser = localStorage.getItem("pathwayUser");
+    
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      
+      // If admin, load students in their class
+      if (parsedUser.role === "admin" && parsedUser.classId) {
+        setStudents(mockStudents.filter(student => student.classId === parsedUser.classId));
       }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    }
+    
+    setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
     
     try {
-      // Check if it's a demo account first
-      if ((email === 'admin@example.com' || email === 'student@example.com') && password === 'password') {
-        const mockUser = await mockAuth.signIn(email, password);
-        localStorage.setItem('mockUser', JSON.stringify(mockUser));
-        
-        // Create a mock User object
-        const mockUserObj: User = {
-          id: mockUser.id,
-          email: mockUser.email,
-          user_metadata: { role: mockUser.role, full_name: mockUser.full_name },
-          app_metadata: { role: mockUser.role },
-          aud: 'authenticated',
-          created_at: new Date().toISOString(),
-          role: 'authenticated',
-          updated_at: new Date().toISOString(),
-          confirmation_sent_at: null,
-          confirmed_at: null,
-          email_confirmed_at: null,
-          invited_at: null,
-          last_sign_in_at: null,
-          phone: null,
-          recovery_sent_at: null
-        };
-        setUser(mockUserObj);
-        console.log('Mock login successful:', mockUser);
-        return;
-      }
-
-      // Otherwise use real Supabase auth
-      const profile = await auth.signIn(email, password);
-      console.log('Login successful:', profile);
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const signup = async (email: string, password: string, userData?: { full_name?: string }): Promise<void> => {
-    setIsLoading(true);
-    
-    try {
-      const redirectUrl = `${window.location.origin}/`;
+      // In a real app, this would be an API call
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: userData
+      const mockUsers: User[] = [
+        {
+          id: "1",
+          name: "Student User",
+          email: "student@example.com",
+          role: "student",
+          avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
+          classId: "class-1"
+        },
+        {
+          id: "2",
+          name: "Admin User",
+          email: "admin@example.com",
+          role: "admin",
+          avatar: "/lovable-uploads/7aff8652-12ca-4080-b580-d23a64527cd3.png",
+          classId: "class-1"
         }
-      });
-
-      if (error) throw error;
+      ];
       
-      console.log('Signup successful:', data);
+      const foundUser = mockUsers.find(u => u.email === email);
+      
+      if (!foundUser) {
+        throw new Error("Invalid email or password");
+      }
+      
+      // If admin, load students in their class
+      if (foundUser.role === "admin" && foundUser.classId) {
+        setStudents(mockStudents.filter(student => student.classId === foundUser.classId));
+      }
+      
+      // Store in localStorage for persistence
+      localStorage.setItem("pathwayUser", JSON.stringify(foundUser));
+      setUser(foundUser);
     } catch (error) {
-      console.error('Signup error:', error);
+      console.error("Login error:", error);
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = async (): Promise<void> => {
-    try {
-      // Clear mock user if it exists
-      localStorage.removeItem('mockUser');
-      
-      // Also sign out from Supabase
-      await auth.signOut();
-      setUser(null);
-      setSession(null);
-    } catch (error) {
-      console.error('Logout error:', error);
-      throw error;
-    }
-  };
-
-  // Determine if user is admin by checking their role in user metadata
-  const isAdmin = user?.user_metadata?.role === 'admin' || user?.app_metadata?.role === 'admin';
-
-  const contextValue: AuthContextType = {
-    user,
-    session,
-    isLoading,
-    login,
-    signup,
-    logout,
-    isAuthenticated: !!user,
-    isAdmin,
+  const logout = () => {
+    localStorage.removeItem("pathwayUser");
+    setUser(null);
+    setStudents([]);
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        login,
+        logout,
+        isAuthenticated: !!user,
+        isAdmin: user?.role === "admin",
+        students
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);
