@@ -72,7 +72,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   
   // Determine if the user is a student (not an admin)
-  const isStudent = user && user.role === 'student';
+  const isStudent = user && !isAdmin;
   
   const menuItems = getMenuItems(isAdmin, isStudent);
   
@@ -95,7 +95,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <Header
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
-          userName={user?.name}
+          userName={user?.email || 'User'}
         />
         
         <main className="p-6 w-full">
