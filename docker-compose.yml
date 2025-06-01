@@ -1,0 +1,32 @@
+
+version: '3.8'
+
+services:
+  mindway-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      # Mount source code for development (optional)
+      - .:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+  # Development service (alternative to production build)
+  mindway-ai-dev:
+    image: node:18-alpine
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    profiles:
+      - dev
