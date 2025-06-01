@@ -1,150 +1,122 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { User } from "@/types";
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+import { auth } from '@/lib/auth/auth';
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  signup: (email: string, password: string, userData?: { full_name?: string }) => Promise<void>;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  students: User[];
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  session: null,
   isLoading: true,
   login: async () => {},
-  logout: () => {},
+  signup: async () => {},
+  logout: async () => {},
   isAuthenticated: false,
   isAdmin: false,
-  students: []
 });
-
-// Mock student data
-const mockStudents: User[] = [
-  {
-    id: "3",
-    name: "Alex Chen",
-    email: "alex@example.com",
-    role: "student",
-    avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
-    classId: "class-1"
-  },
-  {
-    id: "4",
-    name: "Sarah Wong",
-    email: "sarah@example.com",
-    role: "student",
-    avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
-    classId: "class-1"
-  },
-  {
-    id: "5",
-    name: "Michael Lee",
-    email: "michael@example.com",
-    role: "student",
-    avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
-    classId: "class-1"
-  },
-  {
-    id: "6",
-    name: "Emily Tan",
-    email: "emily@example.com",
-    role: "student",
-    avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
-    classId: "class-2"
-  }
-];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [students, setStudents] = useState<User[]>([]);
 
   useEffect(() => {
-    // Check if user is stored in localStorage
-    const storedUser = localStorage.getItem("pathwayUser");
-    
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      
-      // If admin, load students in their class
-      if (parsedUser.role === "admin" && parsedUser.classId) {
-        setStudents(mockStudents.filter(student => student.classId === parsedUser.classId));
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth state changed:', event, session);
+        setSession(session);
+        setUser(session?.user ?? null);
+        setIsLoading(false);
       }
-    }
-    
-    setIsLoading(false);
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
     
     try {
-      // In a real app, this would be an API call
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockUsers: User[] = [
-        {
-          id: "1",
-          name: "Student User",
-          email: "student@example.com",
-          role: "student",
-          avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
-          classId: "class-1"
-        },
-        {
-          id: "2",
-          name: "Admin User",
-          email: "admin@example.com",
-          role: "admin",
-          avatar: "/lovable-uploads/7aff8652-12ca-4080-b580-d23a64527cd3.png",
-          classId: "class-1"
-        }
-      ];
-      
-      const foundUser = mockUsers.find(u => u.email === email);
-      
-      if (!foundUser) {
-        throw new Error("Invalid email or password");
-      }
-      
-      // If admin, load students in their class
-      if (foundUser.role === "admin" && foundUser.classId) {
-        setStudents(mockStudents.filter(student => student.classId === foundUser.classId));
-      }
-      
-      // Store in localStorage for persistence
-      localStorage.setItem("pathwayUser", JSON.stringify(foundUser));
-      setUser(foundUser);
+      const profile = await auth.signIn(email, password);
+      console.log('Login successful:', profile);
     } catch (error) {
-      console.error("Login error:", error);
+      console.error('Login error:', error);
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("pathwayUser");
-    setUser(null);
-    setStudents([]);
+  const signup = async (email: string, password: string, userData?: { full_name?: string }): Promise<void> => {
+    setIsLoading(true);
+    
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: userData
+        }
+      });
+
+      if (error) throw error;
+      
+      console.log('Signup successful:', data);
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const logout = async (): Promise<void> => {
+    try {
+      await auth.signOut();
+      setUser(null);
+      setSession(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
+    }
+  };
+
+  // Determine if user is admin by checking their role in the database
+  const isAdmin = user?.user_metadata?.role === 'admin' || user?.app_metadata?.role === 'admin';
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        session,
         isLoading,
         login,
+        signup,
         logout,
         isAuthenticated: !!user,
-        isAdmin: user?.role === "admin",
-        students
+        isAdmin,
       }}
     >
       {children}
