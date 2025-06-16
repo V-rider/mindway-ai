@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { ClassPerformance, StudentPerformance } from '@/types';
 import { motion } from 'framer-motion';
-import { User, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
+import { User, TrendingUp, TrendingDown, ChevronRight, Calendar, Target, Award, AlertTriangle } from 'lucide-react';
 import {
   ResponsiveContainer,
   BarChart,
@@ -14,7 +15,11 @@ import {
   Cell,
   PieChart,
   Pie,
-  Legend
+  Legend,
+  LineChart,
+  Line,
+  ScatterChart,
+  Scatter
 } from 'recharts';
 
 interface ClassPerformanceCardProps {
@@ -38,9 +43,98 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   const errorChartData = classData.errorPatterns.map((error, index) => ({
     name: error.pattern,
     value: error.percentage,
-    subject: error.pattern, // Adding subject field which contains the pattern name
-    fill: ['#FF6B81', '#FF9F43', '#FFCC29'][index % 3] // Pink, Orange, Yellow colors similar to the image
+    subject: error.pattern,
+    fill: ['#FF6B81', '#FF9F43', '#FFCC29'][index % 3]
   }));
+
+  // Mock assessment data for this class
+  const classAssessments = [
+    {
+      id: "test-1",
+      name: "Number Operations Quiz",
+      date: "2023-11-20",
+      averageScore: 78,
+      participantCount: 22,
+      difficulty: "Medium",
+      status: "completed"
+    },
+    {
+      id: "test-2", 
+      name: "Fractions Assessment",
+      date: "2023-11-15",
+      averageScore: 65,
+      participantCount: 24,
+      difficulty: "Hard",
+      status: "completed"
+    },
+    {
+      id: "test-3",
+      name: "Geometry Basics",
+      date: "2023-11-10",
+      averageScore: 85,
+      participantCount: 23,
+      difficulty: "Easy",
+      status: "completed"
+    },
+    {
+      id: "test-4",
+      name: "Word Problems Challenge",
+      date: "2023-11-05",
+      averageScore: 72,
+      participantCount: 24,
+      difficulty: "Hard",
+      status: "completed"
+    }
+  ];
+
+  // Performance trend data
+  const performanceTrend = [
+    { assessment: "Geometry Basics", score: 85, date: "Nov 10" },
+    { assessment: "Word Problems", score: 72, date: "Nov 5" },
+    { assessment: "Fractions", score: 65, date: "Nov 15" },
+    { assessment: "Number Ops", score: 78, date: "Nov 20" }
+  ];
+
+  // Student ability analysis data
+  const studentAbilityData = [
+    {
+      category: "High Performers",
+      count: 8,
+      percentage: 33,
+      color: "#10B981",
+      description: "Consistent scores above 80%"
+    },
+    {
+      category: "Steady Improvers", 
+      count: 6,
+      percentage: 25,
+      color: "#3B82F6",
+      description: "Showing steady improvement"
+    },
+    {
+      category: "Inconsistent",
+      count: 5,
+      percentage: 21,
+      color: "#F59E0B", 
+      description: "Variable performance"
+    },
+    {
+      category: "Need Support",
+      count: 5,
+      percentage: 21,
+      color: "#EF4444",
+      description: "Consistently below 60%"
+    }
+  ];
+
+  // Score distribution data
+  const scoreDistribution = [
+    { range: "90-100%", count: 4, color: "#10B981" },
+    { range: "80-89%", count: 7, color: "#059669" },
+    { range: "70-79%", count: 6, color: "#F59E0B" },
+    { range: "60-69%", count: 4, color: "#DC2626" },
+    { range: "Below 60%", count: 3, color: "#B91C1C" }
+  ];
   
   return (
     <div className="space-y-6">
@@ -70,15 +164,174 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
         </div>
       </div>
 
-      {/* Performance Overview */}
+      {/* Assessment Analysis Section */}
       <motion.div 
         className="glass-card rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-6">
+          Assessment Analysis
+        </h3>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Performance Trend */}
+          <div>
+            <h4 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">
+              Performance Trend
+            </h4>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={performanceTrend}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis domain={[0, 100]} />
+                  <Tooltip formatter={(value) => [`${value}%`, 'Class Average']} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="score" 
+                    stroke="#8b5cf6" 
+                    strokeWidth={3}
+                    dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Student Ability Distribution */}
+          <div>
+            <h4 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">
+              Student Performance Categories
+            </h4>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={studentAbilityData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    paddingAngle={2}
+                    dataKey="count"
+                    nameKey="category"
+                  >
+                    {studentAbilityData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value, name) => [`${value} students`, name]} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-4 space-y-2">
+              {studentAbilityData.map((category, index) => (
+                <div key={index} className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: category.color }}
+                    />
+                    <span className="text-gray-700 dark:text-gray-300">{category.category}</span>
+                  </div>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    {category.count} ({category.percentage}%)
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Assessments */}
+        <div className="mb-6">
+          <h4 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">
+            Recent Assessments
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {classAssessments.map((assessment, index) => (
+              <div key={assessment.id} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h5 className="font-medium text-gray-800 dark:text-gray-200">
+                      {assessment.name}
+                    </h5>
+                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        {assessment.date}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <User className="w-4 h-4" />
+                        {assessment.participantCount} students
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        assessment.difficulty === 'Easy' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                        assessment.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                        'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                      }`}>
+                        {assessment.difficulty}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-2xl font-bold ${
+                      assessment.averageScore >= 75 ? 'text-green-600 dark:text-green-400' :
+                      assessment.averageScore >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
+                      'text-red-600 dark:text-red-400'
+                    }`}>
+                      {assessment.averageScore}%
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      Class Avg
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Score Distribution */}
+        <div>
+          <h4 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">
+            Score Distribution (Latest Assessment)
+          </h4>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={scoreDistribution} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="range" />
+                <YAxis />
+                <Tooltip formatter={(value) => [`${value} students`, 'Count']} />
+                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                  {scoreDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                  <LabelList 
+                    dataKey="count" 
+                    position="top" 
+                    style={{ fill: '#666', fontSize: '12px', fontWeight: 'bold' }}
+                  />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Performance Overview */}
+      <motion.div 
+        className="glass-card rounded-xl p-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
         <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
-          Performance Overview
+          Topic Performance Overview
         </h3>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -93,8 +346,8 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                   layout="vertical"
                   data={sortedTopicMastery}
                   margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
-                  barSize={18} // Further reduced bar size for more spacing
-                  barGap={16} // Increased bar gap for better spacing
+                  barSize={18}
+                  barGap={16}
                 >
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" domain={[0, 100]} />
@@ -102,7 +355,6 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     dataKey="topic" 
                     type="category" 
                     tick={(props) => {
-                      // Custom tick renderer to prevent line breaks in the topic names
                       const topic = props.payload.value;
                       return (
                         <text 
@@ -118,8 +370,8 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                       );
                     }}
                     width={120}
-                    interval={0} // Ensure all ticks are shown
-                    tickMargin={10} // Add margin to ticks
+                    interval={0}
+                    tickMargin={10}
                   />
                   <Tooltip 
                     formatter={(value) => [`${value}%`, 'Mastery']}
@@ -131,7 +383,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     {sortedTopicMastery.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={entry.mastery >= 70 ? "#16a34a" : "#f97316"} // Dark green (#16a34a) for ≥70%, Orange for <70%
+                        fill={entry.mastery >= 70 ? "#16a34a" : "#f97316"}
                       />
                     ))}
                     <LabelList 
@@ -147,7 +399,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
             </div>
           </div>
           
-          {/* Common Error Patterns - Now a full pie chart instead of donut */}
+          {/* Common Error Patterns */}
           <div className="lg:col-span-1">
             <h4 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">
               Common Error Patterns
@@ -162,7 +414,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     outerRadius={80}
                     paddingAngle={2}
                     dataKey="value"
-                    nameKey="subject" // Changed from "name" to "subject" to display pattern names
+                    nameKey="subject"
                     label={false}
                   >
                     {errorChartData.map((entry, index) => (
@@ -171,7 +423,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                   </Pie>
                   <Tooltip 
                     formatter={(value) => [`${value}%`, `${errorChartData.find(item => item.value === value)?.subject || 'Error'}`]}
-                    labelFormatter={(label) => `${label}`} // This will display the subject name
+                    labelFormatter={(label) => `${label}`}
                   />
                 </PieChart>
               </ResponsiveContainer>
