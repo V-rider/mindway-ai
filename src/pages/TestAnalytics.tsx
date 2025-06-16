@@ -5,6 +5,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, FileText, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TestAnalysis } from "@/components/ui/TestAnalysis";
+import { PredictionScatterPlot } from "@/components/ui/PredictionScatterPlot";
 import { motion, AnimatePresence } from "framer-motion";
 
 const TestAnalytics = () => {
@@ -27,7 +28,7 @@ const TestAnalytics = () => {
     const fetchTestData = () => {
       // Simulate API delay
       setTimeout(() => {
-        // Mock data
+        // Mock data with predicted scores
         const data = {
           id: testId || "",
           name: "Math Fundamentals Assessment",
@@ -72,31 +73,57 @@ const TestAnalytics = () => {
               studentId: "s-1",
               name: "Emma Johnson",
               score: 85,
+              predictedScore: 82,
               areas: ["Excellent at addition and subtraction", "Needs work on fractions"]
             },
             {
               studentId: "s-2",
               name: "Noah Smith",
               score: 75,
+              predictedScore: 78,
               areas: ["Strong in multiplication", "Struggles with word problems"]
             },
             {
               studentId: "s-3",
               name: "Olivia Brown",
               score: 90,
+              predictedScore: 87,
               areas: ["Excellent across all areas", "Sometimes makes calculation errors"]
             },
             {
               studentId: "s-4",
               name: "William Davis",
               score: 65,
+              predictedScore: 70,
               areas: ["Good at basic operations", "Needs help with fractions and decimals"]
             },
             {
               studentId: "s-5",
               name: "Ava Wilson",
               score: 80,
+              predictedScore: 79,
               areas: ["Strong problem solver", "Occasionally makes careless mistakes"]
+            },
+            {
+              studentId: "s-6",
+              name: "James Miller",
+              score: 92,
+              predictedScore: 85,
+              areas: ["Exceptional mathematical reasoning", "Great at complex problems"]
+            },
+            {
+              studentId: "s-7",
+              name: "Sophia Garcia",
+              score: 68,
+              predictedScore: 75,
+              areas: ["Good effort but needs more practice", "Struggles with time management"]
+            },
+            {
+              studentId: "s-8",
+              name: "Liam Rodriguez",
+              score: 83,
+              predictedScore: 81,
+              areas: ["Consistent performer", "Good at following procedures"]
             }
           ]
         };
@@ -118,6 +145,14 @@ const TestAnalytics = () => {
       navigate('/reports');
     }
   };
+
+  // Prepare scatter plot data
+  const scatterPlotData = testData?.studentResults.map(student => ({
+    studentId: student.studentId,
+    name: student.name,
+    actualScore: student.score,
+    predictedScore: student.predictedScore || student.score // fallback if no predicted score
+  })) || [];
 
   return (
     <MainLayout>
@@ -166,7 +201,12 @@ const TestAnalytics = () => {
                 </div>
               </div>
               
-              {testData && <TestAnalysis result={testData} testName={testData.name} hideScoreCard={true} />}
+              {testData && (
+                <div className="space-y-8">
+                  <TestAnalysis result={testData} testName={testData.name} hideScoreCard={true} />
+                  <PredictionScatterPlot data={scatterPlotData} testName={testData.name} />
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         )}
