@@ -18,6 +18,9 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
   // This is a temporary solution until we update the test data structure
   const adaptedResult = {
     score: result.averageScore,
+    totalQuestions: result.questionStats ? result.questionStats.length : 5,
+    correctAnswers: Math.round(result.averageScore * 5 / 100), // Estimated based on score
+    incorrectAnswers: 5 - Math.round(result.averageScore * 5 / 100),
     concepts: result.questionStats ? result.questionStats.map(q => ({
       name: q.topic,
       percentage: q.correctPercentage,
@@ -69,12 +72,37 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">{testName} - {t('analysis')}</h2>
         <div className="inline-flex items-center gap-2 px-4 py-1 bg-purple-100 dark:bg-purple-900/30 rounded-full text-purple-700 dark:text-purple-300 text-sm font-medium">
-          <span>{t('class.average')}:</span>
+          <span>{t('overall.score')}:</span>
           <span className={getScoreColor(adaptedResult.score)}>
             {adaptedResult.score}%
           </span>
         </div>
       </div>
+      
+      {/* Score Card */}
+      <motion.div 
+        className="glass-card rounded-xl p-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('total.questions')}</h3>
+            <p className="text-3xl font-bold text-gray-800 dark:text-gray-100">{adaptedResult.totalQuestions}</p>
+          </div>
+          
+          <div className="text-center">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('correct.answers')}</h3>
+            <p className="text-3xl font-bold text-green-500 dark:text-green-400">{adaptedResult.correctAnswers}</p>
+          </div>
+          
+          <div className="text-center">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('incorrect.answers')}</h3>
+            <p className="text-3xl font-bold text-red-500 dark:text-red-400">{adaptedResult.incorrectAnswers}</p>
+          </div>
+        </div>
+      </motion.div>
       
       {/* By Concept */}
       <motion.div 
@@ -120,7 +148,7 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName }) 
               </div>
               
               <div className="text-xs text-gray-500 dark:text-gray-400">
-                {concept.percentage}% {t('class.average')}
+                {concept.percentage * concept.total / 100} {t('of')} {concept.total} {t('correct')}
               </div>
               
               <Link
