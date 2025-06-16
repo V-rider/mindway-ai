@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -165,7 +166,7 @@ const TestAnalytics = () => {
                 </div>
               </div>
               
-              {testData && <TestAnalysis result={testData} testName={testData.name} />}
+              {testData && <TestAnalysis result={testData} testName={testData.name} hideScoreCard={true} />}
             </motion.div>
           </AnimatePresence>
         )}
