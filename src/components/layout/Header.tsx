@@ -29,7 +29,11 @@ export const Header: React.FC<HeaderProps> = ({
           className="h-8 w-8"
           aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
         >
-          <Menu className="h-4 w-4" />
+          <Menu 
+            className={`h-4 w-4 transition-transform duration-300 ${
+              sidebarOpen ? 'rotate-90' : 'rotate-0'
+            }`} 
+          />
         </Button>
         
         <div className="ml-auto flex items-center gap-4">
