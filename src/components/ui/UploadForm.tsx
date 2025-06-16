@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Upload, Check, AlertCircle, Loader2, Users, Plus, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -88,6 +87,17 @@ export const UploadForm: React.FC = () => {
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
     setPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Handle select all/deselect all students
+  const handleSelectAllStudents = () => {
+    if (selectedStudents.length === students.length) {
+      // Deselect all
+      setSelectedStudents([]);
+    } else {
+      // Select all
+      setSelectedStudents(students.map(student => student.id));
+    }
   };
   
   const handleSubmit = async (e: React.FormEvent) => {
@@ -311,9 +321,18 @@ export const UploadForm: React.FC = () => {
               <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">
                 Assign Tests to Students
               </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {selectedStudents.length} of {students.length} selected
-              </p>
+              <div className="flex items-center gap-4">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {selectedStudents.length} of {students.length} selected
+                </p>
+                <button
+                  type="button"
+                  onClick={handleSelectAllStudents}
+                  className="text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
+                >
+                  {selectedStudents.length === students.length ? 'Deselect All' : 'Select All'}
+                </button>
+              </div>
             </div>
             
             <div className="glass-card rounded-xl p-4">
