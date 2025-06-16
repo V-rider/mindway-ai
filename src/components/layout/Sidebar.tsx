@@ -65,16 +65,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, menuItems, us
 
           {/* Logo and App Name */}
           <div className="px-6 mb-6 mt-2">
-            <div className="flex items-center gap-3 mb-2">
-              <img 
-                src="/lovable-uploads/139bc233-d2ab-4215-8100-a458760da518.png" 
-                alt="Cortex Logo" 
-                className="w-8 h-8 object-contain"
-              />
-              <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                Mindway AI
-              </h1>
-            </div>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+              Mindway AI
+            </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Analytics & Insights
             </p>
