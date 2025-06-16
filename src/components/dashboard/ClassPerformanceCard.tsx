@@ -1,7 +1,10 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { ClassPerformance, StudentPerformance } from '@/types';
 import { motion } from 'framer-motion';
-import { User, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
+import { User, TrendingUp, TrendingDown, ChevronRight, FileText, Search, X, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import {
   ResponsiveContainer,
   BarChart,
@@ -28,6 +31,10 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   students,
   onStudentSelect,
 }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] = useState<string>("date");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+
   // Sort students by average score descending
   const sortedStudents = [...students].sort((a, b) => b.averageScore - a.averageScore);
   
@@ -38,9 +45,124 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   const errorChartData = classData.errorPatterns.map((error, index) => ({
     name: error.pattern,
     value: error.percentage,
-    subject: error.pattern, // Adding subject field which contains the pattern name
-    fill: ['#FF6B81', '#FF9F43', '#FFCC29'][index % 3] // Pink, Orange, Yellow colors similar to the image
+    subject: error.pattern,
+    fill: ['#FF6B81', '#FF9F43', '#FFCC29'][index % 3]
   }));
+
+  // Mock assessments data for this class
+  const classAssessments = [
+    { 
+      id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-1`, 
+      name: `${classData.name} - Fractions Assessment`, 
+      date: "2023-10-25", 
+      performance: "Above Average", 
+      completionRate: "94%",
+      averageScore: 82
+    },
+    { 
+      id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-2`, 
+      name: `${classData.name} - Geometry Quiz`, 
+      date: "2023-10-18", 
+      performance: "Excellent", 
+      completionRate: "98%",
+      averageScore: 88
+    },
+    { 
+      id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-3`, 
+      name: `${classData.name} - Word Problems Test`, 
+      date: "2023-10-10", 
+      performance: "Good", 
+      completionRate: "91%",
+      averageScore: 76
+    },
+    { 
+      id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-4`, 
+      name: `${classData.name} - Algebra Basics`, 
+      date: "2023-09-28", 
+      performance: "Average", 
+      completionRate: "87%",
+      averageScore: 71
+    },
+    { 
+      id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-5`, 
+      name: `${classData.name} - Measurement Unit`, 
+      date: "2023-09-15", 
+      performance: "Above Average", 
+      completionRate: "93%",
+      averageScore: 79
+    }
+  ];
+
+  // Function to format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+  
+  // Function to get performance color
+  const getPerformanceColor = (performance: string) => {
+    switch (performance) {
+      case "Excellent":
+        return "text-green-600 dark:text-green-400";
+      case "Above Average":
+        return "text-green-500 dark:text-green-400";
+      case "Good":
+        return "text-green-500 dark:text-green-400";
+      case "Average":
+        return "text-yellow-500 dark:text-yellow-400";
+      case "Below Average":
+        return "text-yellow-600 dark:text-yellow-500";
+      case "Needs Improvement":
+        return "text-yellow-600 dark:text-yellow-500";
+      case "Needs Support":
+        return "text-red-500 dark:text-red-400";
+      default:
+        return "text-gray-600 dark:text-gray-400";
+    }
+  };
+  
+  // Function to sort assessments
+  const sortAssessments = (assessments: any[]) => {
+    return [...assessments].sort((a, b) => {
+      let comparison = 0;
+      
+      if (sortField === "date") {
+        comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+      } else if (sortField === "name") {
+        comparison = a.name.localeCompare(b.name);
+      } else if (sortField === "performance") {
+        const performanceOrder = ["Excellent", "Above Average", "Good", "Average", "Below Average", "Needs Improvement", "Needs Support"];
+        comparison = performanceOrder.indexOf(a.performance) - performanceOrder.indexOf(b.performance);
+      }
+      
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+  };
+
+  // Filter assessments based on search term
+  const filteredAssessments = classAssessments
+    .filter(assessment => assessment.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  
+  // Sort filtered assessments
+  const sortedAndFilteredAssessments = sortAssessments(filteredAssessments);
+  
+  // Toggle sort direction
+  const toggleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  // Navigate to individual assessment analytics
+  const handleViewAssessmentAnalytics = (assessmentId: string) => {
+    console.log(`Viewing analytics for assessment: ${assessmentId}`);
+    // This would typically navigate to a detailed assessment page
+  };
   
   return (
     <div className="space-y-6">
@@ -93,8 +215,8 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                   layout="vertical"
                   data={sortedTopicMastery}
                   margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
-                  barSize={18} // Further reduced bar size for more spacing
-                  barGap={16} // Increased bar gap for better spacing
+                  barSize={18}
+                  barGap={16}
                 >
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" domain={[0, 100]} />
@@ -102,7 +224,6 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     dataKey="topic" 
                     type="category" 
                     tick={(props) => {
-                      // Custom tick renderer to prevent line breaks in the topic names
                       const topic = props.payload.value;
                       return (
                         <text 
@@ -118,8 +239,8 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                       );
                     }}
                     width={120}
-                    interval={0} // Ensure all ticks are shown
-                    tickMargin={10} // Add margin to ticks
+                    interval={0}
+                    tickMargin={10}
                   />
                   <Tooltip 
                     formatter={(value) => [`${value}%`, 'Mastery']}
@@ -131,7 +252,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     {sortedTopicMastery.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={entry.mastery >= 70 ? "#16a34a" : "#f97316"} // Dark green (#16a34a) for ≥70%, Orange for <70%
+                        fill={entry.mastery >= 70 ? "#16a34a" : "#f97316"}
                       />
                     ))}
                     <LabelList 
@@ -147,7 +268,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
             </div>
           </div>
           
-          {/* Common Error Patterns - Now a full pie chart instead of donut */}
+          {/* Common Error Patterns */}
           <div className="lg:col-span-1">
             <h4 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">
               Common Error Patterns
@@ -162,7 +283,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     outerRadius={80}
                     paddingAngle={2}
                     dataKey="value"
-                    nameKey="subject" // Changed from "name" to "subject" to display pattern names
+                    nameKey="subject"
                     label={false}
                   >
                     {errorChartData.map((entry, index) => (
@@ -171,7 +292,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                   </Pie>
                   <Tooltip 
                     formatter={(value) => [`${value}%`, `${errorChartData.find(item => item.value === value)?.subject || 'Error'}`]}
-                    labelFormatter={(label) => `${label}`} // This will display the subject name
+                    labelFormatter={(label) => `${label}`}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -207,6 +328,164 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
             </div>
           </div>
         </div>
+      </motion.div>
+
+      {/* Class Assessments */}
+      <motion.div 
+        className="glass-card rounded-xl p-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+            Class Assessments
+          </h3>
+          
+          <div className="mt-4 sm:mt-0 w-full sm:w-auto">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                type="search"
+                className="block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                placeholder="Search assessments..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {sortedAndFilteredAssessments.length > 0 ? (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead 
+                    className="cursor-pointer" 
+                    onClick={() => toggleSort("name")}
+                  >
+                    <div className="flex items-center">
+                      Assessment Name
+                      {sortField === "name" && (
+                        <span className="ml-2">
+                          {sortDirection === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer" 
+                    onClick={() => toggleSort("date")}
+                  >
+                    <div className="flex items-center">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      Date
+                      {sortField === "date" && (
+                        <span className="ml-2">
+                          {sortDirection === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer" 
+                    onClick={() => toggleSort("performance")}
+                  >
+                    <div className="flex items-center">
+                      Performance
+                      {sortField === "performance" && (
+                        <span className="ml-2">
+                          {sortDirection === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead>Completion Rate</TableHead>
+                  <TableHead>Avg Score</TableHead>
+                  <TableHead className="w-[50px]">View</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedAndFilteredAssessments.map((assessment) => (
+                  <TableRow 
+                    key={assessment.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors cursor-pointer"
+                    onClick={() => handleViewAssessmentAnalytics(assessment.id)}
+                  >
+                    <TableCell>
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 rounded-md bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-3">
+                          <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <span className="font-medium text-gray-800 dark:text-gray-100">
+                          {assessment.name}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{formatDate(assessment.date)}</TableCell>
+                    <TableCell>
+                      <span className={`font-medium ${getPerformanceColor(assessment.performance)}`}>
+                        {assessment.performance}
+                      </span>
+                    </TableCell>
+                    <TableCell>{assessment.completionRate}</TableCell>
+                    <TableCell>
+                      <span className={`font-medium ${
+                        assessment.averageScore >= 80 
+                          ? "text-green-600 dark:text-green-400" 
+                          : assessment.averageScore >= 70
+                          ? "text-yellow-600 dark:text-yellow-400"
+                          : "text-red-600 dark:text-red-400"
+                      }`}>
+                        {assessment.averageScore}%
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="rounded-full p-2 h-auto w-auto"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewAssessmentAnalytics(assessment.id);
+                        }}
+                      >
+                        <ChevronRight className="w-5 h-5 text-gray-500" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <div className="flex flex-col items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+                <Search className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h4 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-2">
+                No assessments found
+              </h4>
+              <p className="text-gray-600 dark:text-gray-400">
+                {searchTerm
+                  ? "No assessments match your search criteria. Try a different search term."
+                  : "No assessments available for this class."}
+              </p>
+            </div>
+          </div>
+        )}
       </motion.div>
       
       {/* Student List */}
