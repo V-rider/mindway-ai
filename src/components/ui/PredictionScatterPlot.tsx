@@ -157,7 +157,19 @@ export const PredictionScatterPlot: React.FC<PredictionScatterPlotProps> = ({ da
                       fill={color}
                       stroke="#fff"
                       strokeWidth={2}
-                      className="hover:r-8 transition-all cursor-pointer"
+                      className="transition-all duration-300 ease-in-out hover:scale-150 hover:r-8 cursor-pointer transform-gpu"
+                      style={{
+                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+                        transformOrigin: 'center'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'scale(1.5)';
+                        e.target.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'scale(1)';
+                        e.target.style.filter = 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))';
+                      }}
                     />
                   );
                 }}
