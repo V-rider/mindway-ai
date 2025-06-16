@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ClassPerformance, StudentPerformance } from '@/types';
 import { motion } from 'framer-motion';
@@ -35,12 +36,19 @@ import {
   AreaChart
 } from 'recharts';
 
+/**
+ * Props interface for the ClassPerformanceCard component
+ */
 interface ClassPerformanceCardProps {
   classData: ClassPerformance;
   students: StudentPerformance[];
   onStudentSelect: (studentId: string) => void;
 }
 
+/**
+ * Main component for displaying detailed class performance analytics
+ * Includes performance trends, topic mastery, error patterns, assessments, and student list
+ */
 export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   classData,
   students,
@@ -48,16 +56,19 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
 }) => {
   const navigate = useNavigate();
   
-  // State for assessments section
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortField, setSortField] = useState<string>("date");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-  const [viewAllTests, setViewAllTests] = useState(false);
+  // State management for assessments section
+  const [searchTerm, setSearchTerm] = useState(""); // Search filter for assessments
+  const [sortField, setSortField] = useState<string>("date"); // Current sort field
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc"); // Sort direction
+  const [viewAllTests, setViewAllTests] = useState(false); // Toggle between recent and all tests
   
-  // State for performance trend time period
+  // State for performance trend time period selection
   const [timePeriod, setTimePeriod] = useState<"week" | "month" | "year">("month");
   
-  // Mock assessments data for each class
+  /**
+   * Mock assessments data for each class
+   * In a real application, this would come from an API
+   */
   const classAssessments = {
     recentTests: [
       { id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-1`, name: "Ratios & Proportions Quiz", date: "2023-10-25", performance: "Excellent", completionRate: "98%" },
@@ -74,7 +85,10 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
     ]
   };
 
-  // Mock performance trend data for different time periods
+  /**
+   * Mock performance trend data for different time periods
+   * Contains sample data points for week, month, and year views
+   */
   const performanceTrendData = {
     week: [
       { date: "2023-10-23", score: 74, testName: "Daily Quiz 1" },
@@ -105,21 +119,28 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   // Get current performance trend data based on selected time period
   const classPerformanceTrend = performanceTrendData[timePeriod];
 
-  // Sort students by average score descending
+  // Sort students by average score in descending order for display
   const sortedStudents = [...students].sort((a, b) => b.averageScore - a.averageScore);
   
-  // Sort topic mastery data from highest to lowest percentage
+  // Sort topic mastery data from highest to lowest percentage for better visualization
   const sortedTopicMastery = [...classData.topicMastery].sort((a, b) => b.mastery - a.mastery);
   
-  // Prepare data for the error patterns pie chart with subject names
+  /**
+   * Prepare data for the error patterns pie chart
+   * Maps error patterns to chart-friendly format with colors
+   */
   const errorChartData = classData.errorPatterns.map((error, index) => ({
     name: error.pattern,
     value: error.percentage,
-    subject: error.pattern, // Adding subject field which contains the pattern name
-    fill: ['#FF6B81', '#FF9F43', '#FFCC29'][index % 3] // Pink, Orange, Yellow colors similar to the image
+    subject: error.pattern, // Adding subject field for tooltip display
+    fill: ['#FF6B81', '#FF9F43', '#FFCC29'][index % 3] // Cycling through pink, orange, yellow colors
   }));
 
-  // Function to format date based on time period
+  /**
+   * Format date strings based on the selected time period
+   * @param dateString - ISO date string to format
+   * @returns Formatted date string appropriate for the time period
+   */
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     if (timePeriod === "week") {
@@ -141,7 +162,11 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
     }
   };
   
-  // Function to get performance color
+  /**
+   * Get appropriate CSS color class based on performance level
+   * @param performance - Performance level string
+   * @returns CSS class string for coloring
+   */
   const getPerformanceColor = (performance: string) => {
     switch (performance) {
       case "Excellent":
@@ -163,7 +188,11 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
     }
   };
   
-  // Function to sort tests
+  /**
+   * Sort tests array based on current sort field and direction
+   * @param tests - Array of test objects to sort
+   * @returns Sorted array of tests
+   */
   const sortTests = (tests: any[]) => {
     return [...tests].sort((a, b) => {
       let comparison = 0;
@@ -186,14 +215,17 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
     ? classAssessments.allTests 
     : classAssessments.recentTests;
 
-  // Filter tests based on search term
+  // Filter tests based on search term (case-insensitive)
   const filteredTests = testsToDisplay
     .filter(test => test.name.toLowerCase().includes(searchTerm.toLowerCase()));
   
-  // Sort filtered tests
+  // Apply sorting to filtered tests
   const sortedAndFilteredTests = sortTests(filteredTests);
   
-  // Toggle sort direction
+  /**
+   * Toggle sort direction or change sort field
+   * @param field - Field name to sort by
+   */
   const toggleSort = (field: string) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -203,19 +235,24 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
     }
   };
 
-  // Toggle view all tests
+  /**
+   * Toggle between showing recent tests and all tests
+   */
   const toggleViewAllTests = () => {
     setViewAllTests(!viewAllTests);
   };
   
-  // Navigate to individual test analytics
+  /**
+   * Navigate to individual test analytics page
+   * @param testId - ID of the test to view analytics for
+   */
   const handleViewTestAnalytics = (testId: string) => {
     navigate(`/reports/${testId}`);
   };
   
   return (
     <div className="space-y-6">
-      {/* Class Header */}
+      {/* Class Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
@@ -225,6 +262,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
             Grade {classData.grade} • {students.length} students
           </p>
         </div>
+        {/* Class average score display with color coding */}
         <div className="mt-4 md:mt-0 flex items-center gap-3">
           <div className="px-4 py-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
             <span className="text-sm text-gray-600 dark:text-gray-400">Average:</span>
@@ -241,7 +279,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
         </div>
       </div>
 
-      {/* Performance Trend */}
+      {/* Performance Trend Chart Section */}
       <motion.div 
         className="glass-card rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
@@ -253,6 +291,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
             Class Performance Trend
           </h3>
           
+          {/* Time period selector buttons */}
           <div className="flex gap-2 mt-3 sm:mt-0">
             {(["week", "month", "year"] as const).map((period) => (
               <button
@@ -270,6 +309,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
           </div>
         </div>
         
+        {/* Area chart displaying performance trend over time */}
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={classPerformanceTrend}>
@@ -293,6 +333,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                 }}
               />
+              {/* Gradient definition for area fill */}
               <defs>
                 <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
@@ -313,7 +354,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
         </div>
       </motion.div>
 
-      {/* Performance Overview */}
+      {/* Performance Overview Section */}
       <motion.div 
         className="glass-card rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
@@ -325,19 +366,20 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
         </h3>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Topic Mastery Overview - Takes up 2 cols */}
+          {/* Topic Mastery Overview - Takes up 2 columns on large screens */}
           <div className="lg:col-span-2">
             <h4 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">
               Topic Mastery Overview
             </h4>
+            {/* Horizontal bar chart showing topic mastery percentages */}
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   layout="vertical"
                   data={sortedTopicMastery}
                   margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
-                  barSize={18} // Further reduced bar size for more spacing
-                  barGap={16} // Increased bar gap for better spacing
+                  barSize={18} // Reduced bar size for better spacing
+                  barGap={16} // Increased gap between bars
                 >
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" domain={[0, 100]} />
@@ -345,7 +387,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     dataKey="topic" 
                     type="category" 
                     tick={(props) => {
-                      // Custom tick renderer to prevent line breaks in the topic names
+                      // Custom tick renderer to prevent line breaks in topic names
                       const topic = props.payload.value;
                       return (
                         <text 
@@ -361,7 +403,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                       );
                     }}
                     width={120}
-                    interval={0} // Ensure all ticks are shown
+                    interval={0} // Show all ticks
                     tickMargin={10} // Add margin to ticks
                   />
                   <Tooltip 
@@ -369,14 +411,16 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                   />
                   <Bar 
                     dataKey="mastery" 
-                    radius={[0, 4, 4, 0]}
+                    radius={[0, 4, 4, 0]} // Rounded corners on the right side
                   >
+                    {/* Color bars based on mastery level: green for ≥70%, orange for <70% */}
                     {sortedTopicMastery.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={entry.mastery >= 70 ? "#16a34a" : "#f97316"} // Dark green (#16a34a) for ≥70%, Orange for <70%
+                        fill={entry.mastery >= 70 ? "#16a34a" : "#f97316"}
                       />
                     ))}
+                    {/* Display percentage labels on the bars */}
                     <LabelList 
                       dataKey="mastery" 
                       position="right" 
@@ -390,11 +434,12 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
             </div>
           </div>
           
-          {/* Common Error Patterns - Now a full pie chart instead of donut */}
+          {/* Common Error Patterns - Pie chart with legend */}
           <div className="lg:col-span-1">
             <h4 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">
               Common Error Patterns
             </h4>
+            {/* Pie chart showing distribution of error patterns */}
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -405,16 +450,17 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     outerRadius={80}
                     paddingAngle={2}
                     dataKey="value"
-                    nameKey="subject" // Changed from "name" to "subject" to display pattern names
+                    nameKey="subject" // Use subject field for display
                     label={false}
                   >
+                    {/* Apply predefined colors to pie slices */}
                     {errorChartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
                   <Tooltip 
                     formatter={(value) => [`${value}%`, `${errorChartData.find(item => item.value === value)?.subject || 'Error'}`]}
-                    labelFormatter={(label) => `${label}`} // This will display the subject name
+                    labelFormatter={(label) => `${label}`}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -424,6 +470,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
             <div className="mt-4 space-y-4">
               {classData.errorPatterns.map((error, index) => (
                 <div key={index} className="space-y-1">
+                  {/* Error pattern name with color indicator */}
                   <div className="flex items-center gap-2">
                     <div 
                       className="w-3 h-3 rounded-full" 
@@ -433,6 +480,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                       {error.pattern}
                     </span>
                   </div>
+                  {/* Progress bar showing error percentage */}
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div 
                       className="h-2 rounded-full" 
@@ -452,19 +500,22 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
         </div>
       </motion.div>
 
-      {/* Recent Tests/Assessments - Exactly like Reports page */}
+      {/* Assessments Section - Mirrored from Reports page */}
       <motion.div 
         className="glass-card rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
+        {/* Section header with controls */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
             {viewAllTests ? "All Assessments" : "Recent Assessments"}
           </h2>
           
+          {/* Search and filter controls */}
           <div className="flex flex-col sm:flex-row gap-4 mt-4 sm:mt-0 w-full sm:w-auto">
+            {/* Toggle between recent and all tests */}
             <Button
               variant="outline"
               onClick={toggleViewAllTests}
@@ -474,6 +525,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
               <span>{viewAllTests ? "Show Recent" : "View All Tests"}</span>
             </Button>
             
+            {/* Search input with clear functionality */}
             <div className="relative order-0 sm:order-none w-full sm:w-auto">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-4 w-4 text-gray-400" />
@@ -485,6 +537,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
+              {/* Clear search button */}
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
@@ -497,11 +550,13 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
           </div>
         </div>
         
+        {/* Assessments table or empty state */}
         {sortedAndFilteredTests.length > 0 ? (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
+                  {/* Sortable column headers */}
                   <TableHead 
                     className="cursor-pointer" 
                     onClick={() => toggleSort("name")}
@@ -547,6 +602,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {/* Render each assessment row */}
                 {sortedAndFilteredTests.map((test) => (
                   <TableRow 
                     key={test.id}
@@ -555,6 +611,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                   >
                     <TableCell>
                       <div className="flex items-center">
+                        {/* Test icon */}
                         <div className="w-8 h-8 rounded-md bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-3">
                           <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                         </div>
@@ -565,12 +622,14 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     </TableCell>
                     <TableCell>{formatDate(test.date)}</TableCell>
                     <TableCell>
+                      {/* Performance level with color coding */}
                       <span className={`font-medium ${getPerformanceColor(test.performance)}`}>
                         {test.performance}
                       </span>
                     </TableCell>
                     <TableCell>{test.completionRate}</TableCell>
                     <TableCell>
+                      {/* Navigate to test analytics button */}
                       <Button 
                         variant="ghost" 
                         size="sm" 
@@ -589,6 +648,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
             </Table>
           </div>
         ) : (
+          // Empty state when no assessments match search criteria
           <div className="text-center py-8">
             <div className="flex flex-col items-center justify-center">
               <div className="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
@@ -606,6 +666,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
           </div>
         )}
         
+        {/* Download report button */}
         <div className="flex justify-center mt-6">
           <Button className="flex items-center gap-2">
             <Download className="w-4 h-4" />
@@ -614,7 +675,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
         </div>
       </motion.div>
       
-      {/* Student List */}
+      {/* Student List Section */}
       <motion.div 
         className="glass-card rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
@@ -625,15 +686,17 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
           Students
         </h3>
         
+        {/* Student list with individual student cards */}
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {sortedStudents.map((student) => (
             <motion.div
               key={student.id}
               className="py-4 first:pt-0 last:pb-0 cursor-pointer"
               onClick={() => onStudentSelect(student.id)}
-              whileHover={{ x: 5 }}
+              whileHover={{ x: 5 }} // Subtle hover animation
             >
               <div className="flex items-center">
+                {/* Student avatar or placeholder */}
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-purple-100 dark:bg-gray-700 flex items-center justify-center mr-4">
                   {student.avatar ? (
                     <img 
@@ -646,11 +709,13 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                   )}
                 </div>
                 
+                {/* Student information */}
                 <div className="flex-1">
                   <h4 className="text-base font-medium text-gray-800 dark:text-gray-200">
                     {student.name}
                   </h4>
                   <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {/* Average score with color coding */}
                     <div className="flex items-center">
                       <span>Average: </span>
                       <span className={`ml-1 ${
@@ -663,6 +728,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                         {student.averageScore}%
                       </span>
                     </div>
+                    {/* Growth indicator with trend icons */}
                     <div className="flex items-center ml-4">
                       <span>Growth: </span>
                       <div className={`ml-1 flex items-center ${
@@ -690,6 +756,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                   </div>
                 </div>
                 
+                {/* Navigation arrow */}
                 <ChevronRight className="w-5 h-5 text-gray-400" />
               </div>
             </motion.div>
