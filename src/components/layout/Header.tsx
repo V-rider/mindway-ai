@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useTranslation } from '@/hooks/use-translation';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Button } from "@/components/ui/button";
@@ -29,11 +29,11 @@ export const Header: React.FC<HeaderProps> = ({
           className="h-8 w-8"
           aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
         >
-          <Menu 
-            className={`h-4 w-4 transition-transform duration-300 ${
-              sidebarOpen ? 'rotate-90' : 'rotate-0'
-            }`} 
-          />
+          {sidebarOpen ? (
+            <X className="h-4 w-4 transition-all duration-300" />
+          ) : (
+            <Menu className="h-4 w-4 transition-all duration-300" />
+          )}
         </Button>
         
         <div className="ml-auto flex items-center gap-4">
