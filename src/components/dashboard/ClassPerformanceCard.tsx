@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ClassPerformance, StudentPerformance } from '@/types';
 import { motion } from 'framer-motion';
@@ -55,6 +54,9 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [viewAllTests, setViewAllTests] = useState(false);
   
+  // State for performance trend time period
+  const [timePeriod, setTimePeriod] = useState<"week" | "month" | "year">("month");
+  
   // Mock assessments data for each class
   const classAssessments = {
     recentTests: [
@@ -72,15 +74,36 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
     ]
   };
 
-  // Mock performance trend data for the class
-  const classPerformanceTrend = [
-    { date: "2023-08-15", score: 68, testName: "Mathematical Reasoning Test" },
-    { date: "2023-08-29", score: 71, testName: "Pre-Algebra Evaluation" },
-    { date: "2023-09-12", score: 69, testName: "Geometric Formulas Assessment" },
-    { date: "2023-09-27", score: 74, testName: "Statistics & Data Analysis" },
-    { date: "2023-10-10", score: 72, testName: "Algebra Basics Test" },
-    { date: "2023-10-25", score: 76, testName: "Ratios & Proportions Quiz" },
-  ];
+  // Mock performance trend data for different time periods
+  const performanceTrendData = {
+    week: [
+      { date: "2023-10-23", score: 74, testName: "Daily Quiz 1" },
+      { date: "2023-10-24", score: 76, testName: "Daily Quiz 2" },
+      { date: "2023-10-25", score: 78, testName: "Ratios & Proportions Quiz" },
+      { date: "2023-10-26", score: 75, testName: "Practice Test" },
+      { date: "2023-10-27", score: 77, testName: "Weekly Assessment" },
+      { date: "2023-10-28", score: 79, testName: "Review Quiz" },
+      { date: "2023-10-29", score: 76, testName: "Weekend Practice" },
+    ],
+    month: [
+      { date: "2023-08-15", score: 68, testName: "Mathematical Reasoning Test" },
+      { date: "2023-08-29", score: 71, testName: "Pre-Algebra Evaluation" },
+      { date: "2023-09-12", score: 69, testName: "Geometric Formulas Assessment" },
+      { date: "2023-09-27", score: 74, testName: "Statistics & Data Analysis" },
+      { date: "2023-10-10", score: 72, testName: "Algebra Basics Test" },
+      { date: "2023-10-25", score: 76, testName: "Ratios & Proportions Quiz" },
+    ],
+    year: [
+      { date: "2023-01-15", score: 65, testName: "Q1 Assessment" },
+      { date: "2023-03-15", score: 68, testName: "Q2 Assessment" },
+      { date: "2023-06-15", score: 70, testName: "Q3 Assessment" },
+      { date: "2023-09-15", score: 73, testName: "Q4 Assessment" },
+      { date: "2023-10-25", score: 76, testName: "Current Assessment" },
+    ]
+  };
+
+  // Get current performance trend data based on selected time period
+  const classPerformanceTrend = performanceTrendData[timePeriod];
 
   // Sort students by average score descending
   const sortedStudents = [...students].sort((a, b) => b.averageScore - a.averageScore);
@@ -96,12 +119,26 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
     fill: ['#FF6B81', '#FF9F43', '#FFCC29'][index % 3] // Pink, Orange, Yellow colors similar to the image
   }));
 
-  // Function to format date
+  // Function to format date based on time period
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    const date = new Date(dateString);
+    if (timePeriod === "week") {
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'short',
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } else if (timePeriod === "month") {
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } else {
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric',
+        month: 'short'
+      });
+    }
   };
   
   // Function to get performance color
@@ -211,9 +248,27 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
-          Class Performance Trend
-        </h3>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+            Class Performance Trend
+          </h3>
+          
+          <div className="flex gap-2 mt-3 sm:mt-0">
+            {(["week", "month", "year"] as const).map((period) => (
+              <button
+                key={period}
+                onClick={() => setTimePeriod(period)}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  timePeriod === period
+                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+              >
+                {period.charAt(0).toUpperCase() + period.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
         
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
