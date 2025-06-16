@@ -1,3 +1,4 @@
+
 import React from "react";
 import { TestResult, ConceptResult, ErrorTypeResult } from "@/types";
 import { motion } from "framer-motion";
@@ -153,13 +154,16 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName, hi
                 {concept.percentage * concept.total / 100} {t('of')} {concept.total} {t('correct')}
               </div>
               
-              <Link
-                to={`/learning-pathway?concept=${encodeURIComponent(concept.name)}`}
-                className="inline-flex items-center text-xs text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-medium transition-colors"
-              >
-                <BookOpen className="w-3 h-3 mr-1" /> 
-                {t('practice.this.concept')}
-              </Link>
+              {/* Only show practice link for students (when hideScoreCard is false) */}
+              {!hideScoreCard && (
+                <Link
+                  to={`/learning-pathway?concept=${encodeURIComponent(concept.name)}`}
+                  className="inline-flex items-center text-xs text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-medium transition-colors"
+                >
+                  <BookOpen className="w-3 h-3 mr-1" /> 
+                  {t('practice.this.concept')}
+                </Link>
+              )}
             </motion.div>
           ))}
         </div>
