@@ -29,7 +29,11 @@ import {
   Cell,
   PieChart,
   Pie,
-  Legend
+  Legend,
+  LineChart,
+  Line,
+  Area,
+  AreaChart
 } from 'recharts';
 
 interface ClassPerformanceCardProps {
@@ -67,6 +71,16 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
       { id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-6`, name: "Mathematical Reasoning Test", date: "2023-08-15", performance: "Excellent", completionRate: "96%" }
     ]
   };
+
+  // Mock performance trend data for the class
+  const classPerformanceTrend = [
+    { date: "2023-08-15", score: 68, testName: "Mathematical Reasoning Test" },
+    { date: "2023-08-29", score: 71, testName: "Pre-Algebra Evaluation" },
+    { date: "2023-09-12", score: 69, testName: "Geometric Formulas Assessment" },
+    { date: "2023-09-27", score: 74, testName: "Statistics & Data Analysis" },
+    { date: "2023-10-10", score: 72, testName: "Algebra Basics Test" },
+    { date: "2023-10-25", score: 76, testName: "Ratios & Proportions Quiz" },
+  ];
 
   // Sort students by average score descending
   const sortedStudents = [...students].sort((a, b) => b.averageScore - a.averageScore);
@@ -190,12 +204,66 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
         </div>
       </div>
 
-      {/* Performance Overview */}
+      {/* Performance Trend */}
       <motion.div 
         className="glass-card rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+      >
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+          Class Performance Trend
+        </h3>
+        
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={classPerformanceTrend}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+              <XAxis 
+                dataKey="date" 
+                tickFormatter={(value) => formatDate(value)}
+                tick={{ fontSize: 12 }}
+              />
+              <YAxis 
+                domain={[0, 100]}
+                tick={{ fontSize: 12 }}
+              />
+              <Tooltip 
+                formatter={(value, name) => [`${value}%`, 'Class Average']}
+                labelFormatter={(label) => formatDate(label)}
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                }}
+              />
+              <defs>
+                <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+              <Area
+                type="monotone"
+                dataKey="score"
+                stroke="#8b5cf6"
+                strokeWidth={3}
+                fill="url(#scoreGradient)"
+                dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, stroke: '#8b5cf6', strokeWidth: 2 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </motion.div>
+
+      {/* Performance Overview */}
+      <motion.div 
+        className="glass-card rounded-xl p-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
       >
         <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
           Performance Overview
@@ -334,7 +402,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
         className="glass-card rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
       >
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
@@ -496,7 +564,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
         className="glass-card rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
       >
         <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
           Students
