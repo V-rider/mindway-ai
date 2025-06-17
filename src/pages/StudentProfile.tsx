@@ -247,7 +247,7 @@ const StudentProfile = () => {
               </div>
             </div>
             
-            {/* Past Reports - Removed prediction accuracy analysis, showing student scores */}
+            {/* Past Reports */}
             <div className="glass-card rounded-xl p-6">
               <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center">
                 <FileText className="w-5 h-5 text-blue-500 mr-2" />
@@ -271,20 +271,15 @@ const StudentProfile = () => {
                     </div>
                     
                     <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <div className={`font-medium ${
-                          report.score >= 75 
-                            ? "text-green-600 dark:text-green-400" 
-                            : report.score >= 60
-                            ? "text-yellow-600 dark:text-yellow-400"
-                            : "text-red-600 dark:text-red-400"
-                        }`}>
-                          {report.score}%
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          Student Score
-                        </div>
-                      </div>
+                      <span className={`font-medium ${
+                        report.score >= 75 
+                          ? "text-green-600 dark:text-green-400" 
+                          : report.score >= 60
+                          ? "text-yellow-600 dark:text-yellow-400"
+                          : "text-red-600 dark:text-red-400"
+                      }`}>
+                        {report.score}%
+                      </span>
                       
                       <Link
                         to={`/reports/${report.testId}?studentId=${student.id}`}
