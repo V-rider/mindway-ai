@@ -739,26 +739,30 @@ const Dashboard = () => {
   const isMobile = useIsMobile();
   const [selectedGrade, setSelectedGrade] = useState<string>("6"); // New state to track selected grade
   
-  // Handle view changes
+  // Handle view changes with scroll to top
   const handleViewClass = (classId: string) => {
     setSelectedClassId(classId);
     setViewState("class");
+    window.scrollTo(0, 0);
   };
   
   const handleViewStudent = (studentId: string) => {
     setSelectedStudentId(studentId);
     setViewState("student");
+    window.scrollTo(0, 0);
   };
   
   const handleBackToOverview = () => {
     setViewState("overview");
     setSelectedClassId(null);
     setSelectedStudentId(null);
+    window.scrollTo(0, 0);
   };
   
   const handleBackToClass = () => {
     setViewState("class");
     setSelectedStudentId(null);
+    window.scrollTo(0, 0);
   };
   
   const handleGenerateReport = () => {
@@ -767,11 +771,13 @@ const Dashboard = () => {
 
   const handleViewMiscorrection = () => {
     setViewState("miscorrection");
+    window.scrollTo(0, 0);
   };
   
-  // New handler for grade changes
+  // New handler for grade changes with scroll to top
   const handleGradeChange = (grade: string) => {
     setSelectedGrade(grade);
+    window.scrollTo(0, 0);
   };
 
   // New handler for detail report button click
