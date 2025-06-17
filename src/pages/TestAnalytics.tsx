@@ -146,22 +146,6 @@ const TestAnalytics = () => {
     }
   };
 
-  // Get the specific student's data if studentId is provided
-  const getStudentSpecificData = () => {
-    if (!studentId || !testData) return testData;
-    
-    const studentResult = testData.studentResults.find(student => student.studentId === studentId);
-    if (studentResult) {
-      // Return modified test data with the student's specific score
-      return {
-        ...testData,
-        averageScore: studentResult.score, // Use student's actual score instead of class average
-        studentName: studentResult.name
-      };
-    }
-    return testData;
-  };
-
   // Prepare scatter plot data
   const scatterPlotData = testData?.studentResults.map(student => ({
     studentId: student.studentId,
@@ -169,8 +153,6 @@ const TestAnalytics = () => {
     actualScore: student.score,
     predictedScore: student.predictedScore || student.score // fallback if no predicted score
   })) || [];
-
-  const displayData = getStudentSpecificData();
 
   return (
     <MainLayout>
@@ -203,17 +185,9 @@ const TestAnalytics = () => {
                     
                     <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-2">
                       Test Analytics
-                      {studentId && displayData?.studentName && (
-                        <span className="text-lg font-normal text-gray-600 dark:text-gray-400 ml-2">
-                          - {displayData.studentName}
-                        </span>
-                      )}
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400">
-                      {studentId 
-                        ? "Individual student analysis of test results and performance metrics"
-                        : "Comprehensive analysis of test results and performance metrics"
-                      }
+                      Comprehensive analysis of test results and performance metrics
                     </p>
                   </div>
                   
@@ -227,17 +201,10 @@ const TestAnalytics = () => {
                 </div>
               </div>
               
-              {displayData && (
+              {testData && (
                 <div className="space-y-8">
-                  <TestAnalysis 
-                    result={displayData} 
-                    testName={displayData.name} 
-                    hideScoreCard={!studentId} // Only hide score card for class view, show for individual students
-                  />
-                  {/* Only show prediction scatter plot for class view, not individual student */}
-                  {!studentId && (
-                    <PredictionScatterPlot data={scatterPlotData} testName={displayData.name} />
-                  )}
+                  <TestAnalysis result={testData} testName={testData.name} hideScoreCard={true} />
+                  <PredictionScatterPlot data={scatterPlotData} testName={testData.name} />
                 </div>
               )}
             </motion.div>
