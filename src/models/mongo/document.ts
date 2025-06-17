@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb';
 
 export interface DocumentDocument {
   _id?: ObjectId;
+  status?: string; // e.g., pending_analysis, analyzed, failed_analysis
   title: string;
   description?: string | null;
   file_url: string; // URL to the document, e.g., S3, Google Cloud Storage

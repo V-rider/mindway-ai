@@ -107,6 +107,7 @@ export interface ChallengeAttemptDTO extends BaseDocumentDTO {
 export interface DocumentDTO extends BaseDocumentDTO {
   title: string;
   description?: string | null;
+  status?: string;
   file_url: string;
   file_type: string;
   file_size: number;
@@ -163,7 +164,7 @@ export interface Database {
       student_achievements: { Row: StudentAchievementDTO, Insert: Omit<StudentAchievementDTO, '_id' | 'earned_at' | 'student' | 'achievement'>, Update: Partial<Omit<StudentAchievementDTO, '_id' | 'student' | 'achievement'>> },
       math_challenges: { Row: MathChallengeDTO, Insert: Omit<MathChallengeDTO, '_id' | 'created_at' | 'updated_at'>, Update: Partial<Omit<MathChallengeDTO, '_id' | 'created_at' | 'updated_at'>> },
       challenge_attempts: { Row: ChallengeAttemptDTO, Insert: Omit<ChallengeAttemptDTO, '_id' | 'attempted_at' | 'challenge' | 'student'>, Update: Partial<Omit<ChallengeAttemptDTO, '_id' | 'attempted_at' | 'challenge' | 'student'>> },
-      documents: { Row: DocumentDTO, Insert: Omit<DocumentDTO, '_id' | 'created_at' | 'updated_at' | 'uploaded_by_user' | 'class_info'> & {uploaded_by: string, class_id: string}, Update: Partial<Omit<DocumentDTO, '_id' | 'created_at' | 'updated_at' | 'uploaded_by_user' | 'class_info'>> },
+      documents: { Row: DocumentDTO, Insert: Omit<DocumentDTO, '_id' | 'created_at' | 'updated_at' | 'uploaded_by_user' | 'class_info' | 'status'> & {uploaded_by: string, class_id: string, status?: string}, Update: Partial<Omit<DocumentDTO, '_id' | 'created_at' | 'updated_at' | 'uploaded_by_user' | 'class_info'>> },
       document_analysis: { Row: DocumentAnalysisDTO, Insert: Omit<DocumentAnalysisDTO, '_id' | 'created_at' | 'updated_at'> & {document_id: string}, Update: Partial<Omit<DocumentAnalysisDTO, '_id' | 'created_at' | 'updated_at'>> },
       document_annotations: { Row: DocumentAnnotationDTO, Insert: Omit<DocumentAnnotationDTO, '_id' | 'created_at' | 'updated_at' | 'user'> & {document_id: string, user_id: string}, Update: Partial<Omit<DocumentAnnotationDTO, '_id' | 'created_at' | 'updated_at' | 'user'>> },
       document_highlights: { Row: DocumentHighlightDTO, Insert: Omit<DocumentHighlightDTO, '_id' | 'created_at' | 'user'> & {document_id: string, user_id: string}, Update: Partial<Omit<DocumentHighlightDTO, '_id' | 'created_at' | 'user'>> },

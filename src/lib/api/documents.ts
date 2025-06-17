@@ -92,7 +92,7 @@ export const documentApi = {
     }
   },
 
-  async createDocument(documentData: Omit<DocumentDocument, '_id' | 'created_at' | 'updated_at' | 'uploaded_by' | 'class_id'> & {uploaded_by: string, class_id: string}): Promise<DocumentDocument | null> {
+  async createDocument(documentData: Omit<DocumentDocument, '_id' | 'created_at' | 'updated_at' | 'uploaded_by' | 'class_id'> & {uploaded_by: string, class_id: string, status?: string}): Promise<DocumentDocument | null> {
     try {
       const db = await getDbInstance();
       if (!ObjectId.isValid(documentData.uploaded_by) || !ObjectId.isValid(documentData.class_id)) {
