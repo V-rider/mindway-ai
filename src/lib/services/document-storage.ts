@@ -1,37 +1,39 @@
-import { supabase } from '@/integrations/supabase/client';
+// IMPORTANT: This file requires a new document storage solution (e.g., S3, Google Cloud Storage, or MongoDB GridFS).
+// Supabase-specific storage calls have been removed or stubbed.
+
 import { documentApi } from '../api/documents';
+// We need the DocumentDTO type if documentApi returns DTOs, or DocumentDocument if it returns raw docs.
+// Assuming documentApi.createDocument and getDocumentById now use/return types compatible with MongoDB (e.g., DocumentDTO or DocumentDocument)
+// For the purpose of this refactor, we'll assume documentApi returns objects with at least file_url, file_type.
 
 export const documentStorageService = {
   // Upload document to storage
   async uploadDocument(file: File, classId: string, userId: string) {
     try {
-      // Generate a unique file name
+      console.warn("documentStorageService.uploadDocument: Needs implementation for actual file upload to a new storage provider.");
+      // Generate a unique file name (this part is fine)
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${userId}/${classId}/${fileName}`;
+      const fileName = `${userId}-${classId}-${Date.now()}.${fileExt}`; // Made more unique
+      // const filePath = `${userId}/${classId}/${fileName}`; // Path for new storage
 
-      // Upload file to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('documents')
-        .upload(filePath, file);
+      // Placeholder for file upload. In a real scenario:
+      // 1. Upload `file` to your chosen storage provider (S3, GCS, GridFS, etc.)
+      // 2. Get the `publicUrl` or a retrievable identifier from the storage provider.
+      const publicUrl = `placeholder://new-storage/${fileName}`; // Replace with actual URL post-upload
 
-      if (uploadError) throw uploadError;
-
-      // Get the public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('documents')
-        .getPublicUrl(filePath);
-
-      // Create document record
-      const document = await documentApi.createDocument({
+      // Create document record in MongoDB (this part uses the already refactored documentApi)
+      // Ensure the input to createDocument matches the expected type (DocumentDTO or Omit<DocumentDocument, ...>)
+      const documentData = {
         title: file.name,
-        file_url: publicUrl,
+        file_url: publicUrl, // This URL will come from the new storage provider
         file_type: file.type,
         file_size: file.size,
-        uploaded_by: userId,
-        class_id: classId,
-        status: 'pending_analysis', // Explicitly set status
-      });
+        uploaded_by: userId, // Assuming userId is string ObjectId
+        class_id: classId,   // Assuming classId is string ObjectId
+        status: 'pending_analysis', // Now that model supports it
+      };
+      // No longer need ts-ignore if status is properly part of the type for createDocument
+      const document = await documentApi.createDocument(documentData);
 
       return document;
     } catch (error) {
@@ -43,22 +45,21 @@ export const documentStorageService = {
   // Delete document from storage
   async deleteDocument(documentId: string) {
     try {
+      console.warn("documentStorageService.deleteDocument: Needs implementation for actual file deletion from new storage provider.");
       // Get document details
       const document = await documentApi.getDocumentById(documentId);
       if (!document) throw new Error('Document not found');
 
-      // Extract file path from URL
-      const filePath = document.file_url.split('/').pop();
-      if (!filePath) throw new Error('Invalid file path');
+      // Extract file path or identifier from document.file_url
+      // This logic will depend on the structure of file_url from the new storage.
+      // const fileIdentifierInStorage = extractIdentifierFromUrl(document.file_url);
 
-      // Delete from storage
-      const { error: storageError } = await supabase.storage
-        .from('documents')
-        .remove([filePath]);
+      // Placeholder for file deletion from storage:
+      // await newStorageProvider.delete(fileIdentifierInStorage);
+      console.log(`Placeholder: Would delete ${document.file_url} from new storage.`);
 
-      if (storageError) throw storageError;
 
-      // Delete document record
+      // Delete document record from MongoDB (this part is fine)
       await documentApi.deleteDocument(documentId);
     } catch (error) {
       console.error('Error deleting document:', error);
@@ -67,18 +68,16 @@ export const documentStorageService = {
   },
 
   // Get document download URL
-  async getDocumentDownloadUrl(documentId: string) {
+  async getDocumentDownloadUrl(documentId: string): Promise<string | null> {
     try {
+      console.warn("documentStorageService.getDocumentDownloadUrl: Needs implementation for generating download URL from new storage provider (might be direct URL or signed URL).");
       const document = await documentApi.getDocumentById(documentId);
       if (!document) throw new Error('Document not found');
 
-      // Create a signed URL for download
-      const { data, error } = await supabase.storage
-        .from('documents')
-        .createSignedUrl(document.file_url, 60); // URL valid for 60 seconds
-
-      if (error) throw error;
-      return data.signedUrl;
+      // If the file_url is already a direct public URL from the new storage, return it.
+      // If signed URLs are needed, implement that logic here.
+      // For example: return newStorageProvider.createSignedUrl(document.file_url, 60);
+      return document.file_url; // Assuming file_url is now the direct/public URL.
     } catch (error) {
       console.error('Error getting download URL:', error);
       throw error;
@@ -86,18 +85,17 @@ export const documentStorageService = {
   },
 
   // Get document preview URL
-  async getDocumentPreviewUrl(documentId: string) {
+  async getDocumentPreviewUrl(documentId: string): Promise<string | null> {
     try {
       const document = await documentApi.getDocumentById(documentId);
       if (!document) throw new Error('Document not found');
 
-      // For PDFs and images, we can use the public URL
+      // This logic might largely remain the same if file_url is a direct link.
+      // If previews require special handling with the new storage, adjust here.
       if (document.file_type.startsWith('image/') || document.file_type === 'application/pdf') {
-        return document.file_url;
+        return document.file_url; // Assuming file_url is direct link to viewable content
       }
-
-      // For other file types, we might need to generate a preview
-      // This could involve converting the file to PDF or using a preview service
+      console.warn("documentStorageService.getDocumentPreviewUrl: Preview not available for this file type or needs specific implementation for new storage.");
       throw new Error('Preview not available for this file type');
     } catch (error) {
       console.error('Error getting preview URL:', error);
@@ -106,24 +104,23 @@ export const documentStorageService = {
   },
 
   // Get document thumbnail URL
-  async getDocumentThumbnailUrl(documentId: string) {
+  async getDocumentThumbnailUrl(documentId: string): Promise<string | null> {
     try {
       const document = await documentApi.getDocumentById(documentId);
       if (!document) throw new Error('Document not found');
 
-      // For images, we can use the file URL
+      // This logic might change based on how thumbnails are handled with the new storage.
       if (document.file_type.startsWith('image/')) {
-        return document.file_url;
+        return document.file_url; // Assuming file_url can serve as a thumbnail for images
       }
 
-      // For PDFs, we might need to generate a thumbnail
       if (document.file_type === 'application/pdf') {
-        // This could involve using a PDF thumbnail generation service
+        console.warn("documentStorageService.getDocumentThumbnailUrl: PDF thumbnail generation not implemented for new storage.");
         throw new Error('Thumbnail generation not implemented');
       }
 
-      // For other file types, return a default icon
-      return '/icons/document.png';
+      console.warn("documentStorageService.getDocumentThumbnailUrl: Returning default icon, thumbnail generation not implemented for this file type for new storage.");
+      return '/icons/document.png'; // Default icon
     } catch (error) {
       console.error('Error getting thumbnail URL:', error);
       throw error;

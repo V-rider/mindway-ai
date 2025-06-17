@@ -1,246 +1,125 @@
-import { supabase } from '../supabase/client';
-import type { Database } from '@/types/database';
+import { fetchApi } from './client';
+import type { DocumentDocument } from '@/models/mongo/document';
+import type { DocumentAnalysisDocument } from '@/models/mongo/document_analysis';
+import type { DocumentAnnotationDocument } from '@/models/mongo/document_annotation';
+import type { DocumentHighlightDocument } from '@/models/mongo/document_highlight';
+// Import UserDocument and ClassDocument if needed for populating details
+import type { UserDocument } from '@/models/mongo/user';
+import type { ClassDocument } from '@/models/mongo/class';
 
-type Document = Database['public']['Tables']['documents']['Row'];
-type DocumentInsert = Database['public']['Tables']['documents']['Insert'];
-type DocumentUpdate = Database['public']['Tables']['documents']['Update'];
-type DocumentAnalysis = Database['public']['Tables']['document_analysis']['Row'];
-type DocumentAnnotation = Database['public']['Tables']['document_annotations']['Row'];
-type DocumentHighlight = Database['public']['Tables']['document_highlights']['Row'];
+
+const DOCUMENTS_COLLECTION = 'documents';
+const DOC_ANALYSIS_COLLECTION = 'documentAnalysis';
+const DOC_ANNOTATIONS_COLLECTION = 'documentAnnotations';
+const DOC_HIGHLIGHTS_COLLECTION = 'documentHighlights';
+const USERS_COLLECTION = 'users';
+const CLASSES_COLLECTION = 'classes';
 
 export const documentApi = {
-  // Get all documents
-  async getDocuments() {
-    const { data, error } = await supabase
-      .from('documents')
-      .select(`
-        *,
-        uploaded_by:users (
-          id,
-          full_name,
-          email,
-          avatar_url
-        ),
-        class:classes (
-          id,
-          name
-        )
-      `)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+  async getDocuments(): Promise<DocumentDocument[]> {
+    const response = await fetchApi<DocumentDocument[]>('/documents');
+    return response.data || [];
   },
 
-  // Get document by ID
-  async getDocumentById(id: string) {
-    const { data, error } = await supabase
-      .from('documents')
-      .select(`
-        *,
-        uploaded_by:users (
-          id,
-          full_name,
-          email,
-          avatar_url
-        ),
-        class:classes (
-          id,
-          name
-        )
-      `)
-      .eq('id', id)
-      .single();
-
-    if (error) throw error;
-    return data;
+  async getDocumentById(id: string): Promise<DocumentDocument | null> {
+    const response = await fetchApi<DocumentDocument>(`/documents/${id}`);
+    return response.data || null;
   },
 
-  // Create new document
-  async createDocument(documentData: DocumentInsert) {
-    const { data, error } = await supabase
-      .from('documents')
-      .insert(documentData)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+  async createDocument(documentData: Omit<DocumentDocument, '_id' | 'created_at' | 'updated_at'>): Promise<DocumentDocument | null> {
+    const response = await fetchApi<DocumentDocument>('/documents', {
+      method: 'POST',
+      body: JSON.stringify(documentData),
+    });
+    return response.data || null;
   },
 
-  // Update document
-  async updateDocument(id: string, documentData: DocumentUpdate) {
-    const { data, error } = await supabase
-      .from('documents')
-      .update(documentData)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+  async updateDocument(id: string, documentData: Partial<DocumentDocument>): Promise<DocumentDocument | null> {
+    const response = await fetchApi<DocumentDocument>(`/documents/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(documentData),
+    });
+    return response.data || null;
   },
 
-  // Delete document
-  async deleteDocument(id: string) {
-    const { error } = await supabase
-      .from('documents')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+  async deleteDocument(id: string): Promise<boolean> {
+    const response = await fetchApi<{ success: boolean }>(`/documents/${id}`, {
+      method: 'DELETE',
+    });
+    return response.data?.success || false;
   },
 
-  // Get documents by class
-  async getDocumentsByClass(classId: string) {
-    const { data, error } = await supabase
-      .from('documents')
-      .select(`
-        *,
-        uploaded_by:users (
-          id,
-          full_name,
-          email,
-          avatar_url
-        )
-      `)
-      .eq('class_id', classId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+  async getDocumentsByClass(classId: string): Promise<DocumentDocument[]> {
+    const response = await fetchApi<DocumentDocument[]>(`/documents/class/${classId}`);
+    return response.data || [];
   },
 
-  // Get documents by user
-  async getDocumentsByUser(userId: string) {
-    const { data, error } = await supabase
-      .from('documents')
-      .select(`
-        *,
-        class:classes (
-          id,
-          name
-        )
-      `)
-      .eq('uploaded_by', userId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+  async getDocumentsByUser(userId: string): Promise<DocumentDocument[]> {
+    const response = await fetchApi<DocumentDocument[]>(`/documents/user/${userId}`);
+    return response.data || [];
   },
 
   // Document Analysis
-  async getDocumentAnalysis(documentId: string) {
-    const { data, error } = await supabase
-      .from('document_analysis')
-      .select('*')
-      .eq('document_id', documentId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+  async getDocumentAnalysis(documentId: string): Promise<DocumentAnalysisDocument[]> {
+    const response = await fetchApi<DocumentAnalysisDocument[]>(`/documents/${documentId}/analysis`);
+    return response.data || [];
   },
 
-  async createDocumentAnalysis(analysisData: Omit<DocumentAnalysis, 'id' | 'created_at' | 'updated_at'>) {
-    const { data, error } = await supabase
-      .from('document_analysis')
-      .insert(analysisData)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+  async createDocumentAnalysis(analysisData: Omit<DocumentAnalysisDocument, '_id' | 'created_at' | 'updated_at'>): Promise<DocumentAnalysisDocument | null> {
+    const response = await fetchApi<DocumentAnalysisDocument>(`/documents/${analysisData.document_id}/analysis`, {
+      method: 'POST',
+      body: JSON.stringify(analysisData),
+    });
+    return response.data || null;
   },
 
   // Document Annotations
-  async getDocumentAnnotations(documentId: string) {
-    const { data, error } = await supabase
-      .from('document_annotations')
-      .select(`
-        *,
-        user:users (
-          id,
-          full_name,
-          email,
-          avatar_url
-        )
-      `)
-      .eq('document_id', documentId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+  async getDocumentAnnotations(documentId: string): Promise<DocumentAnnotationDocument[]> {
+    const response = await fetchApi<DocumentAnnotationDocument[]>(`/documents/${documentId}/annotations`);
+    return response.data || [];
   },
 
-  async createAnnotation(annotationData: Omit<DocumentAnnotation, 'id' | 'created_at' | 'updated_at'>) {
-    const { data, error } = await supabase
-      .from('document_annotations')
-      .insert(annotationData)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+  async createAnnotation(annotationData: Omit<DocumentAnnotationDocument, '_id' | 'created_at' | 'updated_at'>): Promise<DocumentAnnotationDocument | null> {
+    const response = await fetchApi<DocumentAnnotationDocument>(`/documents/${annotationData.document_id}/annotations`, {
+      method: 'POST',
+      body: JSON.stringify(annotationData),
+    });
+    return response.data || null;
   },
 
-  async updateAnnotation(id: string, annotationData: Partial<DocumentAnnotation>) {
-    const { data, error } = await supabase
-      .from('document_annotations')
-      .update(annotationData)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+  async updateAnnotation(id: string, annotationData: Partial<DocumentAnnotationDocument>): Promise<DocumentAnnotationDocument | null> {
+    const response = await fetchApi<DocumentAnnotationDocument>(`/documents/annotations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(annotationData),
+    });
+    return response.data || null;
   },
 
-  async deleteAnnotation(id: string) {
-    const { error } = await supabase
-      .from('document_annotations')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+  async deleteAnnotation(id: string): Promise<boolean> {
+    const response = await fetchApi<{ success: boolean }>(`/documents/annotations/${id}`, {
+      method: 'DELETE',
+    });
+    return response.data?.success || false;
   },
 
   // Document Highlights
-  async getDocumentHighlights(documentId: string) {
-    const { data, error } = await supabase
-      .from('document_highlights')
-      .select(`
-        *,
-        user:users (
-          id,
-          full_name,
-          email,
-          avatar_url
-        )
-      `)
-      .eq('document_id', documentId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+  async getDocumentHighlights(documentId: string): Promise<DocumentHighlightDocument[]> {
+    const response = await fetchApi<DocumentHighlightDocument[]>(`/documents/${documentId}/highlights`);
+    return response.data || [];
   },
 
-  async createHighlight(highlightData: Omit<DocumentHighlight, 'id' | 'created_at'>) {
-    const { data, error } = await supabase
-      .from('document_highlights')
-      .insert(highlightData)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+  async createHighlight(highlightData: Omit<DocumentHighlightDocument, '_id' | 'created_at' | 'updated_at'>): Promise<DocumentHighlightDocument | null> {
+    const response = await fetchApi<DocumentHighlightDocument>(`/documents/${highlightData.document_id}/highlights`, {
+      method: 'POST',
+      body: JSON.stringify(highlightData),
+    });
+    return response.data || null;
   },
 
-  async deleteHighlight(id: string) {
-    const { error } = await supabase
-      .from('document_highlights')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  }
-}; 
+  async deleteHighlight(id: string): Promise<boolean> {
+    const response = await fetchApi<{ success: boolean }>(`/documents/highlights/${id}`, {
+      method: 'DELETE',
+    });
+    return response.data?.success || false;
+  },
+};
