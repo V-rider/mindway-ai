@@ -34,22 +34,33 @@ export const StudentProfileCard: React.FC<StudentProfileCardProps> = ({
 }) => {
   const { isAdmin } = useAuth();
   
-  // Format dates for the chart with a unique key to force re-rendering
-  const chartData = React.useMemo(() => 
-    student.progressData.map(point => ({
+  // Format dates for the chart with proper dependency array and force re-render
+  const chartData = React.useMemo(() => {
+    if (!student.progressData || student.progressData.length === 0) {
+      return [];
+    }
+    return student.progressData.map(point => ({
       name: new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       Score: point.score,
       testId: point.testId,
       testName: point.testName,
-    })), [student.progressData]
-  );
+    }));
+  }, [student.progressData, student.id]);
   
-  // For the pie chart with memoization
+  // For the pie chart with proper validation
   const COLORS = ['#FF8042', '#FFBB28', '#00C49F', '#0088FE'];
-  const pieChartData = React.useMemo(() => student.mistakeBreakdown, [student.mistakeBreakdown]);
+  const pieChartData = React.useMemo(() => {
+    if (!student.mistakeBreakdown || student.mistakeBreakdown.length === 0) {
+      return [];
+    }
+    return student.mistakeBreakdown;
+  }, [student.mistakeBreakdown, student.id]);
+  
+  // Force component re-render when student changes
+  const renderKey = React.useMemo(() => `${student.id}-${Date.now()}`, [student.id]);
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" key={renderKey}>
       {/* Student Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center">
@@ -101,108 +112,129 @@ export const StudentProfileCard: React.FC<StudentProfileCardProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+        key={`performance-${renderKey}`}
       >
         <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-6">
           Performance Overview
         </h3>
         
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Progress Chart with unique key */}
+          {/* Progress Chart with forced re-render */}
           <div className="lg:col-span-3 bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
             <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-4">
               Progress Over Time
             </h4>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%" key={`line-chart-${student.id}-${chartData.length}`}>
-                <LineChart
-                  data={chartData}
-                  margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+              {chartData.length > 0 ? (
+                <ResponsiveContainer 
+                  width="100%" 
+                  height="100%" 
+                  key={`line-chart-${student.id}-${chartData.length}-${renderKey}`}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                  <XAxis 
-                    dataKey="name" 
-                    tick={{ fontSize: 12, fill: '#888' }} 
-                  />
-                  <YAxis 
-                    domain={[0, 100]} 
-                    tick={{ fontSize: 12, fill: '#888' }} 
-                    label={{ 
-                      value: 'Score (%)', 
-                      angle: -90, 
-                      position: 'insideLeft',
-                      style: { textAnchor: 'middle', fill: '#888', fontSize: 12 } 
-                    }} 
-                  />
-                  <Tooltip 
-                    formatter={(value: number) => [`${value}%`, 'Score']}
-                    labelFormatter={(label) => `Test Date: ${label}`}
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="Score" 
-                    stroke="#8884d8" 
-                    strokeWidth={2} 
-                    activeDot={{ r: 8 }} 
-                    isAnimationActive={true} 
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+                  <LineChart
+                    data={chartData}
+                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fontSize: 12, fill: '#888' }} 
+                    />
+                    <YAxis 
+                      domain={[0, 100]} 
+                      tick={{ fontSize: 12, fill: '#888' }} 
+                      label={{ 
+                        value: 'Score (%)', 
+                        angle: -90, 
+                        position: 'insideLeft',
+                        style: { textAnchor: 'middle', fill: '#888', fontSize: 12 } 
+                      }} 
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [`${value}%`, 'Score']}
+                      labelFormatter={(label) => `Test Date: ${label}`}
+                    />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="Score" 
+                      stroke="#8884d8" 
+                      strokeWidth={2} 
+                      activeDot={{ r: 8 }} 
+                      isAnimationActive={true} 
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                  No progress data available
+                </div>
+              )}
             </div>
           </div>
           
-          {/* Mistake Breakdown with unique key and better rendering */}
+          {/* Mistake Breakdown with forced re-render */}
           <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
             <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-4">
               Mistake Breakdown
             </h4>
             <ScrollArea className="h-64">
               <div className="flex flex-col justify-center items-center h-full">
-                <ResponsiveContainer width="100%" height={220} key={`pie-chart-${student.id}-${pieChartData.length}`}>
-                  <PieChart>
-                    <Pie
-                      data={pieChartData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="percentage"
-                      nameKey="type"
-                    >
-                      {pieChartData.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}-${entry.type}`} 
-                          fill={COLORS[index % COLORS.length]} 
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value: number) => [`${value}%`, 'Percentage']}
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          const data = payload[0].payload;
-                          return (
-                            <div className="bg-white dark:bg-gray-800 p-2 border border-gray-200 dark:border-gray-700 rounded shadow-md">
-                              <p className="text-sm font-medium">{data.type}</p>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">{`${data.percentage}%`}</p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Legend 
-                      layout="vertical"
-                      align="right"
-                      verticalAlign="middle"
-                      wrapperStyle={{ fontSize: '12px' }}
-                      formatter={(value) => {
-                        return <span className="text-xs">{value}</span>;
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                {pieChartData.length > 0 ? (
+                  <ResponsiveContainer 
+                    width="100%" 
+                    height={220} 
+                    key={`pie-chart-${student.id}-${pieChartData.length}-${renderKey}`}
+                  >
+                    <PieChart>
+                      <Pie
+                        data={pieChartData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="percentage"
+                        nameKey="type"
+                      >
+                        {pieChartData.map((entry, index) => (
+                          <Cell 
+                            key={`cell-${index}-${entry.type}-${renderKey}`} 
+                            fill={COLORS[index % COLORS.length]} 
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: number) => [`${value}%`, 'Percentage']}
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            const data = payload[0].payload;
+                            return (
+                              <div className="bg-white dark:bg-gray-800 p-2 border border-gray-200 dark:border-gray-700 rounded shadow-md">
+                                <p className="text-sm font-medium">{data.type}</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">{`${data.percentage}%`}</p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Legend 
+                        layout="vertical"
+                        align="right"
+                        verticalAlign="middle"
+                        wrapperStyle={{ fontSize: '12px' }}
+                        formatter={(value) => {
+                          return <span className="text-xs">{value}</span>;
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                    No mistake data available
+                  </div>
+                )}
               </div>
             </ScrollArea>
           </div>
