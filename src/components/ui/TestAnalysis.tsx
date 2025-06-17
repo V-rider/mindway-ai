@@ -1,9 +1,7 @@
-
 import React from "react";
 import { TestResult, ConceptResult, ErrorTypeResult } from "@/types";
 import { motion } from "framer-motion";
-import { AlertCircle, BookOpen } from "lucide-react";
-import { Link } from "react-router-dom";
+import { AlertCircle } from "lucide-react";
 import { useTranslation } from "@/hooks/use-translation";
 
 interface TestAnalysisProps {
@@ -153,17 +151,6 @@ export const TestAnalysis: React.FC<TestAnalysisProps> = ({ result, testName, hi
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 {concept.percentage * concept.total / 100} {t('of')} {concept.total} {t('correct')}
               </div>
-              
-              {/* Only show practice link for students (when hideScoreCard is false) */}
-              {!hideScoreCard && (
-                <Link
-                  to={`/learning-pathway?concept=${encodeURIComponent(concept.name)}`}
-                  className="inline-flex items-center text-xs text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-medium transition-colors"
-                >
-                  <BookOpen className="w-3 h-3 mr-1" /> 
-                  {t('practice.this.concept')}
-                </Link>
-              )}
             </motion.div>
           ))}
         </div>
