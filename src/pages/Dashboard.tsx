@@ -748,8 +748,6 @@ const Dashboard = () => {
   const handleViewStudent = (studentId: string) => {
     setSelectedStudentId(studentId);
     setViewState("student");
-    // Scroll to top when student is selected
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
   const handleBackToOverview = () => {
