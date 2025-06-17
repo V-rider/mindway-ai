@@ -34,16 +34,19 @@ export const StudentProfileCard: React.FC<StudentProfileCardProps> = ({
 }) => {
   const { isAdmin } = useAuth();
   
-  // Format dates for the chart
-  const chartData = student.progressData.map(point => ({
-    name: new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    Score: point.score,
-    testId: point.testId,
-    testName: point.testName,
-  }));
+  // Format dates for the chart with a unique key to force re-rendering
+  const chartData = React.useMemo(() => 
+    student.progressData.map(point => ({
+      name: new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      Score: point.score,
+      testId: point.testId,
+      testName: point.testName,
+    })), [student.progressData]
+  );
   
-  // For the pie chart
+  // For the pie chart with memoization
   const COLORS = ['#FF8042', '#FFBB28', '#00C49F', '#0088FE'];
+  const pieChartData = React.useMemo(() => student.mistakeBreakdown, [student.mistakeBreakdown]);
   
   return (
     <div className="space-y-6">
@@ -104,13 +107,13 @@ export const StudentProfileCard: React.FC<StudentProfileCardProps> = ({
         </h3>
         
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Progress Chart */}
+          {/* Progress Chart with unique key */}
           <div className="lg:col-span-3 bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
             <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-4">
               Progress Over Time
             </h4>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" key={`line-chart-${student.id}-${chartData.length}`}>
                 <LineChart
                   data={chartData}
                   margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
@@ -148,17 +151,17 @@ export const StudentProfileCard: React.FC<StudentProfileCardProps> = ({
             </div>
           </div>
           
-          {/* Mistake Breakdown - Fixed with ScrollArea and better responsive handling */}
+          {/* Mistake Breakdown with unique key and better rendering */}
           <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
             <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-4">
               Mistake Breakdown
             </h4>
             <ScrollArea className="h-64">
               <div className="flex flex-col justify-center items-center h-full">
-                <ResponsiveContainer width="100%" height={220}>
+                <ResponsiveContainer width="100%" height={220} key={`pie-chart-${student.id}-${pieChartData.length}`}>
                   <PieChart>
                     <Pie
-                      data={student.mistakeBreakdown}
+                      data={pieChartData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
@@ -167,9 +170,9 @@ export const StudentProfileCard: React.FC<StudentProfileCardProps> = ({
                       dataKey="percentage"
                       nameKey="type"
                     >
-                      {student.mistakeBreakdown.map((entry, index) => (
+                      {pieChartData.map((entry, index) => (
                         <Cell 
-                          key={`cell-${index}`} 
+                          key={`cell-${index}-${entry.type}`} 
                           fill={COLORS[index % COLORS.length]} 
                         />
                       ))}
