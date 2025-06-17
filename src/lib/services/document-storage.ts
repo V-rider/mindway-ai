@@ -30,6 +30,7 @@ export const documentStorageService = {
         file_size: file.size,
         uploaded_by: userId,
         class_id: classId,
+        status: 'pending_analysis', // Explicitly set status
       });
 
       return document;

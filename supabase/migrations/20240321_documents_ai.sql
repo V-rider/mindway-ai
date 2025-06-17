@@ -8,6 +8,7 @@ CREATE TABLE documents (
     file_size INTEGER NOT NULL,
     uploaded_by UUID REFERENCES users(id),
     class_id UUID REFERENCES classes(id),
+    status VARCHAR(50) DEFAULT 'pending_analysis' NOT NULL, -- New column
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

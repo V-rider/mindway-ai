@@ -5,6 +5,9 @@ import { TestMeta } from "@/types";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
+import { documentStorageService } from "@/lib/services/document-storage";
+import { aiAnalysisService } from "@/lib/services/ai-analysis";
+import { extractTextFromFile } from "@/lib/services/content-extraction";
 
 export const UploadForm: React.FC = () => {
   const [files, setFiles] = useState<File[]>([]);
@@ -102,57 +105,107 @@ export const UploadForm: React.FC = () => {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (files.length === 0) {
-      toast({
-        title: "Missing files",
-        description: "Please upload at least one test image or PDF",
-        variant: "destructive"
-      });
-      return;
+
+    // ... (existing validation for files and selectedStudents) ...
+    if (files.length === 0 || selectedStudents.length === 0 || files.length !== selectedStudents.length) {
+        // Existing toast messages for these errors
+        if (files.length === 0) {
+          toast({ title: "Missing files", description: "Please upload at least one test image or PDF", variant: "destructive" });
+        } else if (selectedStudents.length === 0) {
+          toast({ title: "No students selected", description: "Please select at least one student", variant: "destructive" });
+        } else {
+          toast({ title: "Mismatch between files and students", description: "Please ensure the number of files matches the number of selected students", variant: "destructive" });
+        }
+        return;
     }
-    
-    if (selectedStudents.length === 0) {
-      toast({
-        title: "No students selected",
-        description: "Please select at least one student",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (selectedStudents.length !== files.length) {
-      toast({
-        title: "Mismatch between files and students",
-        description: "Please ensure the number of files matches the number of selected students",
-        variant: "destructive"
-      });
-      return;
-    }
-    
+
     setUploading(true);
-    
-    try {
-      // In a real app, this would upload to a server
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+    const { user, currentClassId } = useAuth(); // Assuming currentClassId is available
+
+    if (!user || !currentClassId) {
       toast({
-        title: "Upload successful",
-        description: `${files.length} tests have been uploaded and are being analyzed`,
-        variant: "default"
+        title: "Authentication Error",
+        description: "User or class information is missing. Please log in again.",
+        variant: "destructive",
       });
-      
-      navigate("/reports");
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast({
-        title: "Upload failed",
-        description: "There was an error uploading the tests",
-        variant: "destructive"
-      });
-    } finally {
       setUploading(false);
+      return;
+    }
+    const userId = user.id;
+
+    let successfulUploads = 0;
+    let failedUploads = 0;
+
+    // Use a for...of loop to handle async operations correctly within the loop
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const studentId = selectedStudents[i]; // Assuming one file per student, and order matches
+
+      try {
+        toast({
+          title: `Processing file ${i + 1} of ${files.length}`,
+          description: `Uploading ${file.name}...`,
+          variant: "default",
+        });
+
+        // 1. Upload document
+        const document = await documentStorageService.uploadDocument(file, currentClassId, userId);
+        // Associate student with document if necessary.
+        // The current 'documents' table schema doesn't directly link to a single student,
+        // but rather to a class and uploaded_by. This might need further thought if a
+        // direct student-document link (for this specific test instance) is required beyond class enrollment.
+        // For now, we proceed with upload and analysis.
+
+        toast({
+          title: `File ${i + 1}: ${file.name} uploaded`,
+          description: `Extracting content and starting AI analysis...`,
+          variant: "default",
+        });
+
+        // 2. Extract text (placeholder)
+        // This will be properly implemented in the next plan step
+        const textContent = await extractTextFromFile(file);
+
+        // 3. Analyze document
+        await aiAnalysisService.analyzeDocument(document.id, textContent);
+        // We might also want to associate studentId with the analysis if the backend supports it,
+        // or store this association in another table if needed.
+
+        successfulUploads++;
+        toast({
+          title: `File ${i + 1}: Analysis initiated`,
+          description: `${file.name} is being analyzed.`,
+          variant: "default", // Changed to success, but could be "default"
+        });
+      } catch (error) {
+        failedUploads++;
+        console.error(`Error processing file ${file.name}:`, error);
+        toast({
+          title: `Error processing file ${file.name}`,
+          description: error instanceof Error ? error.message : "An unknown error occurred.",
+          variant: "destructive",
+        });
+      }
+    }
+
+    setUploading(false);
+
+    if (failedUploads > 0) {
+      toast({
+        title: "Uploads Complete with Errors",
+        description: `${successfulUploads} tests processed successfully, ${failedUploads} failed.`,
+        variant: "destructive", // Or "warning"
+      });
+    } else {
+      toast({
+        title: "All Tests Processed",
+        description: `${successfulUploads} tests have been uploaded and sent for analysis.`,
+        variant: "default", // Changed to success
+      });
+    }
+
+    if (successfulUploads > 0) {
+      navigate("/reports"); // Navigate if at least one upload was successful
     }
   };
   
