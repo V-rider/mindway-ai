@@ -1,2 +1,2 @@
-export const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://cortexlimitedhk:TjLpm5quH2kOlX6l@main.pqu0ch8.mongodb.net/?retryWrites=true&w=majority&appName=Main";
-export const MONGO_DB_NAME = process.env.MONGO_DB_NAME || "Main";
+export const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017";
+export const MONGO_DB_NAME = process.env.MONGO_DB_NAME || "mindway";

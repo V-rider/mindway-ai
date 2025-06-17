@@ -1,5 +1,4 @@
-import { getDbInstance, handleDbError } from '@/lib/supabase/client';
-import { ObjectId } from 'mongodb';
+import { fetchApi } from './client';
 import type { UserDocument } from '@/models/mongo/user';
 // NOTE: Supabase auth.getUser() is specific to Supabase.
 // This will need to be replaced with your MongoDB authentication strategy.
@@ -15,33 +14,23 @@ export const userApi = {
   async getCurrentUser(userIdFromAuth?: string): Promise<UserDocument | null> {
     if (!userIdFromAuth) {
       console.warn("getCurrentUser called without a user ID from auth system.");
-      return null; // Or throw error: not authenticated
-    }
-    try {
-      const db = await getDbInstance();
-      if (!ObjectId.isValid(userIdFromAuth)) return null;
-      return await db.collection<UserDocument>(USERS_COLLECTION)
-        .findOne({ _id: new ObjectId(userIdFromAuth) });
-    } catch (error) {
-      handleDbError(error, 'getCurrentUser');
       return null;
     }
+    const response = await fetchApi<UserDocument>(`/users/${userIdFromAuth}`);
+    return response.data || null;
   },
 
   async getUserById(id: string): Promise<UserDocument | null> {
-    try {
-      const db = await getDbInstance();
-      if (!ObjectId.isValid(id)) return null;
-      return await db.collection<UserDocument>(USERS_COLLECTION)
-        .findOne({ _id: new ObjectId(id) });
-    } catch (error) {
-      handleDbError(error, 'getUserById');
-      return null;
-    }
+    const response = await fetchApi<UserDocument>(`/users/${id}`);
+    return response.data || null;
   },
 
   // This should be restricted (e.g. admin only) at the application/API gateway level
   async getAllUsers(): Promise<UserDocument[]> {
+    const response = await fetchApi<UserDocument[]>('/users');
+    return response.data || [];
+  },
+
     try {
       const db = await getDbInstance();
       return await db.collection<UserDocument>(USERS_COLLECTION)
