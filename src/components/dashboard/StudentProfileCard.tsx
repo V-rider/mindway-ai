@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { StudentProfile } from '@/types';
 import { motion } from 'framer-motion';
@@ -98,6 +97,7 @@ export const StudentProfileCard: React.FC<StudentProfileCardProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+        key={`performance-${student.id}`} // Add key to force re-render
       >
         <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-6">
           Performance Overview
@@ -109,7 +109,7 @@ export const StudentProfileCard: React.FC<StudentProfileCardProps> = ({
             <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-4">
               Progress Over Time
             </h4>
-            <div className="h-64">
+            <div className="h-64" key={`line-chart-${student.id}-${chartData.length}`}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={chartData}
@@ -154,7 +154,7 @@ export const StudentProfileCard: React.FC<StudentProfileCardProps> = ({
               Mistake Breakdown
             </h4>
             <ScrollArea className="h-64">
-              <div className="flex flex-col justify-center items-center h-full">
+              <div className="flex flex-col justify-center items-center h-full" key={`pie-chart-${student.id}-${student.mistakeBreakdown.length}`}>
                 <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie
