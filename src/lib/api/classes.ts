@@ -1,5 +1,5 @@
-import { supabase } from '../supabase/client';
-import type { Database } from '@/types/database';
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
 type Class = Database['public']['Tables']['classes']['Row'];
 type ClassInsert = Database['public']['Tables']['classes']['Insert'];
@@ -178,4 +178,4 @@ export const classApi = {
     if (error) throw error;
     return data;
   }
-}; 
+};

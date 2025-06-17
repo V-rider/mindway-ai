@@ -1,5 +1,5 @@
-import { supabase } from '../supabase/client';
-import type { Database } from '@/types/database';
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
 type Achievement = Database['public']['Tables']['achievements']['Row'];
 type AchievementInsert = Database['public']['Tables']['achievements']['Insert'];
@@ -170,4 +170,4 @@ export const achievementApi = {
     if (error) throw error;
     return data;
   }
-}; 
+};

@@ -1,5 +1,5 @@
-import { supabase } from '../supabase/client';
-import type { Database } from '@/types/database';
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
 type Material = Database['public']['Tables']['learning_materials']['Row'];
 type MaterialInsert = Database['public']['Tables']['learning_materials']['Insert'];
@@ -204,4 +204,4 @@ export const materialApi = {
     if (error) throw error;
     return data;
   }
-}; 
+};

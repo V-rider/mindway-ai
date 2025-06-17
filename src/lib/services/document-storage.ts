@@ -1,4 +1,4 @@
-import { supabase } from '../supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { documentApi } from '../api/documents';
 
 export const documentStorageService = {
@@ -129,4 +129,4 @@ export const documentStorageService = {
       throw error;
     }
   }
-}; 
+};

@@ -1,6 +1,7 @@
-import { supabase } from '../supabase/client';
+
+import { supabase } from '@/integrations/supabase/client';
 import { userApi } from '../api/users';
-import type { Database } from '@/types/database';
+import type { Database } from '@/integrations/supabase/types';
 
 type User = Database['public']['Tables']['users']['Row'];
 

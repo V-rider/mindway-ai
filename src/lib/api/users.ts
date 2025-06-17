@@ -1,5 +1,5 @@
-import { supabase, handleSupabaseError } from '../supabase/client';
-import type { Database } from '@/types/database';
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
 type User = Database['public']['Tables']['users']['Row'];
 type UserInsert = Database['public']['Tables']['users']['Insert'];
@@ -104,4 +104,4 @@ export const userApi = {
     if (error) throw error;
     return data;
   }
-}; 
+};

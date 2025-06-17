@@ -61,20 +61,10 @@ export const aiAnalysisService = {
         }),
       ]);
 
-      // If all successful, update status to 'analyzed'
-      await documentApi.updateDocument(documentId, { status: 'analyzed' });
-
       return analysis;
     } catch (error) {
       console.error(`Error analyzing document ${documentId}:`, error);
-      // Update status to 'error_analysis' before rethrowing
-      try {
-        await documentApi.updateDocument(documentId, { status: 'error_analysis' });
-      } catch (statusUpdateError) {
-        console.error(`Failed to update document ${documentId} status to error_analysis:`, statusUpdateError);
-        // Log this error but don't let it mask the original error
-      }
-      throw error; // Rethrow the original error for the calling function
+      throw error;
     }
   },
 
@@ -180,4 +170,4 @@ export const aiAnalysisService = {
       throw error;
     }
   }
-}; 
+};

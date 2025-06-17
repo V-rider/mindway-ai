@@ -1,5 +1,5 @@
-import { supabase } from '../supabase/client';
-import type { Database } from '@/types/database';
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
 type Challenge = Database['public']['Tables']['math_challenges']['Row'];
 type ChallengeInsert = Database['public']['Tables']['math_challenges']['Insert'];
@@ -202,4 +202,4 @@ export const challengeApi = {
     if (challengesError) throw challengesError;
     return challenges;
   }
-}; 
+};
