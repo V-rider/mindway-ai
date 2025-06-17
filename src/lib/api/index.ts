@@ -8,4 +8,4 @@ export { achievementApi } from './achievements';
 export { challengeApi } from './challenges';
 
 // Export types
-export type { Database } from '@/integrations/supabase/types';
+export type { Database } from '@/types/database';

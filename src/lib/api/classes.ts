@@ -1,181 +1,299 @@
-import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
+import { getDbInstance, handleDbError } from '@/lib/supabase/client';
+import { ObjectId } from 'mongodb';
+import type { ClassDocument } from '@/models/mongo/class';
+import type { ClassEnrollmentDocument } from '@/models/mongo/class_enrollment';
+import type { UserDocument } from '@/models/mongo/user';
+import type { LearningMaterialDocument } from '@/models/mongo/learning_material';
 
-type Class = Database['public']['Tables']['classes']['Row'];
-type ClassInsert = Database['public']['Tables']['classes']['Insert'];
-type ClassUpdate = Database['public']['Tables']['classes']['Update'];
-type ClassEnrollment = Database['public']['Tables']['class_enrollments']['Row'];
+const CLASSES_COLLECTION = 'classes';
+const ENROLLMENTS_COLLECTION = 'classEnrollments';
+const USERS_COLLECTION = 'users';
+const MATERIALS_COLLECTION = 'learningMaterials';
 
 export const classApi = {
-  // Get all classes
-  async getClasses() {
-    const { data, error } = await supabase
-      .from('classes')
-      .select(`
-        *,
-        teacher:users!teacher_id (
-          id,
-          full_name,
-          email,
-          avatar_url
-        )
-      `)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+  async getClasses(): Promise<any[]> { // Define specific type
+    try {
+      const db = await getDbInstance();
+      return await db.collection<ClassDocument>(CLASSES_COLLECTION)
+        .aggregate([
+          {
+            $lookup: {
+              from: USERS_COLLECTION,
+              localField: 'teacher_id',
+              foreignField: '_id',
+              as: 'teacher',
+            },
+          },
+          { $unwind: { path: '$teacher', preserveNullAndEmptyArrays: true } }, // Use preserveNullAndEmptyArrays if teacher might not exist
+          { $sort: { created_at: -1 } },
+          {
+            $project: { // Project to match Supabase output structure if needed
+              _id: 1, name: 1, description: 1, teacher_id: 1, created_at: 1, updated_at: 1,
+              teacher: { _id: '$teacher._id', full_name: '$teacher.full_name', email: '$teacher.email', avatar_url: '$teacher.avatar_url' }
+            }
+          }
+        ])
+        .toArray();
+    } catch (error) {
+      handleDbError(error, 'getClasses');
+      return [];
+    }
   },
 
-  // Get class by ID
-  async getClassById(id: string) {
-    const { data, error } = await supabase
-      .from('classes')
-      .select(`
-        *,
-        teacher:users!teacher_id (
-          id,
-          full_name,
-          email,
-          avatar_url
-        )
-      `)
-      .eq('id', id)
-      .single();
-
-    if (error) throw error;
-    return data;
+  async getClassById(id: string): Promise<any | null> { // Define specific type
+    try {
+      const db = await getDbInstance();
+      if (!ObjectId.isValid(id)) return null;
+      const classes = await db.collection<ClassDocument>(CLASSES_COLLECTION)
+        .aggregate([
+          { $match: { _id: new ObjectId(id) } },
+          {
+            $lookup: {
+              from: USERS_COLLECTION,
+              localField: 'teacher_id',
+              foreignField: '_id',
+              as: 'teacher',
+            },
+          },
+          { $unwind: { path: '$teacher', preserveNullAndEmptyArrays: true } },
+           {
+            $project: {
+              _id: 1, name: 1, description: 1, teacher_id: 1, created_at: 1, updated_at: 1,
+              teacher: { _id: '$teacher._id', full_name: '$teacher.full_name', email: '$teacher.email', avatar_url: '$teacher.avatar_url' }
+            }
+          }
+        ])
+        .toArray();
+      return classes.length > 0 ? classes[0] : null;
+    } catch (error) {
+      handleDbError(error, 'getClassById');
+      return null;
+    }
   },
 
-  // Create new class
-  async createClass(classData: ClassInsert) {
-    const { data, error } = await supabase
-      .from('classes')
-      .insert(classData)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+  async createClass(classData: Omit<ClassDocument, '_id' | 'created_at' | 'updated_at' | 'student_ids' | 'teacher_id'> & {teacher_id: string}): Promise<ClassDocument | null> {
+    try {
+      const db = await getDbInstance();
+      if (!ObjectId.isValid(classData.teacher_id)) throw new Error("Invalid teacher_id");
+      const now = new Date();
+      const newClass: ClassDocument = {
+        ...classData,
+        teacher_id: new ObjectId(classData.teacher_id),
+        student_ids: [], // Initialize with empty array
+        created_at: now,
+        updated_at: now,
+      };
+      const result = await db.collection<ClassDocument>(CLASSES_COLLECTION).insertOne(newClass);
+      if (!result.insertedId) throw new Error('Class creation failed');
+      return { ...newClass, _id: result.insertedId };
+    } catch (error) {
+      handleDbError(error, 'createClass');
+      return null;
+    }
   },
 
-  // Update class
-  async updateClass(id: string, classData: ClassUpdate) {
-    const { data, error } = await supabase
-      .from('classes')
-      .update(classData)
-      .eq('id', id)
-      .select()
-      .single();
+  async updateClass(id: string, classData: Partial<Omit<ClassDocument, '_id' | 'created_at' | 'updated_at' | 'student_ids' | 'teacher_id'>> & {teacher_id?: string}): Promise<ClassDocument | null> {
+    try {
+      const db = await getDbInstance();
+      if (!ObjectId.isValid(id)) return null;
 
-    if (error) throw error;
-    return data;
+      const updatePayload: any = { ...classData };
+      if (classData.teacher_id && ObjectId.isValid(classData.teacher_id)) {
+        updatePayload.teacher_id = new ObjectId(classData.teacher_id);
+      } else if (classData.teacher_id) { // if teacher_id is present but invalid
+        delete updatePayload.teacher_id; // or throw error
+      }
+
+      const result = await db.collection<ClassDocument>(CLASSES_COLLECTION)
+        .findOneAndUpdate(
+          { _id: new ObjectId(id) },
+          { $set: { ...updatePayload, updated_at: new Date() } },
+          { returnDocument: 'after' }
+        );
+      return result;
+    } catch (error) {
+      handleDbError(error, 'updateClass');
+      return null;
+    }
   },
 
-  // Delete class
-  async deleteClass(id: string) {
-    const { error } = await supabase
-      .from('classes')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+  async deleteClass(id: string): Promise<boolean> {
+    try {
+      const db = await getDbInstance();
+      if (!ObjectId.isValid(id)) return false;
+      // Consider deleting related enrollments and materials or handling it at application level
+      const result = await db.collection<ClassDocument>(CLASSES_COLLECTION).deleteOne({ _id: new ObjectId(id) });
+      if (result.deletedCount === 1) {
+        // Also delete enrollments for this class
+        await db.collection<ClassEnrollmentDocument>(ENROLLMENTS_COLLECTION).deleteMany({ class_id: new ObjectId(id) });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      handleDbError(error, 'deleteClass');
+      return false;
+    }
   },
 
-  // Get classes by teacher
-  async getClassesByTeacher(teacherId: string) {
-    const { data, error } = await supabase
-      .from('classes')
-      .select(`
-        *,
-        teacher:users!teacher_id (
-          id,
-          full_name,
-          email,
-          avatar_url
-        )
-      `)
-      .eq('teacher_id', teacherId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+  async getClassesByTeacher(teacherId: string): Promise<any[]> { // Define specific type
+    try {
+      const db = await getDbInstance();
+      if (!ObjectId.isValid(teacherId)) return [];
+      return await db.collection<ClassDocument>(CLASSES_COLLECTION)
+        .aggregate([
+          { $match: { teacher_id: new ObjectId(teacherId) } },
+          {
+            $lookup: { // Self-lookup to structure teacher info as in getClasses
+              from: USERS_COLLECTION,
+              localField: 'teacher_id',
+              foreignField: '_id',
+              as: 'teacher',
+            },
+          },
+          { $unwind: { path: '$teacher', preserveNullAndEmptyArrays: true } },
+          { $sort: { created_at: -1 } },
+          {
+            $project: {
+              _id: 1, name: 1, description: 1, teacher_id: 1, created_at: 1, updated_at: 1,
+              teacher: { _id: '$teacher._id', full_name: '$teacher.full_name', email: '$teacher.email', avatar_url: '$teacher.avatar_url' }
+            }
+          }
+        ])
+        .toArray();
+    } catch (error) {
+      handleDbError(error, 'getClassesByTeacher');
+      return [];
+    }
   },
 
-  // Get classes for student
-  async getStudentClasses(studentId: string) {
-    const { data, error } = await supabase
-      .from('class_enrollments')
-      .select(`
-        class:classes (
-          *,
-          teacher:users!teacher_id (
-            id,
-            full_name,
-            email,
-            avatar_url
-          )
-        )
-      `)
-      .eq('student_id', studentId)
-      .order('enrolled_at', { ascending: false });
-
-    if (error) throw error;
-    return data.map(item => item.class);
+  // If ClassDocument.student_ids is used:
+  async getStudentClasses(studentId: string): Promise<any[]> { // Define specific type
+    try {
+      const db = await getDbInstance();
+      if (!ObjectId.isValid(studentId)) return [];
+      // Find classes where student_ids array contains the studentId
+      // This replaces querying the class_enrollments table directly for this purpose
+      const studentOId = new ObjectId(studentId);
+      const classes = await db.collection<ClassDocument>(CLASSES_COLLECTION)
+        .aggregate([
+            { $match: { student_ids: studentOId } },
+            {
+                $lookup: {
+                    from: USERS_COLLECTION,
+                    localField: 'teacher_id',
+                    foreignField: '_id',
+                    as: 'teacher'
+                }
+            },
+            { $unwind: { path: '$teacher', preserveNullAndEmptyArrays: true } },
+            // We need to sort by enrollment date, which is not on the class document.
+            // This might require keeping ClassEnrollment collection or adding enrollment_date to student_ids array objects.
+            // For now, sorting by class creation.
+            { $sort: { created_at: -1 } },
+            {
+                 $project: {
+                    // Supabase returned { class: { ... } }, we'll return the class directly
+                    _id: 1, name: 1, description: 1, teacher_id: 1, created_at: 1, updated_at: 1, student_ids:1,
+                    teacher: { _id: '$teacher._id', full_name: '$teacher.full_name', email: '$teacher.email', avatar_url: '$teacher.avatar_url' }
+                 }
+            }
+        ])
+        .toArray();
+      return classes;
+    } catch (error) {
+      handleDbError(error, 'getStudentClasses');
+      return [];
+    }
   },
 
-  // Enroll student in class
-  async enrollStudent(classId: string, studentId: string) {
-    const { data, error } = await supabase
-      .from('class_enrollments')
-      .insert({
-        class_id: classId,
-        student_id: studentId
-      })
-      .select()
-      .single();
+  // Enroll student: adds student_id to class.student_ids and creates/updates enrollment document
+  async enrollStudent(classId: string, studentId: string): Promise<ClassEnrollmentDocument | null> {
+    try {
+      const db = await getDbInstance();
+      if (!ObjectId.isValid(classId) || !ObjectId.isValid(studentId)) return null;
 
-    if (error) throw error;
-    return data;
+      const classOId = new ObjectId(classId);
+      const studentOId = new ObjectId(studentId);
+
+      // Add student to class's student_ids array
+      await db.collection<ClassDocument>(CLASSES_COLLECTION).updateOne(
+        { _id: classOId },
+        { $addToSet: { student_ids: studentOId } } // $addToSet prevents duplicates
+      );
+
+      // Create enrollment document
+      const newEnrollment: ClassEnrollmentDocument = {
+        class_id: classOId,
+        student_id: studentOId,
+        enrolled_at: new Date(),
+      };
+      const result = await db.collection<ClassEnrollmentDocument>(ENROLLMENTS_COLLECTION).insertOne(newEnrollment);
+      if (!result.insertedId) throw new Error('Enrollment failed');
+      return { ...newEnrollment, _id: result.insertedId };
+    } catch (error) {
+      handleDbError(error, 'enrollStudent');
+      return null;
+    }
   },
 
-  // Remove student from class
-  async removeStudent(classId: string, studentId: string) {
-    const { error } = await supabase
-      .from('class_enrollments')
-      .delete()
-      .eq('class_id', classId)
-      .eq('student_id', studentId);
+  // Remove student: removes student_id from class.student_ids and deletes enrollment document
+  async removeStudent(classId: string, studentId: string): Promise<boolean> {
+    try {
+      const db = await getDbInstance();
+      if (!ObjectId.isValid(classId) || !ObjectId.isValid(studentId)) return false;
 
-    if (error) throw error;
+      const classOId = new ObjectId(classId);
+      const studentOId = new ObjectId(studentId);
+
+      // Remove student from class's student_ids array
+      await db.collection<ClassDocument>(CLASSES_COLLECTION).updateOne(
+        { _id: classOId },
+        { $pull: { student_ids: studentOId } }
+      );
+
+      // Delete enrollment document
+      const result = await db.collection<ClassEnrollmentDocument>(ENROLLMENTS_COLLECTION).deleteOne({
+        class_id: classOId,
+        student_id: studentOId,
+      });
+      return result.deletedCount === 1;
+    } catch (error) {
+      handleDbError(error, 'removeStudent');
+      return false;
+    }
   },
 
-  // Get class students
-  async getClassStudents(classId: string) {
-    const { data, error } = await supabase
-      .from('class_enrollments')
-      .select(`
-        student:users (
-          id,
-          full_name,
-          email,
-          avatar_url
-        )
-      `)
-      .eq('class_id', classId);
+  // Get class students by looking up users in class.student_ids
+  async getClassStudents(classId: string): Promise<UserDocument[]> {
+    try {
+      const db = await getDbInstance();
+      if (!ObjectId.isValid(classId)) return [];
 
-    if (error) throw error;
-    return data.map(item => item.student);
+      const classDoc = await db.collection<ClassDocument>(CLASSES_COLLECTION).findOne({ _id: new ObjectId(classId) });
+      if (!classDoc || !classDoc.student_ids || classDoc.student_ids.length === 0) return [];
+
+      const students = await db.collection<UserDocument>(USERS_COLLECTION)
+        .find({ _id: { $in: classDoc.student_ids } })
+        .project({ full_name: 1, email: 1, avatar_url: 1, _id: 1 }) // project needed fields
+        .toArray();
+      return students;
+    } catch (error) {
+      handleDbError(error, 'getClassStudents');
+      return [];
+    }
   },
 
-  // Get class materials
-  async getClassMaterials(classId: string) {
-    const { data, error } = await supabase
-      .from('learning_materials')
-      .select('*')
-      .eq('class_id', classId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+  async getClassMaterials(classId: string): Promise<LearningMaterialDocument[]> {
+    try {
+      const db = await getDbInstance();
+      if (!ObjectId.isValid(classId)) return [];
+      return await db.collection<LearningMaterialDocument>(MATERIALS_COLLECTION)
+        .find({ class_id: new ObjectId(classId) })
+        .sort({ created_at: -1 })
+        .toArray();
+    } catch (error) {
+      handleDbError(error, 'getClassMaterials');
+      return [];
+    }
   }
 };
