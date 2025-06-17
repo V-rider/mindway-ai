@@ -1,255 +1,205 @@
-import { getDbInstance, handleDbError } from '@/lib/supabase/client';
-import { ObjectId } from 'mongodb';
-import type { MathChallengeDocument } from '@/models/mongo/math_challenge';
-import type { ChallengeAttemptDocument } from '@/models/mongo/challenge_attempt';
-import type { UserDocument } from '@/models/mongo/user';
+import { supabase } from '../supabase/client';
+import type { Database } from '@/types/database';
 
-const CHALLENGES_COLLECTION = 'mathChallenges';
-const ATTEMPTS_COLLECTION = 'challengeAttempts';
-const USERS_COLLECTION = 'users';
+type Challenge = Database['public']['Tables']['math_challenges']['Row'];
+type ChallengeInsert = Database['public']['Tables']['math_challenges']['Insert'];
+type ChallengeUpdate = Database['public']['Tables']['math_challenges']['Update'];
+type ChallengeAttempt = Database['public']['Tables']['challenge_attempts']['Row'];
 
 export const challengeApi = {
-  async getChallenges(): Promise<MathChallengeDocument[]> {
-    try {
-      const db = await getDbInstance();
-      return await db.collection<MathChallengeDocument>(CHALLENGES_COLLECTION)
-        .find()
-        .sort({ created_at: -1 })
-        .toArray();
-    } catch (error) {
-      handleDbError(error, 'getChallenges');
-      return [];
-    }
+  // Get all challenges
+  async getChallenges() {
+    const { data, error } = await supabase
+      .from('math_challenges')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
   },
 
-  async getChallengeById(id: string): Promise<MathChallengeDocument | null> {
-    try {
-      const db = await getDbInstance();
-      if (!ObjectId.isValid(id)) return null;
-      return await db.collection<MathChallengeDocument>(CHALLENGES_COLLECTION)
-        .findOne({ _id: new ObjectId(id) });
-    } catch (error) {
-      handleDbError(error, 'getChallengeById');
-      return null;
-    }
+  // Get challenge by ID
+  async getChallengeById(id: string) {
+    const { data, error } = await supabase
+      .from('math_challenges')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
   },
 
-  async createChallenge(challengeData: Omit<MathChallengeDocument, '_id' | 'created_at' | 'updated_at'>): Promise<MathChallengeDocument | null> {
-    try {
-      const db = await getDbInstance();
-      const now = new Date();
-      const newChallenge: MathChallengeDocument = {
-        ...challengeData,
-        created_at: now,
-        updated_at: now,
-      };
-      const result = await db.collection<MathChallengeDocument>(CHALLENGES_COLLECTION).insertOne(newChallenge);
-      if (!result.insertedId) throw new Error('Challenge creation failed');
-      return { ...newChallenge, _id: result.insertedId };
-    } catch (error) {
-      handleDbError(error, 'createChallenge');
-      return null;
-    }
+  // Create new challenge
+  async createChallenge(challengeData: ChallengeInsert) {
+    const { data, error } = await supabase
+      .from('math_challenges')
+      .insert(challengeData)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   },
 
-  async updateChallenge(id: string, challengeData: Partial<Omit<MathChallengeDocument, '_id' | 'created_at' | 'updated_at'>>): Promise<MathChallengeDocument | null> {
-    try {
-      const db = await getDbInstance();
-      if (!ObjectId.isValid(id)) return null;
-      const result = await db.collection<MathChallengeDocument>(CHALLENGES_COLLECTION)
-        .findOneAndUpdate(
-          { _id: new ObjectId(id) },
-          { $set: { ...challengeData, updated_at: new Date() } },
-          { returnDocument: 'after' }
-        );
-      return result;
-    } catch (error) {
-      handleDbError(error, 'updateChallenge');
-      return null;
-    }
+  // Update challenge
+  async updateChallenge(id: string, challengeData: ChallengeUpdate) {
+    const { data, error } = await supabase
+      .from('math_challenges')
+      .update(challengeData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   },
 
-  async deleteChallenge(id: string): Promise<boolean> {
-    try {
-      const db = await getDbInstance();
-      if (!ObjectId.isValid(id)) return false;
-      const result = await db.collection<MathChallengeDocument>(CHALLENGES_COLLECTION).deleteOne({ _id: new ObjectId(id) });
-      return result.deletedCount === 1;
-    } catch (error) {
-      handleDbError(error, 'deleteChallenge');
-      return false;
-    }
+  // Delete challenge
+  async deleteChallenge(id: string) {
+    const { error } = await supabase
+      .from('math_challenges')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   },
 
-  async getChallengesByDifficulty(difficulty: number): Promise<MathChallengeDocument[]> {
-    try {
-      const db = await getDbInstance();
-      return await db.collection<MathChallengeDocument>(CHALLENGES_COLLECTION)
-        .find({ difficulty_level: difficulty })
-        .sort({ created_at: -1 })
-        .toArray();
-    } catch (error) {
-      handleDbError(error, 'getChallengesByDifficulty');
-      return [];
-    }
+  // Get challenges by difficulty
+  async getChallengesByDifficulty(difficulty: number) {
+    const { data, error } = await supabase
+      .from('math_challenges')
+      .select('*')
+      .eq('difficulty_level', difficulty)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
   },
 
-  async submitAttempt(studentId: string, challengeId: string, attemptText: string, isCorrect: boolean): Promise<ChallengeAttemptDocument | null> {
-    try {
-      const db = await getDbInstance();
-      if (!ObjectId.isValid(studentId) || !ObjectId.isValid(challengeId)) return null;
-      const newAttempt: ChallengeAttemptDocument = {
-        student_id: new ObjectId(studentId),
-        challenge_id: new ObjectId(challengeId),
+  // Submit challenge attempt
+  async submitAttempt(
+    studentId: string,
+    challengeId: string,
+    attemptText: string,
+    isCorrect: boolean
+  ) {
+    const { data, error } = await supabase
+      .from('challenge_attempts')
+      .insert({
+        student_id: studentId,
+        challenge_id: challengeId,
         attempt_text: attemptText,
-        is_correct: isCorrect,
-        attempted_at: new Date(),
-      };
-      const result = await db.collection<ChallengeAttemptDocument>(ATTEMPTS_COLLECTION).insertOne(newAttempt);
-      if (!result.insertedId) throw new Error('Submitting attempt failed');
-      return { ...newAttempt, _id: result.insertedId };
-    } catch (error) {
-      handleDbError(error, 'submitAttempt');
-      return null;
-    }
+        is_correct: isCorrect
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   },
 
-  async getStudentAttempts(studentId: string): Promise<any[]> { // Consider a more specific type
-    try {
-      const db = await getDbInstance();
-      if (!ObjectId.isValid(studentId)) return [];
-      return await db.collection<ChallengeAttemptDocument>(ATTEMPTS_COLLECTION)
-        .aggregate([
-          { $match: { student_id: new ObjectId(studentId) } },
-          {
-            $lookup: {
-              from: CHALLENGES_COLLECTION,
-              localField: 'challenge_id',
-              foreignField: '_id',
-              as: 'challenge',
-            },
-          },
-          { $unwind: '$challenge' },
-          { $sort: { attempted_at: -1 } },
-           {
-            $project: {
-              _id: 1, student_id: 1, challenge_id: 1, attempt_text: 1, is_correct: 1, attempted_at: 1,
-              challenge: { _id: '$challenge._id', title: '$challenge.title', description: '$challenge.description', difficulty_level: '$challenge.difficulty_level' }
-            }
-          }
-        ])
-        .toArray();
-    } catch (error) {
-      handleDbError(error, 'getStudentAttempts');
-      return [];
-    }
+  // Get student attempts
+  async getStudentAttempts(studentId: string) {
+    const { data, error } = await supabase
+      .from('challenge_attempts')
+      .select(`
+        *,
+        challenge:math_challenges (
+          id,
+          title,
+          description,
+          difficulty_level
+        )
+      `)
+      .eq('student_id', studentId)
+      .order('attempted_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
   },
 
-  async getChallengeAttempts(challengeId: string): Promise<any[]> { // Consider a more specific type
-    try {
-      const db = await getDbInstance();
-      if (!ObjectId.isValid(challengeId)) return [];
-      return await db.collection<ChallengeAttemptDocument>(ATTEMPTS_COLLECTION)
-        .aggregate([
-          { $match: { challenge_id: new ObjectId(challengeId) } },
-          {
-            $lookup: {
-              from: USERS_COLLECTION,
-              localField: 'student_id',
-              foreignField: '_id',
-              as: 'student',
-            },
-          },
-          { $unwind: '$student' },
-          { $sort: { attempted_at: -1 } },
-          {
-            $project: {
-              _id: 1, student_id: 1, challenge_id: 1, attempt_text: 1, is_correct: 1, attempted_at: 1,
-              student: { _id: '$student._id', full_name: '$student.full_name', email: '$student.email', avatar_url: '$student.avatar_url' }
-            }
-          }
-        ])
-        .toArray();
-    } catch (error) {
-      handleDbError(error, 'getChallengeAttempts');
-      return [];
-    }
+  // Get challenge attempts
+  async getChallengeAttempts(challengeId: string) {
+    const { data, error } = await supabase
+      .from('challenge_attempts')
+      .select(`
+        *,
+        student:users (
+          id,
+          full_name,
+          email,
+          avatar_url
+        )
+      `)
+      .eq('challenge_id', challengeId)
+      .order('attempted_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
   },
 
-  async getStudentSuccessRate(studentId: string): Promise<number> {
-    try {
-      const db = await getDbInstance();
-      if (!ObjectId.isValid(studentId)) return 0;
-      const attempts = await db.collection<ChallengeAttemptDocument>(ATTEMPTS_COLLECTION)
-        .find({ student_id: new ObjectId(studentId) })
-        .project({ is_correct: 1 })
-        .toArray();
+  // Get student success rate
+  async getStudentSuccessRate(studentId: string) {
+    const { data, error } = await supabase
+      .from('challenge_attempts')
+      .select('is_correct')
+      .eq('student_id', studentId);
 
-      if (attempts.length === 0) return 0;
-      const correctAttempts = attempts.filter(a => a.is_correct).length;
-      return (correctAttempts / attempts.length) * 100;
-    } catch (error) {
-      handleDbError(error, 'getStudentSuccessRate');
-      return 0;
-    }
+    if (error) throw error;
+
+    const totalAttempts = data.length;
+    const correctAttempts = data.filter(attempt => attempt.is_correct).length;
+    
+    return totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
   },
 
-  async getChallengeSuccessRate(challengeId: string): Promise<number> {
-    try {
-      const db = await getDbInstance();
-      if (!ObjectId.isValid(challengeId)) return 0;
-      const attempts = await db.collection<ChallengeAttemptDocument>(ATTEMPTS_COLLECTION)
-        .find({ challenge_id: new ObjectId(challengeId) })
-        .project({ is_correct: 1 })
-        .toArray();
+  // Get challenge success rate
+  async getChallengeSuccessRate(challengeId: string) {
+    const { data, error } = await supabase
+      .from('challenge_attempts')
+      .select('is_correct')
+      .eq('challenge_id', challengeId);
 
-      if (attempts.length === 0) return 0;
-      const correctAttempts = attempts.filter(a => a.is_correct).length;
-      return (correctAttempts / attempts.length) * 100;
-    } catch (error) {
-      handleDbError(error, 'getChallengeSuccessRate');
-      return 0;
-    }
+    if (error) throw error;
+
+    const totalAttempts = data.length;
+    const correctAttempts = data.filter(attempt => attempt.is_correct).length;
+    
+    return totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
   },
 
-  async getRecentChallenges(limit: number = 5): Promise<MathChallengeDocument[]> {
-    try {
-      const db = await getDbInstance();
-      return await db.collection<MathChallengeDocument>(CHALLENGES_COLLECTION)
-        .find()
-        .sort({ created_at: -1 })
-        .limit(limit)
-        .toArray();
-    } catch (error) {
-      handleDbError(error, 'getRecentChallenges');
-      return [];
-    }
+  // Get recent challenges
+  async getRecentChallenges(limit: number = 5) {
+    const { data, error } = await supabase
+      .from('math_challenges')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return data;
   },
 
-  // getPopularChallenges needs re-thinking for MongoDB.
-  // Supabase version used a count on a non-existent 'count' field.
-  // A possible MongoDB approach is to $group by challenge_id and $sum attempts, then $sort.
-  async getPopularChallenges(limit: number = 5): Promise<MathChallengeDocument[]> {
-    try {
-      const db = await getDbInstance();
-      const popularChallengeIds = await db.collection<ChallengeAttemptDocument>(ATTEMPTS_COLLECTION)
-        .aggregate([
-          { $group: { _id: '$challenge_id', count: { $sum: 1 } } },
-          { $sort: { count: -1 } },
-          { $limit: limit },
-          { $project: { _id: 1 } } // Project only the challenge_id
-        ])
-        .map(doc => doc._id)
-        .toArray();
+  // Get popular challenges
+  async getPopularChallenges(limit: number = 5) {
+    const { data, error } = await supabase
+      .from('challenge_attempts')
+      .select('challenge_id, count')
+      .select('challenge_id')
+      .order('count', { ascending: false })
+      .limit(limit);
 
-      if (popularChallengeIds.length === 0) return [];
+    if (error) throw error;
 
-      return await db.collection<MathChallengeDocument>(CHALLENGES_COLLECTION)
-        .find({ _id: { $in: popularChallengeIds } })
-        .toArray();
-    } catch (error) {
-      handleDbError(error, 'getPopularChallenges');
-      return [];
-    }
+    // Get full challenge details for the popular challenges
+    const challengeIds = data.map(item => item.challenge_id);
+    const { data: challenges, error: challengesError } = await supabase
+      .from('math_challenges')
+      .select('*')
+      .in('id', challengeIds);
+
+    if (challengesError) throw challengesError;
+    return challenges;
   }
-};
+}; 

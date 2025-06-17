@@ -33,11 +33,8 @@ docker-compose up -d mindway-ai
 Create a `.env` file in the project root with your Supabase credentials:
 
 ```
-VITE_MONGO_URI=your_mongodb_connection_string # Example: mongodb://localhost:27017/mydatabase
-VITE_MONGO_DB_NAME=your_mongodb_database_name # Example: mydatabase
-# If you were using Supabase for auth, you'll need new variables for your chosen auth provider's configuration.
-# VITE_AUTH_PROVIDER_URL=...
-# VITE_AUTH_PROVIDER_CLIENT_ID=...
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ## Available Services

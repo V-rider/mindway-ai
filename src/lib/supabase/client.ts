@@ -1,14 +1,17 @@
-// This file re-exports the database instance getter from integrations
-// and provides a generic database error handler.
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database';
 
-export { getDbInstance } from '@/integrations/supabase/client';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Helper function to handle Database errors
-export const handleDbError = (error: any, context?: string) => {
-  const message = context ? `Error in ${context}: ` : 'Database error: ';
-  console.error(message, error);
-  if (error instanceof Error) {
-    throw new Error(`\${message}\${error.message}`);
-  }
-  throw new Error(`\${message}An unknown error occurred`);
-};
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables');
+}
+
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+
+// Helper function to handle Supabase errors
+export const handleSupabaseError = (error: any) => {
+  console.error('Supabase error:', error);
+  throw new Error(error.message || 'An error occurred while communicating with the database');
+}; 

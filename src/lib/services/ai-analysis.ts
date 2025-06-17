@@ -63,7 +63,7 @@ export const aiAnalysisService = {
 
       return analysis;
     } catch (error) {
-      console.error(`Error analyzing document ${documentId}:`, error);
+      console.error('Error analyzing document:', error);
       throw error;
     }
   },
@@ -170,4 +170,4 @@ export const aiAnalysisService = {
       throw error;
     }
   }
-};
+}; 
