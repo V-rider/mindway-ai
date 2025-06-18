@@ -16,7 +16,7 @@ export const PROJECT_CONFIGS: ProjectConfig[] = [
   {
     domain: "max.edu.hk",
     supabaseUrl: "https://eypvrfvszxoicyzlihhe.supabase.co",
-    supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5cHZyZnZzenp4aWN5emxpaGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNTA0OTcsImV4cCI6MjA2NTcyNjQ5N30.zjNgzw9ZnRlJGF-1I6BbFaXkm6LtRZ4S1X2gq3vK9wE",
+    supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5cHZyZnZzenhvaWN5emxpaGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyMTcwNTgsImV4cCI6MjA2NTc5MzA1OH0.HAvOtr6razZ2-9e_YiFI1cpDkrKl6FodHPSpmvgFkuQ",
     projectName: "MAX"
   }
 ];
