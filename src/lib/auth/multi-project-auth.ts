@@ -1,5 +1,7 @@
+
 import { dynamicSupabase, getCurrentSupabaseClient } from '../supabase/dynamic-client';
 import { getProjectByDomain } from '@/config/projects';
+import { verifyPassword } from './password-utils';
 import type { Database } from '@/integrations/supabase/types';
 
 // Define user type based on actual tables structure
@@ -30,23 +32,45 @@ export const multiProjectAuth = {
       const { data: studentData, error: studentError } = await client
         .from('students')
         .select('*')
-        .eq('email', email)
-        .eq('password', password);
+        .eq('email', email);
 
       console.log("Student query result:", { data: studentData, error: studentError });
 
       if (!studentError && studentData && studentData.length > 0) {
         const student = studentData[0];
-        console.log("Student login successful:", student.email);
-        return {
-          id: student.sid,
-          name: student.name,
-          email: student.email,
-          role: "student" as const,
-          classId: student.class,
-          project: project.projectName,
-          domain: project.domain
-        };
+        
+        // Check if user has hashed password
+        if (student.hashed_password) {
+          console.log("Verifying hashed password for student...");
+          const isPasswordValid = await verifyPassword(password, student.hashed_password);
+          
+          if (isPasswordValid) {
+            console.log("Student login successful with hashed password:", student.email);
+            return {
+              id: student.sid,
+              name: student.name,
+              email: student.email,
+              role: "student" as const,
+              classId: student.class,
+              project: project.projectName,
+              domain: project.domain
+            };
+          }
+        }
+        
+        // Fallback to plain text password if hashed password doesn't exist or doesn't match
+        if (student.password === password) {
+          console.log("Student login successful with plain text password:", student.email);
+          return {
+            id: student.sid,
+            name: student.name,
+            email: student.email,
+            role: "student" as const,
+            classId: student.class,
+            project: project.projectName,
+            domain: project.domain
+          };
+        }
       }
 
       // If not found in students, try teachers table
@@ -54,23 +78,45 @@ export const multiProjectAuth = {
       const { data: teacherData, error: teacherError } = await client
         .from('teachers')
         .select('*')
-        .eq('email', email)
-        .eq('password', password);
+        .eq('email', email);
 
       console.log("Teacher query result:", { data: teacherData, error: teacherError });
 
       if (!teacherError && teacherData && teacherData.length > 0) {
         const teacher = teacherData[0];
-        console.log("Teacher login successful:", teacher.email);
-        return {
-          id: teacher.email,
-          name: teacher.name,
-          email: teacher.email,
-          role: "admin" as const,
-          classId: teacher.classes,
-          project: project.projectName,
-          domain: project.domain
-        };
+        
+        // Check if user has hashed password
+        if (teacher.hashed_password) {
+          console.log("Verifying hashed password for teacher...");
+          const isPasswordValid = await verifyPassword(password, teacher.hashed_password);
+          
+          if (isPasswordValid) {
+            console.log("Teacher login successful with hashed password:", teacher.email);
+            return {
+              id: teacher.email,
+              name: teacher.name,
+              email: teacher.email,
+              role: "admin" as const,
+              classId: teacher.classes,
+              project: project.projectName,
+              domain: project.domain
+            };
+          }
+        }
+        
+        // Fallback to plain text password if hashed password doesn't exist or doesn't match
+        if (teacher.password === password) {
+          console.log("Teacher login successful with plain text password:", teacher.email);
+          return {
+            id: teacher.email,
+            name: teacher.name,
+            email: teacher.email,
+            role: "admin" as const,
+            classId: teacher.classes,
+            project: project.projectName,
+            domain: project.domain
+          };
+        }
       }
 
       // Log detailed error information
@@ -95,14 +141,12 @@ export const multiProjectAuth = {
     dynamicSupabase.reset();
   },
 
-  // Get current session from localStorage
   async getSession() {
     const storedUser = localStorage.getItem("pathwayUser");
     if (!storedUser) return null;
 
     try {
       const user = JSON.parse(storedUser);
-      // Restore the client for this user's domain if needed
       if (user.domain && !dynamicSupabase.getCurrentClient()) {
         dynamicSupabase.getClientByEmail(`user@${user.domain}`);
       }
@@ -113,17 +157,14 @@ export const multiProjectAuth = {
     }
   },
 
-  // Get current user from localStorage
   async getCurrentUser() {
     return this.getSession();
   },
 
-  // Get the current project info
   getCurrentProject() {
     return dynamicSupabase.getCurrentProject();
   },
 
-  // Get current supabase client
   getCurrentClient() {
     return dynamicSupabase.getCurrentClient();
   }
