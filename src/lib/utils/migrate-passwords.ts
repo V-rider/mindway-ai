@@ -7,71 +7,79 @@ export const migrateStudentPasswords = async () => {
   
   console.log("Starting student password migration...");
   
-  // Get all students with temporary hashes
-  const { data: students, error: fetchError } = await supabase
-    .from('students')
-    .select('*')
-    .eq('hashed_password', 'temp_salt:temp_hash');
+  try {
+    // Get all students with temporary hashes
+    const { data: students, error: fetchError } = await supabase
+      .from('students')
+      .select('*')
+      .eq('hashed_password', 'temp_salt:temp_hash');
 
-  if (fetchError) {
-    console.error("Error fetching students:", fetchError);
-    return;
-  }
-
-  console.log(`Found ${students?.length || 0} students to migrate`);
-
-  // Known passwords for the sample data based on the migration files
-  const knownPasswords: Record<string, string> = {
-    'gay.jasper@cfss.edu.hk': 'P9mK2xL4',
-    'student@example.com': 'password',
-    'jane@example.com': 'password'
-  };
-
-  if (!students || students.length === 0) {
-    console.log("No students found with temporary passwords");
-    return;
-  }
-
-  // Process each student
-  for (const student of students) {
-    const plainPassword = knownPasswords[student.email];
-    
-    if (!plainPassword) {
-      console.warn(`No known password for ${student.email}, skipping...`);
-      continue;
+    if (fetchError) {
+      console.error("Error fetching students:", fetchError);
+      return;
     }
 
-    try {
-      // Hash the password using the Edge Function
-      const { data: hashResult, error: hashError } = await supabase.functions.invoke('auth-password', {
-        body: {
-          action: 'hash',
-          password: plainPassword
-        }
-      });
+    console.log(`Found ${students?.length || 0} students to migrate`);
 
-      if (hashError) {
-        console.error(`Error hashing password for ${student.email}:`, hashError);
+    // Known passwords for the sample data based on the migration files
+    const knownPasswords: Record<string, string> = {
+      'gay.jasper@cfss.edu.hk': 'P9mK2xL4',
+      'student@example.com': 'password',
+      'jane@example.com': 'password'
+    };
+
+    if (!students || students.length === 0) {
+      console.log("No students found with temporary passwords");
+      return;
+    }
+
+    // Process each student
+    for (const student of students) {
+      const plainPassword = knownPasswords[student.email];
+      
+      if (!plainPassword) {
+        console.warn(`No known password for ${student.email}, skipping...`);
         continue;
       }
 
-      // Update the student record with the hashed password
-      const { error: updateError } = await supabase
-        .from('students')
-        .update({ hashed_password: hashResult.hashedPassword })
-        .eq('sid', student.sid);
+      try {
+        console.log(`Attempting to hash password for student: ${student.email}`);
+        
+        // Hash the password using the Edge Function
+        const { data: hashResult, error: hashError } = await supabase.functions.invoke('auth-password', {
+          body: {
+            action: 'hash',
+            password: plainPassword
+          }
+        });
 
-      if (updateError) {
-        console.error(`Error updating password for ${student.email}:`, updateError);
-      } else {
-        console.log(`Successfully migrated password for ${student.email}`);
+        if (hashError) {
+          console.error(`Error hashing password for ${student.email}:`, hashError);
+          continue;
+        }
+
+        console.log(`Successfully hashed password for ${student.email}, updating database...`);
+
+        // Update the student record with the hashed password
+        const { error: updateError } = await supabase
+          .from('students')
+          .update({ hashed_password: hashResult.hashedPassword })
+          .eq('sid', student.sid);
+
+        if (updateError) {
+          console.error(`Error updating password for ${student.email}:`, updateError);
+        } else {
+          console.log(`Successfully migrated password for ${student.email}`);
+        }
+      } catch (error) {
+        console.error(`Unexpected error migrating ${student.email}:`, error);
       }
-    } catch (error) {
-      console.error(`Unexpected error migrating ${student.email}:`, error);
     }
-  }
 
-  console.log("Student password migration completed");
+    console.log("Student password migration completed");
+  } catch (error) {
+    console.error("Student password migration failed:", error);
+  }
 };
 
 // Enhanced function for teachers including CFSS teachers
@@ -80,69 +88,73 @@ export const migrateTeacherPasswords = async () => {
   
   console.log("Starting teacher password migration...");
   
-  // Get all teachers that need migration (either temp hash or no hashed_password)
-  const { data: teachers, error: fetchError } = await supabase
-    .from('teachers')
-    .select('*')
-    .or('hashed_password.eq.temp_salt:temp_hash,hashed_password.is.null');
+  try {
+    // Get all teachers that need migration (either temp hash or no hashed_password)
+    const { data: teachers, error: fetchError } = await supabase
+      .from('teachers')
+      .select('*')
+      .or('hashed_password.eq.temp_salt:temp_hash,hashed_password.is.null');
 
-  if (fetchError) {
-    console.error("Error fetching teachers:", fetchError);
-    return;
-  }
-
-  console.log(`Found ${teachers?.length || 0} teachers to migrate`);
-
-  if (!teachers || teachers.length === 0) {
-    console.log("No teachers found that need migration");
-    return;
-  }
-
-  // Process each teacher
-  for (const teacher of teachers) {
-    // For CFSS teachers or any teacher, use their existing password column value
-    let plainPassword = teacher.password;
-    
-    console.log(`Processing teacher: ${teacher.email} with password from DB`);
-    
-    if (!plainPassword) {
-      console.warn(`No password found for ${teacher.email}, skipping...`);
-      continue;
+    if (fetchError) {
+      console.error("Error fetching teachers:", fetchError);
+      return;
     }
 
-    try {
-      console.log(`Attempting to hash password for ${teacher.email}`);
-      
-      // Hash the password using the Edge Function
-      const { data: hashResult, error: hashError } = await supabase.functions.invoke('auth-password', {
-        body: {
-          action: 'hash',
-          password: plainPassword
-        }
-      });
+    console.log(`Found ${teachers?.length || 0} teachers to migrate`);
 
-      if (hashError) {
-        console.error(`Error hashing password for ${teacher.email}:`, hashError);
+    if (!teachers || teachers.length === 0) {
+      console.log("No teachers found that need migration");
+      return;
+    }
+
+    // Process each teacher
+    for (const teacher of teachers) {
+      // For CFSS teachers or any teacher, use their existing password column value
+      let plainPassword = teacher.password;
+      
+      console.log(`Processing teacher: ${teacher.email} with password from DB`);
+      
+      if (!plainPassword) {
+        console.warn(`No password found for ${teacher.email}, skipping...`);
         continue;
       }
 
-      console.log(`Successfully hashed password for ${teacher.email}, updating database...`);
+      try {
+        console.log(`Attempting to hash password for ${teacher.email}`);
+        
+        // Hash the password using the Edge Function
+        const { data: hashResult, error: hashError } = await supabase.functions.invoke('auth-password', {
+          body: {
+            action: 'hash',
+            password: plainPassword
+          }
+        });
 
-      // Update the teacher record with the hashed password
-      const { error: updateError } = await supabase
-        .from('teachers')
-        .update({ hashed_password: hashResult.hashedPassword })
-        .eq('email', teacher.email);
+        if (hashError) {
+          console.error(`Error hashing password for ${teacher.email}:`, hashError);
+          continue;
+        }
 
-      if (updateError) {
-        console.error(`Error updating password for ${teacher.email}:`, updateError);
-      } else {
-        console.log(`Successfully migrated password for ${teacher.email}`);
+        console.log(`Successfully hashed password for ${teacher.email}, updating database...`);
+
+        // Update the teacher record with the hashed password
+        const { error: updateError } = await supabase
+          .from('teachers')
+          .update({ hashed_password: hashResult.hashedPassword })
+          .eq('email', teacher.email);
+
+        if (updateError) {
+          console.error(`Error updating password for ${teacher.email}:`, updateError);
+        } else {
+          console.log(`Successfully migrated password for ${teacher.email}`);
+        }
+      } catch (error) {
+        console.error(`Unexpected error migrating ${teacher.email}:`, error);
       }
-    } catch (error) {
-      console.error(`Unexpected error migrating ${teacher.email}:`, error);
     }
-  }
 
-  console.log("Teacher password migration completed");
+    console.log("Teacher password migration completed");
+  } catch (error) {
+    console.error("Teacher password migration failed:", error);
+  }
 };
