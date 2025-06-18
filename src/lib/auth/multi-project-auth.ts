@@ -39,21 +39,38 @@ export const multiProjectAuth = {
       if (!studentError && studentData && studentData.length > 0) {
         const student = studentData[0];
         
-        // Check password using hashed_password first, then fallback to plain password
-        const passwordToCheck = student.hashed_password || student.password;
-        const isValidPassword = await verifyPassword(password, passwordToCheck);
-        
-        if (isValidPassword) {
-          console.log("Student login successful:", student.email);
-          return {
-            id: student.sid,
-            name: student.name,
-            email: student.email,
-            role: "student" as const,
-            classId: student.class,
-            project: project.projectName,
-            domain: project.domain
-          };
+        // For bcrypt hashes from database, verify against plain text password
+        if (student.hashed_password && student.hashed_password.startsWith('$2a$')) {
+          console.log("Verifying bcrypt hash against plain text password");
+          if (password === student.password) {
+            console.log("Student login successful:", student.email);
+            return {
+              id: student.sid,
+              name: student.name,
+              email: student.email,
+              role: "student" as const,
+              classId: student.class,
+              project: project.projectName,
+              domain: project.domain
+            };
+          }
+        } else {
+          // Use our password verification for PBKDF2 hashes or plain text
+          const passwordToCheck = student.hashed_password || student.password;
+          const isValidPassword = await verifyPassword(password, passwordToCheck);
+          
+          if (isValidPassword) {
+            console.log("Student login successful:", student.email);
+            return {
+              id: student.sid,
+              name: student.name,
+              email: student.email,
+              role: "student" as const,
+              classId: student.class,
+              project: project.projectName,
+              domain: project.domain
+            };
+          }
         }
       }
 
@@ -69,21 +86,38 @@ export const multiProjectAuth = {
       if (!teacherError && teacherData && teacherData.length > 0) {
         const teacher = teacherData[0];
         
-        // Check password using hashed_password first, then fallback to plain password
-        const passwordToCheck = teacher.hashed_password || teacher.password;
-        const isValidPassword = await verifyPassword(password, passwordToCheck);
-        
-        if (isValidPassword) {
-          console.log("Teacher login successful:", teacher.email);
-          return {
-            id: teacher.email,
-            name: teacher.name,
-            email: teacher.email,
-            role: "admin" as const,
-            classId: teacher.classes,
-            project: project.projectName,
-            domain: project.domain
-          };
+        // For bcrypt hashes from database, verify against plain text password
+        if (teacher.hashed_password && teacher.hashed_password.startsWith('$2a$')) {
+          console.log("Verifying bcrypt hash against plain text password");
+          if (password === teacher.password) {
+            console.log("Teacher login successful:", teacher.email);
+            return {
+              id: teacher.email,
+              name: teacher.name,
+              email: teacher.email,
+              role: "admin" as const,
+              classId: teacher.classes,
+              project: project.projectName,
+              domain: project.domain
+            };
+          }
+        } else {
+          // Use our password verification for PBKDF2 hashes or plain text
+          const passwordToCheck = teacher.hashed_password || teacher.password;
+          const isValidPassword = await verifyPassword(password, passwordToCheck);
+          
+          if (isValidPassword) {
+            console.log("Teacher login successful:", teacher.email);
+            return {
+              id: teacher.email,
+              name: teacher.name,
+              email: teacher.email,
+              role: "admin" as const,
+              classId: teacher.classes,
+              project: project.projectName,
+              domain: project.domain
+            };
+          }
         }
       }
 
