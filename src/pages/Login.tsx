@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +39,7 @@ const Login = () => {
     } catch (error) {
       toast({
         title: "Login failed",
-        description: "Invalid email or password. Please contact your administrator.",
+        description: "Invalid email or password. Try student@example.com / admin@example.com",
         variant: "destructive"
       });
       console.error("Login error:", error);
@@ -235,12 +234,6 @@ const Login = () => {
                   </button>
                 </div>
               </div>
-            </div>
-            
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Need access? Contact your administrator to create an account.
-              </p>
             </div>
           </div>
         </motion.div>
