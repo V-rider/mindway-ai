@@ -92,18 +92,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('Students')
         .select('*')
         .eq('email', email)
-        .eq('password', password)
-        .single();
+        .eq('password', password);
 
-      if (!studentError && studentData) {
-        console.log("Student found:", studentData);
+      console.log("Student query result:", { studentData, studentError });
+
+      if (!studentError && studentData && studentData.length > 0) {
+        const student = studentData[0];
+        console.log("Student found:", student);
         const userObj: User = {
-          id: studentData.sid,
-          name: studentData.name,
-          email: studentData.email,
+          id: student.sid,
+          name: student.name,
+          email: student.email,
           role: "student",
           avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
-          classId: studentData.class
+          classId: student.class
         };
         
         localStorage.setItem("pathwayUser", JSON.stringify(userObj));
@@ -117,22 +119,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('Teachers')
         .select('*')
         .eq('email', email)
-        .eq('password', password)
-        .single();
+        .eq('password', password);
 
-      if (!teacherError && teacherData) {
-        console.log("Teacher found:", teacherData);
+      console.log("Teacher query result:", { teacherData, teacherError });
+
+      if (!teacherError && teacherData && teacherData.length > 0) {
+        const teacher = teacherData[0];
+        console.log("Teacher found:", teacher);
         const userObj: User = {
-          id: teacherData.email, // Using email as ID since no specific ID field
-          name: teacherData.name,
-          email: teacherData.email,
+          id: teacher.email, // Using email as ID since no specific ID field
+          name: teacher.name,
+          email: teacher.email,
           role: "admin",
           avatar: "/lovable-uploads/7aff8652-12ca-4080-b580-d23a64527cd3.png",
-          classId: teacherData.classes
+          classId: teacher.classes
         };
         
         // If admin, load students in their class
-        setStudents(mockStudents.filter(student => student.classId === teacherData.classes));
+        setStudents(mockStudents.filter(student => student.classId === teacher.classes));
         
         localStorage.setItem("pathwayUser", JSON.stringify(userObj));
         setUser(userObj);

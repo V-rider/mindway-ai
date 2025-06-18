@@ -7,21 +7,25 @@ type User = Database['public']['Tables']['users']['Row'];
 export const auth = {
   // Sign in with email and password using existing database structure
   async signIn(email: string, password: string) {
+    console.log("Auth.signIn called with:", email);
+    
     // First, try to find the user in the Students table
     const { data: studentData, error: studentError } = await supabase
       .from('Students')
       .select('*')
       .eq('email', email)
-      .eq('password', password)
-      .single();
+      .eq('password', password);
 
-    if (!studentError && studentData) {
+    console.log("Student query:", { studentData, studentError });
+
+    if (!studentError && studentData && studentData.length > 0) {
+      const student = studentData[0];
       return {
-        id: studentData.sid,
-        name: studentData.name,
-        email: studentData.email,
+        id: student.sid,
+        name: student.name,
+        email: student.email,
         role: "student",
-        classId: studentData.class
+        classId: student.class
       };
     }
 
@@ -30,20 +34,23 @@ export const auth = {
       .from('Teachers')
       .select('*')
       .eq('email', email)
-      .eq('password', password)
-      .single();
+      .eq('password', password);
 
-    if (!teacherError && teacherData) {
+    console.log("Teacher query:", { teacherData, teacherError });
+
+    if (!teacherError && teacherData && teacherData.length > 0) {
+      const teacher = teacherData[0];
       return {
-        id: teacherData.email,
-        name: teacherData.name,
-        email: teacherData.email,
+        id: teacher.email,
+        name: teacher.name,
+        email: teacher.email,
         role: "admin",
-        classId: teacherData.classes
+        classId: teacher.classes
       };
     }
 
     // If neither found, throw error
+    console.log("No matching user found");
     throw new Error("Invalid email or password");
   },
 
