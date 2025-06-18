@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -69,7 +69,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { user, logout, isAdmin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  
+  // Initialize sidebar state from localStorage or default to false to prevent auto-opening
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('sidebar-open');
+    return saved ? JSON.parse(saved) : false;
+  });
   
   // Determine if the user is a student (not an admin)
   const isStudent = user && user.role === 'student';
@@ -81,11 +86,33 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     navigate("/");
   };
   
+  // Save sidebar state to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebar-open', JSON.stringify(sidebarOpen));
+  }, [sidebarOpen]);
+  
+  // Prevent keyboard shortcuts from interfering
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Disable Ctrl+B or Cmd+B shortcuts that might trigger sidebar
+      if ((event.ctrlKey || event.metaKey) && event.key === 'b') {
+        event.preventDefault();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+  
+  const handleSidebarToggle = (open: boolean) => {
+    setSidebarOpen(open);
+  };
+  
   return (
     <div className="min-h-screen flex w-full bg-gray-50">
       <Sidebar
         isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
+        onClose={() => handleSidebarToggle(false)}
         menuItems={menuItems}
         user={user}
         onLogout={handleLogout}
@@ -94,7 +121,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}>
         <Header
           sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
+          setSidebarOpen={handleSidebarToggle}
           userName={user?.name}
         />
         

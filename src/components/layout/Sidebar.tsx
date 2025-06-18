@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -33,6 +33,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, menuItems, us
     onLogout();
     navigate("/");
   };
+
+  // Close sidebar on mobile when route changes
+  useEffect(() => {
+    if (isMobile && isOpen) {
+      onClose();
+    }
+  }, [location.pathname, isMobile, isOpen, onClose]);
+
+  // Prevent body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (isMobile && isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobile, isOpen]);
 
   return (
     <>

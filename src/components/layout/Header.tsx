@@ -18,6 +18,10 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  const handleToggle = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
     <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm">
       <div className="flex items-center justify-between px-4 py-3">
@@ -25,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
+          onClick={handleToggle}
           className="h-8 w-8"
           aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
         >
