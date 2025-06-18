@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Loader2, BookOpen, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { getProjectByDomain } from "@/config/projects";
 
@@ -72,8 +72,12 @@ const Login = () => {
           className="w-full max-w-md"
         >
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 mb-4">
-              <BookOpen className="text-white w-8 h-8" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 mb-4 p-2">
+              <img 
+                src="/lovable-uploads/1f7f007e-ab6a-4c27-94f4-e9d3508712db.png" 
+                alt="Mindway AI Logo" 
+                className="w-full h-full object-contain"
+              />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
               Mindway AI
