@@ -7,9 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Import a different bcrypt implementation that works with Deno
-import { compare } from "https://deno.land/x/bcrypt@v0.2.4/mod.ts";
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -17,7 +14,22 @@ serve(async (req) => {
   }
 
   try {
-    const { password, hash } = await req.json();
+    // Get the request body text first
+    const bodyText = await req.text();
+    console.log('Request body text:', bodyText);
+    
+    if (!bodyText || bodyText.trim() === '') {
+      return new Response(
+        JSON.stringify({ error: 'Empty request body' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Parse the JSON
+    const { password, hash } = JSON.parse(bodyText);
 
     if (!password || !hash) {
       return new Response(
@@ -30,9 +42,14 @@ serve(async (req) => {
     }
 
     console.log('Verifying password with bcrypt hash');
+    console.log('Hash format:', hash.substring(0, 10) + '...');
+    
+    // Use a simpler bcrypt verification approach
+    // Import bcrypt dynamically to avoid Worker issues
+    const bcryptModule = await import("https://deno.land/x/bcrypt@v0.4.1/mod.ts");
     
     // Verify the password against the bcrypt hash
-    const isValid = await compare(password, hash);
+    const isValid = await bcryptModule.compare(password, hash);
     
     console.log('Password verification result:', isValid);
 
@@ -44,8 +61,14 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Error in verify-password function:', error);
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
+    
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ 
+        error: 'Internal server error',
+        details: error.message 
+      }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
