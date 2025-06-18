@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { hash, verify } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,7 +24,7 @@ async function hashPassword(password: string, salt: string): Promise<string> {
   return `${salt}:${hashHex}`;
 }
 
-// Verify password against stored hash
+// Verify password against stored hash (supports both new salt:hash format and legacy bcrypt)
 async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
   try {
     // Check if this is the temporary hash that needs migration
@@ -32,6 +33,13 @@ async function verifyPassword(password: string, storedHash: string): Promise<boo
       return false;
     }
 
+    // Check if this is a bcrypt hash (starts with $2a$, $2b$, or $2y$)
+    if (storedHash.startsWith('$2a$') || storedHash.startsWith('$2b$') || storedHash.startsWith('$2y$')) {
+      console.log('Verifying against bcrypt hash');
+      return await verify(password, storedHash);
+    }
+
+    // Handle new salt:hash format
     const parts = storedHash.split(':');
     if (parts.length !== 2) {
       console.error('Invalid hash format - expected salt:hash format, got:', storedHash);
