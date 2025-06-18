@@ -29,7 +29,7 @@ export const migrateStudentPasswords = async () => {
   for (const student of students) {
     // For MAX project, use the existing password column directly
     // For CFSS project, may need known passwords if password column doesn't exist
-    let plainPassword = student.password;
+    let plainPassword = (student as any).password;
     
     // Fallback to known passwords if no password column exists (CFSS case)
     if (!plainPassword) {
@@ -110,7 +110,7 @@ export const migrateTeacherPasswords = async () => {
   // Process each teacher
   for (const teacher of teachers) {
     // For both CFSS and MAX teachers, use their existing password column value
-    let plainPassword = teacher.password;
+    let plainPassword = (teacher as any).password;
     
     console.log(`Processing teacher: ${teacher.email} with password from DB`);
     
