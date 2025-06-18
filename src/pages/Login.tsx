@@ -1,10 +1,11 @@
+
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Loader2, BookOpen, ArrowRight, CheckCircle2, Eye, EyeOff, Building2 } from "lucide-react";
+import { Loader2, BookOpen, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { getProjectByDomain, PROJECT_CONFIGS } from "@/config/projects";
+import { getProjectByDomain } from "@/config/projects";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -14,9 +15,6 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  // Get project info based on current email input
-  const currentProject = email ? getProjectByDomain(email) : null;
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,10 +29,11 @@ const Login = () => {
     }
     
     // Check if domain is supported
-    if (!getProjectByDomain(email)) {
+    const currentProject = getProjectByDomain(email);
+    if (!currentProject) {
       toast({
         title: "Unsupported domain",
-        description: `Email domain not supported. Supported domains: ${PROJECT_CONFIGS.map(c => c.domain).join(', ')}`,
+        description: "Email domain not supported. Please contact your administrator.",
         variant: "destructive"
       });
       return;
@@ -88,25 +87,6 @@ const Login = () => {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
               Sign in to your account
             </h2>
-            
-            {/* Project Indicator */}
-            {currentProject && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mb-6 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800"
-              >
-                <div className="flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                  <span className="text-sm font-medium text-purple-800 dark:text-purple-200">
-                    Connecting to: {currentProject.projectName}
-                  </span>
-                </div>
-                <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
-                  Domain: {currentProject.domain}
-                </p>
-              </motion.div>
-            )}
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -197,37 +177,6 @@ const Login = () => {
                 )}
               </motion.button>
             </form>
-            
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300 dark:border-gray-600" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                    Supported Schools
-                  </span>
-                </div>
-              </div>
-              
-              <div className="mt-4 space-y-2">
-                {PROJECT_CONFIGS.map((project) => (
-                  <div key={project.domain} className="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750">
-                    <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-gray-700 flex-shrink-0 flex items-center justify-center">
-                      <Building2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div className="ml-3 flex-1">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {project.projectName}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        @{project.domain}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </motion.div>
       </div>
@@ -262,7 +211,9 @@ const Login = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: 0.4 + (index * 0.1) }}
                 >
-                  <CheckCircle2 className="w-5 h-5 text-purple-200 mt-0.5 mr-3" />
+                  <div className="w-5 h-5 rounded-full bg-purple-200 mt-0.5 mr-3 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
+                  </div>
                   <p className="text-purple-100">{feature}</p>
                 </motion.div>
               ))}
