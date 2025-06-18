@@ -20,11 +20,15 @@ export const migrateStudentPasswords = async () => {
 
   console.log(`Found ${students?.length || 0} students to migrate`);
 
-  // Known passwords for the sample data based on the migration files
+  // Known passwords for the sample data - both CFSS and MAX
   const knownPasswords: Record<string, string> = {
+    // CFSS students
     'gay.jasper@cfss.edu.hk': 'P9mK2xL4',
     'student@example.com': 'password',
-    'jane@example.com': 'password'
+    'jane@example.com': 'password',
+    // MAX students (add known passwords here)
+    'student1@max.edu.hk': 'password123',
+    'student2@max.edu.hk': 'password123'
   };
 
   if (!students || students.length === 0) {
@@ -74,7 +78,7 @@ export const migrateStudentPasswords = async () => {
   console.log("Student password migration completed");
 };
 
-// Enhanced function for teachers including CFSS teachers
+// Enhanced function for teachers including both CFSS and MAX teachers
 export const migrateTeacherPasswords = async () => {
   const supabase = getCurrentSupabaseClient();
   
@@ -100,7 +104,7 @@ export const migrateTeacherPasswords = async () => {
 
   // Process each teacher
   for (const teacher of teachers) {
-    // For CFSS teachers or any teacher, use their existing password column value
+    // For both CFSS and MAX teachers, use their existing password column value
     let plainPassword = teacher.password;
     
     console.log(`Processing teacher: ${teacher.email} with password from DB`);
