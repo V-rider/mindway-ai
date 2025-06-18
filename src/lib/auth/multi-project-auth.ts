@@ -1,5 +1,7 @@
+
 import { dynamicSupabase, getCurrentSupabaseClient } from '../supabase/dynamic-client';
 import { getProjectByDomain } from '@/config/projects';
+import { PasswordUtils } from './password-utils';
 import type { Database } from '@/integrations/supabase/types';
 
 // Define user type based on actual tables structure
@@ -30,23 +32,50 @@ export const multiProjectAuth = {
       const { data: studentData, error: studentError } = await client
         .from('students')
         .select('*')
-        .eq('email', email)
-        .eq('password', password);
+        .eq('email', email);
 
       console.log("Student query result:", { data: studentData, error: studentError });
 
       if (!studentError && studentData && studentData.length > 0) {
         const student = studentData[0];
-        console.log("Student login successful:", student.email);
-        return {
-          id: student.sid,
-          name: student.name,
-          email: student.email,
-          role: "student" as const,
-          classId: student.class,
-          project: project.projectName,
-          domain: project.domain
-        };
+        
+        // Check password using new hashed password or fallback to old password
+        let passwordValid = false;
+        
+        if (student.hashed_password) {
+          // Use new hashed password verification
+          passwordValid = await PasswordUtils.verifyPassword(password, student.hashed_password);
+          console.log("Using hashed password verification for student");
+        } else if (student.password === password) {
+          // Fallback to old plain text password
+          passwordValid = true;
+          console.log("Using legacy password verification for student");
+          
+          // Optionally upgrade to hashed password
+          try {
+            const hashedPassword = await PasswordUtils.hashPassword(password);
+            await client
+              .from('students')
+              .update({ hashed_password: hashedPassword })
+              .eq('email', email);
+            console.log("Upgraded student password to hashed version");
+          } catch (error) {
+            console.warn("Failed to upgrade student password:", error);
+          }
+        }
+        
+        if (passwordValid) {
+          console.log("Student login successful:", student.email);
+          return {
+            id: student.sid,
+            name: student.name,
+            email: student.email,
+            role: "student" as const,
+            classId: student.class,
+            project: project.projectName,
+            domain: project.domain
+          };
+        }
       }
 
       // If not found in students, try teachers table
@@ -54,23 +83,50 @@ export const multiProjectAuth = {
       const { data: teacherData, error: teacherError } = await client
         .from('teachers')
         .select('*')
-        .eq('email', email)
-        .eq('password', password);
+        .eq('email', email);
 
       console.log("Teacher query result:", { data: teacherData, error: teacherError });
 
       if (!teacherError && teacherData && teacherData.length > 0) {
         const teacher = teacherData[0];
-        console.log("Teacher login successful:", teacher.email);
-        return {
-          id: teacher.email,
-          name: teacher.name,
-          email: teacher.email,
-          role: "admin" as const,
-          classId: teacher.classes,
-          project: project.projectName,
-          domain: project.domain
-        };
+        
+        // Check password using new hashed password or fallback to old password
+        let passwordValid = false;
+        
+        if (teacher.hashed_password) {
+          // Use new hashed password verification
+          passwordValid = await PasswordUtils.verifyPassword(password, teacher.hashed_password);
+          console.log("Using hashed password verification for teacher");
+        } else if (teacher.password === password) {
+          // Fallback to old plain text password
+          passwordValid = true;
+          console.log("Using legacy password verification for teacher");
+          
+          // Optionally upgrade to hashed password
+          try {
+            const hashedPassword = await PasswordUtils.hashPassword(password);
+            await client
+              .from('teachers')
+              .update({ hashed_password: hashedPassword })
+              .eq('email', email);
+            console.log("Upgraded teacher password to hashed version");
+          } catch (error) {
+            console.warn("Failed to upgrade teacher password:", error);
+          }
+        }
+        
+        if (passwordValid) {
+          console.log("Teacher login successful:", teacher.email);
+          return {
+            id: teacher.email,
+            name: teacher.name,
+            email: teacher.email,
+            role: "admin" as const,
+            classId: teacher.classes,
+            project: project.projectName,
+            domain: project.domain
+          };
+        }
       }
 
       // Log detailed error information
@@ -81,7 +137,7 @@ export const multiProjectAuth = {
         console.error("Teacher table error:", teacherError);
       }
 
-      // If neither found, throw error
+      // If neither found or password invalid, throw error
       throw new Error("Invalid email or password");
     } catch (error) {
       console.error("Database query error:", error);
