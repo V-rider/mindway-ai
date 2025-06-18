@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { hash, verify } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts"
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,7 +36,7 @@ async function verifyPassword(password: string, storedHash: string): Promise<boo
     // Check if this is a bcrypt hash (starts with $2a$, $2b$, or $2y$)
     if (storedHash.startsWith('$2a$') || storedHash.startsWith('$2b$') || storedHash.startsWith('$2y$')) {
       console.log('Verifying against bcrypt hash');
-      return await verify(password, storedHash);
+      return await bcrypt.compare(password, storedHash);
     }
 
     // Handle new salt:hash format
