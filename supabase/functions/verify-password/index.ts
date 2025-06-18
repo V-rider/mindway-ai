@@ -1,12 +1,14 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Import a different bcrypt implementation that works with Deno
+import { compare } from "https://deno.land/x/bcrypt@v0.2.4/mod.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -30,7 +32,7 @@ serve(async (req) => {
     console.log('Verifying password with bcrypt hash');
     
     // Verify the password against the bcrypt hash
-    const isValid = await bcrypt.compare(password, hash);
+    const isValid = await compare(password, hash);
     
     console.log('Password verification result:', isValid);
 
