@@ -18,6 +18,26 @@ const createProjectClient = (projectConfig: typeof PROJECT_CONFIGS[0]) => {
   );
 };
 
+// Check if hashed_password column exists in a table
+const checkHashedPasswordColumn = async (supabase: any, tableName: string, projectName: string) => {
+  try {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('hashed_password')
+      .limit(1);
+    
+    if (error && error.code === '42703') {
+      console.error(`Column hashed_password does not exist in ${tableName} table for ${projectName}. Please run the database migration first.`);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error(`Error checking hashed_password column in ${tableName} for ${projectName}:`, error);
+    return false;
+  }
+};
+
 // Utility function to migrate existing plain text passwords to hashed format for a specific project
 export const migrateStudentPasswords = async (projectName?: string) => {
   const projectsToMigrate = projectName 
@@ -30,6 +50,13 @@ export const migrateStudentPasswords = async (projectName?: string) => {
     console.log(`Starting student password migration for ${projectConfig.projectName}...`);
     
     try {
+      // Check if hashed_password column exists
+      const hasHashedPasswordColumn = await checkHashedPasswordColumn(supabase, 'students', projectConfig.projectName);
+      if (!hasHashedPasswordColumn) {
+        console.error(`Skipping student migration for ${projectConfig.projectName} - hashed_password column missing`);
+        continue;
+      }
+
       // Get all students with temporary hashes
       const { data: students, error: fetchError } = await supabase
         .from('students')
@@ -117,6 +144,13 @@ export const migrateTeacherPasswords = async (projectName?: string) => {
     console.log(`Starting teacher password migration for ${projectConfig.projectName}...`);
     
     try {
+      // Check if hashed_password column exists
+      const hasHashedPasswordColumn = await checkHashedPasswordColumn(supabase, 'teachers', projectConfig.projectName);
+      if (!hasHashedPasswordColumn) {
+        console.error(`Skipping teacher migration for ${projectConfig.projectName} - hashed_password column missing`);
+        continue;
+      }
+
       // Get all teachers that need migration (either temp hash or no hashed_password)
       const { data: teachers, error: fetchError } = await supabase
         .from('teachers')
