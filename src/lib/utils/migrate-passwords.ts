@@ -1,43 +1,32 @@
 
 import { getCurrentSupabaseClient } from '../supabase/dynamic-client';
 
+// Utility function to ensure hashed_password column exists
+const ensureHashedPasswordColumn = async (tableName: string) => {
+  const supabase = getCurrentSupabaseClient();
+  
+  try {
+    // Try to add the column (will be ignored if it already exists)
+    const { error } = await supabase.rpc('exec_sql', {
+      sql: `ALTER TABLE public.${tableName} ADD COLUMN IF NOT EXISTS hashed_password TEXT;`
+    });
+    
+    if (error) {
+      console.warn(`Could not ensure hashed_password column exists for ${tableName}:`, error);
+    }
+  } catch (error) {
+    console.warn(`Could not ensure hashed_password column exists for ${tableName}:`, error);
+  }
+};
+
 // Utility function to migrate existing plain text passwords to hashed format
 export const migrateStudentPasswords = async () => {
   const supabase = getCurrentSupabaseClient();
   
   console.log("Starting student password migration...");
   
-  // First, let's check if the hashed_password column exists
-  console.log("Checking students table structure...");
-  
-  try {
-    // Try a simple query to see the table structure
-    const { data: testData, error: testError } = await supabase
-      .from('students')
-      .select('*')
-      .limit(1);
-    
-    if (testError) {
-      console.error("Error accessing students table:", testError);
-      return;
-    }
-    
-    console.log("Students table accessible, sample record:", testData?.[0] || "No records");
-    
-    // Check if any student has a hashed_password column
-    if (testData && testData.length > 0) {
-      const hasHashedPassword = 'hashed_password' in testData[0];
-      console.log("Has hashed_password column:", hasHashedPassword);
-      
-      if (!hasHashedPassword) {
-        console.error("hashed_password column not found in students table");
-        return;
-      }
-    }
-  } catch (error) {
-    console.error("Error checking table structure:", error);
-    return;
-  }
+  // Ensure the hashed_password column exists
+  await ensureHashedPasswordColumn('students');
   
   // Get all students with temporary hashes or null hashed passwords
   const { data: students, error: fetchError } = await supabase
@@ -121,37 +110,8 @@ export const migrateTeacherPasswords = async () => {
   
   console.log("Starting teacher password migration...");
   
-  // First, let's check if the hashed_password column exists
-  console.log("Checking teachers table structure...");
-  
-  try {
-    // Try a simple query to see the table structure
-    const { data: testData, error: testError } = await supabase
-      .from('teachers')
-      .select('*')
-      .limit(1);
-    
-    if (testError) {
-      console.error("Error accessing teachers table:", testError);
-      return;
-    }
-    
-    console.log("Teachers table accessible, sample record:", testData?.[0] || "No records");
-    
-    // Check if any teacher has a hashed_password column
-    if (testData && testData.length > 0) {
-      const hasHashedPassword = 'hashed_password' in testData[0];
-      console.log("Has hashed_password column:", hasHashedPassword);
-      
-      if (!hasHashedPassword) {
-        console.error("hashed_password column not found in teachers table");
-        return;
-      }
-    }
-  } catch (error) {
-    console.error("Error checking table structure:", error);
-    return;
-  }
+  // Ensure the hashed_password column exists
+  await ensureHashedPasswordColumn('teachers');
   
   // Get all teachers that need migration (either temp hash or no hashed_password)
   const { data: teachers, error: fetchError } = await supabase
