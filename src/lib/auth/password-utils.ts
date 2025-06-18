@@ -4,6 +4,8 @@
  * Browser-compatible alternative to bcrypt
  */
 
+import { supabase } from '@/integrations/supabase/client';
+
 // Convert string to ArrayBuffer
 function stringToArrayBuffer(str: string): ArrayBuffer {
   const encoder = new TextEncoder();
@@ -63,25 +65,24 @@ export async function hashPassword(password: string): Promise<string> {
 
 /**
  * Verify a password against a hash
- * Supports both bcrypt hashes (from database) and PBKDF2 hashes (our format)
+ * Supports both bcrypt hashes (via Edge Function) and PBKDF2 hashes (our format)
  */
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
   try {
-    // Handle legacy plain text passwords (for backward compatibility)
-    if (!hash.includes(':') && !hash.startsWith('$')) {
-      return password === hash;
-    }
-    
     // Handle bcrypt hashes from database (starts with $2a$, $2b$, etc.)
     if (hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$')) {
-      // For bcrypt hashes, we need to make a server-side verification request
-      // Since we can't verify bcrypt in the browser, we'll use a workaround
-      // by checking if the original password matches the stored plain text
-      console.log('Detected bcrypt hash, using fallback verification');
+      console.log('Verifying bcrypt hash via Edge Function');
       
-      // This is a temporary solution - in production, you'd want to migrate
-      // all bcrypt hashes to PBKDF2 or implement server-side verification
-      return true; // Allow login for now - this will be handled by the auth system
+      const { data, error } = await supabase.functions.invoke('verify-password', {
+        body: { password, hash }
+      });
+
+      if (error) {
+        console.error('Edge Function error:', error);
+        return false;
+      }
+
+      return data?.isValid || false;
     }
     
     // Handle our PBKDF2 format (salt:hash)
@@ -112,6 +113,12 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
       const hashedPassword = arrayBufferToHex(derivedKey);
       
       return hashedPassword === storedHash;
+    }
+    
+    // Handle legacy plain text passwords (for backward compatibility)
+    if (!hash.includes(':') && !hash.startsWith('$')) {
+      console.log('Comparing with plain text password (legacy)');
+      return password === hash;
     }
     
     return false;
