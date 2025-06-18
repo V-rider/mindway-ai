@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           class: string
           email: string
+          hashed_password: string | null
           name: string
           password: string
           sid: string
@@ -20,6 +21,7 @@ export type Database = {
         Insert: {
           class: string
           email: string
+          hashed_password?: string | null
           name: string
           password: string
           sid: string
@@ -27,6 +29,7 @@ export type Database = {
         Update: {
           class?: string
           email?: string
+          hashed_password?: string | null
           name?: string
           password?: string
           sid?: string
@@ -37,18 +40,21 @@ export type Database = {
         Row: {
           classes: string
           email: string
+          hashed_password: string | null
           name: string
           password: string
         }
         Insert: {
           classes: string
           email: string
+          hashed_password?: string | null
           name: string
           password: string
         }
         Update: {
           classes?: string
           email?: string
+          hashed_password?: string | null
           name?: string
           password?: string
         }

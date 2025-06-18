@@ -1,5 +1,7 @@
+
 import { dynamicSupabase, getCurrentSupabaseClient } from '../supabase/dynamic-client';
 import { getProjectByDomain } from '@/config/projects';
+import { verifyPassword } from './password-utils';
 import type { Database } from '@/integrations/supabase/types';
 
 // Define user type based on actual tables structure
@@ -30,23 +32,29 @@ export const multiProjectAuth = {
       const { data: studentData, error: studentError } = await client
         .from('students')
         .select('*')
-        .eq('email', email)
-        .eq('password', password);
+        .eq('email', email);
 
       console.log("Student query result:", { data: studentData, error: studentError });
 
       if (!studentError && studentData && studentData.length > 0) {
         const student = studentData[0];
-        console.log("Student login successful:", student.email);
-        return {
-          id: student.sid,
-          name: student.name,
-          email: student.email,
-          role: "student" as const,
-          classId: student.class,
-          project: project.projectName,
-          domain: project.domain
-        };
+        
+        // Check password using hashed_password first, then fallback to plain password
+        const passwordToCheck = student.hashed_password || student.password;
+        const isValidPassword = await verifyPassword(password, passwordToCheck);
+        
+        if (isValidPassword) {
+          console.log("Student login successful:", student.email);
+          return {
+            id: student.sid,
+            name: student.name,
+            email: student.email,
+            role: "student" as const,
+            classId: student.class,
+            project: project.projectName,
+            domain: project.domain
+          };
+        }
       }
 
       // If not found in students, try teachers table
@@ -54,23 +62,29 @@ export const multiProjectAuth = {
       const { data: teacherData, error: teacherError } = await client
         .from('teachers')
         .select('*')
-        .eq('email', email)
-        .eq('password', password);
+        .eq('email', email);
 
       console.log("Teacher query result:", { data: teacherData, error: teacherError });
 
       if (!teacherError && teacherData && teacherData.length > 0) {
         const teacher = teacherData[0];
-        console.log("Teacher login successful:", teacher.email);
-        return {
-          id: teacher.email,
-          name: teacher.name,
-          email: teacher.email,
-          role: "admin" as const,
-          classId: teacher.classes,
-          project: project.projectName,
-          domain: project.domain
-        };
+        
+        // Check password using hashed_password first, then fallback to plain password
+        const passwordToCheck = teacher.hashed_password || teacher.password;
+        const isValidPassword = await verifyPassword(password, passwordToCheck);
+        
+        if (isValidPassword) {
+          console.log("Teacher login successful:", teacher.email);
+          return {
+            id: teacher.email,
+            name: teacher.name,
+            email: teacher.email,
+            role: "admin" as const,
+            classId: teacher.classes,
+            project: project.projectName,
+            domain: project.domain
+          };
+        }
       }
 
       // Log detailed error information
@@ -81,7 +95,7 @@ export const multiProjectAuth = {
         console.error("Teacher table error:", teacherError);
       }
 
-      // If neither found, throw error
+      // If neither found or password invalid, throw error
       throw new Error("Invalid email or password");
     } catch (error) {
       console.error("Database query error:", error);
