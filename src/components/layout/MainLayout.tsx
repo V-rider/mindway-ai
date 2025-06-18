@@ -70,10 +70,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Initialize sidebar state from localStorage or default to false to prevent auto-opening
+  // Initialize sidebar state from localStorage or default based on current route
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('sidebar-open');
-    return saved ? JSON.parse(saved) : false;
+    if (saved !== null) {
+      return JSON.parse(saved);
+    }
+    // Default to open only on dashboard
+    return location.pathname === '/dashboard';
   });
   
   // Determine if the user is a student (not an admin)
@@ -90,6 +94,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('sidebar-open', JSON.stringify(sidebarOpen));
   }, [sidebarOpen]);
+  
+  // Auto-open sidebar when navigating to dashboard
+  useEffect(() => {
+    if (location.pathname === '/dashboard' && !sidebarOpen) {
+      setSidebarOpen(true);
+    }
+  }, [location.pathname, sidebarOpen]);
   
   // Prevent keyboard shortcuts from interfering
   useEffect(() => {
