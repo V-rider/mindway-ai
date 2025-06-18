@@ -6,13 +6,23 @@ const ensureHashedPasswordColumn = async (tableName: string) => {
   const supabase = getCurrentSupabaseClient();
   
   try {
-    // Try to add the column (will be ignored if it already exists)
-    const { error } = await supabase.rpc('exec_sql', {
-      sql: `ALTER TABLE public.${tableName} ADD COLUMN IF NOT EXISTS hashed_password TEXT;`
-    });
+    // Check if the column exists by querying table structure
+    const { data: columns, error } = await supabase
+      .from('information_schema.columns')
+      .select('column_name')
+      .eq('table_name', tableName)
+      .eq('table_schema', 'public')
+      .eq('column_name', 'hashed_password');
     
     if (error) {
-      console.warn(`Could not ensure hashed_password column exists for ${tableName}:`, error);
+      console.warn(`Could not check hashed_password column for ${tableName}:`, error);
+      return;
+    }
+    
+    if (!columns || columns.length === 0) {
+      console.log(`hashed_password column not found for ${tableName}, it should have been created by migration`);
+    } else {
+      console.log(`hashed_password column exists for ${tableName}`);
     }
   } catch (error) {
     console.warn(`Could not ensure hashed_password column exists for ${tableName}:`, error);
