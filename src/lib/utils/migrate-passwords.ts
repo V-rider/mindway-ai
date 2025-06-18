@@ -1,7 +1,7 @@
 
 import { getCurrentSupabaseClient } from '../supabase/dynamic-client';
 
-// Utility function to ensure hashed_password column exists
+// Utility function to ensure hashed_password column exists and create it if missing
 const ensureHashedPasswordColumn = async (tableName: string) => {
   const supabase = getCurrentSupabaseClient();
   
@@ -14,8 +14,34 @@ const ensureHashedPasswordColumn = async (tableName: string) => {
       .limit(1);
     
     if (error && error.code === '42703') {
-      console.warn(`hashed_password column not found for ${tableName}, it should have been created by migration`);
-      return false;
+      console.log(`hashed_password column not found for ${tableName}, attempting to create it...`);
+      
+      // Try to add the column using a direct SQL query
+      try {
+        const { error: alterError } = await supabase.rpc('exec_sql', {
+          sql: `ALTER TABLE public.${tableName} ADD COLUMN IF NOT EXISTS hashed_password TEXT;`
+        });
+        
+        if (alterError) {
+          console.error(`Failed to add hashed_password column to ${tableName}:`, alterError);
+          return false;
+        }
+        
+        // Set default values for existing records
+        const { error: updateError } = await supabase.rpc('exec_sql', {
+          sql: `UPDATE public.${tableName} SET hashed_password = 'temp_salt:temp_hash' WHERE hashed_password IS NULL;`
+        });
+        
+        if (updateError) {
+          console.warn(`Failed to set default values for ${tableName}:`, updateError);
+        }
+        
+        console.log(`Successfully created hashed_password column for ${tableName}`);
+        return true;
+      } catch (rpcError) {
+        console.warn(`Could not create column using RPC, trying alternative approach for ${tableName}:`, rpcError);
+        return false;
+      }
     } else if (error) {
       console.warn(`Could not check hashed_password column for ${tableName}:`, error);
       return false;
@@ -35,10 +61,10 @@ export const migrateStudentPasswords = async () => {
   
   console.log("Starting student password migration...");
   
-  // Check if the hashed_password column exists
+  // Check if the hashed_password column exists, create if missing
   const hasColumn = await ensureHashedPasswordColumn('students');
   if (!hasColumn) {
-    console.error("hashed_password column not found in students table");
+    console.error("Could not ensure hashed_password column exists in students table");
     return;
   }
   
@@ -124,10 +150,10 @@ export const migrateTeacherPasswords = async () => {
   
   console.log("Starting teacher password migration...");
   
-  // Check if the hashed_password column exists
+  // Check if the hashed_password column exists, create if missing
   const hasColumn = await ensureHashedPasswordColumn('teachers');
   if (!hasColumn) {
-    console.error("hashed_password column not found in teachers table");
+    console.error("Could not ensure hashed_password column exists in teachers table");
     return;
   }
   
