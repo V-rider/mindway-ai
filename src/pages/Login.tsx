@@ -72,7 +72,7 @@ const Login = () => {
           className="w-full max-w-md"
         >
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 mb-4 p-2">
+            <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
               <img 
                 src="/lovable-uploads/1f7f007e-ab6a-4c27-94f4-e9d3508712db.png" 
                 alt="Mindway AI Logo" 
