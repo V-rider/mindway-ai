@@ -1,107 +1,104 @@
-import { supabase, handleSupabaseError } from '../supabase/client';
-import type { Database } from '@/types/database';
 
-type User = Database['public']['Tables']['users']['Row'];
-type UserInsert = Database['public']['Tables']['users']['Insert'];
-type UserUpdate = Database['public']['Tables']['users']['Update'];
+import { supabase } from '../supabase/client';
 
 export const userApi = {
-  // Get current user
+  // Get current user from localStorage
   async getCurrentUser() {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) throw error;
-    if (!user) return null;
-
-    const { data, error: profileError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError) throw profileError;
-    return data;
+    const storedUser = localStorage.getItem("pathwayUser");
+    return storedUser ? JSON.parse(storedUser) : null;
   },
 
-  // Get user by ID
+  // Get user by ID - search in both Students and Teachers tables
   async getUserById(id: string) {
-    const { data, error } = await supabase
-      .from('users')
+    // First try Students table
+    const { data: studentData, error: studentError } = await supabase
+      .from('Students')
       .select('*')
-      .eq('id', id)
+      .eq('sid', id)
       .single();
 
-    if (error) throw error;
-    return data;
-  },
+    if (!studentError && studentData) {
+      return {
+        id: studentData.sid,
+        name: studentData.name,
+        email: studentData.email,
+        role: "student",
+        classId: studentData.class
+      };
+    }
 
-  // Get all users (admin only)
-  async getAllUsers() {
-    const { data, error } = await supabase
-      .from('users')
+    // Then try Teachers table
+    const { data: teacherData, error: teacherError } = await supabase
+      .from('Teachers')
       .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Create new user
-  async createUser(userData: UserInsert) {
-    const { data, error } = await supabase
-      .from('users')
-      .insert(userData)
-      .select()
+      .eq('email', id) // Using email as ID for teachers
       .single();
 
-    if (error) throw error;
-    return data;
+    if (!teacherError && teacherData) {
+      return {
+        id: teacherData.email,
+        name: teacherData.name,
+        email: teacherData.email,
+        role: "admin",
+        classId: teacherData.classes
+      };
+    }
+
+    throw new Error("User not found");
   },
 
-  // Update user
-  async updateUser(id: string, userData: UserUpdate) {
+  // Get all students
+  async getAllStudents() {
     const { data, error } = await supabase
-      .from('users')
-      .update(userData)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Delete user
-  async deleteUser(id: string) {
-    const { error } = await supabase
-      .from('users')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  },
-
-  // Get users by role
-  async getUsersByRole(role: User['role']) {
-    const { data, error } = await supabase
-      .from('users')
+      .from('Students')
       .select('*')
-      .eq('role', role)
-      .order('created_at', { ascending: false });
+      .order('name', { ascending: true });
 
     if (error) throw error;
-    return data;
+    
+    return data.map(student => ({
+      id: student.sid,
+      name: student.name,
+      email: student.email,
+      role: "student" as const,
+      classId: student.class
+    }));
   },
 
-  // Update user avatar
-  async updateUserAvatar(id: string, avatarUrl: string) {
+  // Get all teachers
+  async getAllTeachers() {
     const { data, error } = await supabase
-      .from('users')
-      .update({ avatar_url: avatarUrl })
-      .eq('id', id)
-      .select()
-      .single();
+      .from('Teachers')
+      .select('*')
+      .order('name', { ascending: true });
 
     if (error) throw error;
-    return data;
+    
+    return data.map(teacher => ({
+      id: teacher.email,
+      name: teacher.name,
+      email: teacher.email,
+      role: "admin" as const,
+      classId: teacher.classes
+    }));
+  },
+
+  // Get students by class
+  async getStudentsByClass(className: string) {
+    const { data, error } = await supabase
+      .from('Students')
+      .select('*')
+      .eq('class', className)
+      .order('name', { ascending: true });
+
+    if (error) throw error;
+    
+    return data.map(student => ({
+      id: student.sid,
+      name: student.name,
+      email: student.email,
+      role: "student" as const,
+      classId: student.class
+    }));
   }
-}; 
+};

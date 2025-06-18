@@ -1,102 +1,67 @@
+
 import { supabase } from '../supabase/client';
-import { userApi } from '../api/users';
 import type { Database } from '@/types/database';
 
 type User = Database['public']['Tables']['users']['Row'];
 
 export const auth = {
-  // Sign up with email and password
-  async signUp(email: string, password: string, userData: Partial<User>) {
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: userData
-      }
-    });
-
-    if (authError) throw authError;
-    if (!authData.user) throw new Error('No user data returned');
-
-    // Create user profile
-    const { data: profile, error: profileError } = await supabase
-      .from('users')
-      .insert({
-        id: authData.user.id,
-        email: authData.user.email!,
-        full_name: userData.full_name || '',
-        role: userData.role || 'student',
-        avatar_url: userData.avatar_url
-      })
-      .select()
+  // Sign in with email and password using existing database structure
+  async signIn(email: string, password: string) {
+    // First, try to find the user in the Students table
+    const { data: studentData, error: studentError } = await supabase
+      .from('Students')
+      .select('*')
+      .eq('email', email)
+      .eq('password', password)
       .single();
 
-    if (profileError) throw profileError;
-    return profile;
-  },
+    if (!studentError && studentData) {
+      return {
+        id: studentData.sid,
+        name: studentData.name,
+        email: studentData.email,
+        role: "student",
+        classId: studentData.class
+      };
+    }
 
-  // Sign in with email and password
-  async signIn(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    // If not found in Students, try Teachers table
+    const { data: teacherData, error: teacherError } = await supabase
+      .from('Teachers')
+      .select('*')
+      .eq('email', email)
+      .eq('password', password)
+      .single();
 
-    if (error) throw error;
-    if (!data.user) throw new Error('No user data returned');
+    if (!teacherError && teacherData) {
+      return {
+        id: teacherData.email,
+        name: teacherData.name,
+        email: teacherData.email,
+        role: "admin",
+        classId: teacherData.classes
+      };
+    }
 
-    // Get user profile
-    const profile = await userApi.getUserById(data.user.id);
-    return profile;
+    // If neither found, throw error
+    throw new Error("Invalid email or password");
   },
 
   // Sign out
   async signOut() {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    // Simply clear local storage since we're not using Supabase auth
+    localStorage.removeItem("pathwayUser");
   },
 
-  // Reset password
-  async resetPassword(email: string) {
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-    if (error) throw error;
-  },
-
-  // Update password
-  async updatePassword(newPassword: string) {
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword
-    });
-    if (error) throw error;
-  },
-
-  // Get current session
+  // Get current session from localStorage
   async getSession() {
-    const { data: { session }, error } = await supabase.auth.getSession();
-    if (error) throw error;
-    return session;
+    const storedUser = localStorage.getItem("pathwayUser");
+    return storedUser ? JSON.parse(storedUser) : null;
   },
 
-  // Get current user
+  // Get current user from localStorage
   async getCurrentUser() {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) throw error;
-    if (!user) return null;
-
-    const profile = await userApi.getUserById(user.id);
-    return profile;
-  },
-
-  // Update user profile
-  async updateProfile(userId: string, updates: Partial<User>) {
-    const { data, error } = await supabase
-      .from('users')
-      .update(updates)
-      .eq('id', userId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+    const storedUser = localStorage.getItem("pathwayUser");
+    return storedUser ? JSON.parse(storedUser) : null;
   }
 };

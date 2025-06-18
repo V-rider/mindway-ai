@@ -1,5 +1,6 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { User } from "@/types";
 
 interface AuthContextType {
@@ -22,7 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   students: []
 });
 
-// Mock student data
+// Mock student data for admin users
 const mockStudents: User[] = [
   {
     id: "3",
@@ -84,48 +85,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     
     try {
-      // In a real app, this would be an API call
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log("Attempting login with email:", email);
       
-      const mockUsers: User[] = [
-        {
-          id: "1",
-          name: "Student User",
-          email: "student@example.com",
+      // First, try to find the user in the Students table
+      const { data: studentData, error: studentError } = await supabase
+        .from('Students')
+        .select('*')
+        .eq('email', email)
+        .eq('password', password)
+        .single();
+
+      if (!studentError && studentData) {
+        console.log("Student found:", studentData);
+        const userObj: User = {
+          id: studentData.sid,
+          name: studentData.name,
+          email: studentData.email,
           role: "student",
           avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
-          classId: "class-1"
-        },
-        {
-          id: "2",
-          name: "Admin User",
-          email: "admin@example.com",
+          classId: studentData.class
+        };
+        
+        localStorage.setItem("pathwayUser", JSON.stringify(userObj));
+        setUser(userObj);
+        setIsLoading(false);
+        return;
+      }
+
+      // If not found in Students, try Teachers table
+      const { data: teacherData, error: teacherError } = await supabase
+        .from('Teachers')
+        .select('*')
+        .eq('email', email)
+        .eq('password', password)
+        .single();
+
+      if (!teacherError && teacherData) {
+        console.log("Teacher found:", teacherData);
+        const userObj: User = {
+          id: teacherData.email, // Using email as ID since no specific ID field
+          name: teacherData.name,
+          email: teacherData.email,
           role: "admin",
           avatar: "/lovable-uploads/7aff8652-12ca-4080-b580-d23a64527cd3.png",
-          classId: "class-1"
-        }
-      ];
-      
-      const foundUser = mockUsers.find(u => u.email === email);
-      
-      if (!foundUser) {
-        throw new Error("Invalid email or password");
+          classId: teacherData.classes
+        };
+        
+        // If admin, load students in their class
+        setStudents(mockStudents.filter(student => student.classId === teacherData.classes));
+        
+        localStorage.setItem("pathwayUser", JSON.stringify(userObj));
+        setUser(userObj);
+        setIsLoading(false);
+        return;
       }
+
+      // If neither student nor teacher found, throw error
+      console.log("No user found with provided credentials");
+      throw new Error("Invalid email or password");
       
-      // If admin, load students in their class
-      if (foundUser.role === "admin" && foundUser.classId) {
-        setStudents(mockStudents.filter(student => student.classId === foundUser.classId));
-      }
-      
-      // Store in localStorage for persistence
-      localStorage.setItem("pathwayUser", JSON.stringify(foundUser));
-      setUser(foundUser);
     } catch (error) {
       console.error("Login error:", error);
-      throw error;
-    } finally {
       setIsLoading(false);
+      throw error;
     }
   };
 

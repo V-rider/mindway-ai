@@ -1,3 +1,4 @@
+
 // Export all API modules
 export { userApi } from './users';
 export { auth } from '../auth/auth';
@@ -7,4 +8,4 @@ export { achievementApi } from './achievements';
 export { challengeApi } from './challenges';
 
 // Export types
-export type { Database } from '@/types/database'; 
+export type { Database } from '@/types/database';
