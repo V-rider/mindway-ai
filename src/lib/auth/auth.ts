@@ -1,3 +1,4 @@
+
 import { supabase } from '../supabase/client';
 import { userApi } from '../api/users';
 import type { Database } from '@/types/database';
@@ -5,36 +6,6 @@ import type { Database } from '@/types/database';
 type User = Database['public']['Tables']['users']['Row'];
 
 export const auth = {
-  // Sign up with email and password
-  async signUp(email: string, password: string, userData: Partial<User>) {
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: userData
-      }
-    });
-
-    if (authError) throw authError;
-    if (!authData.user) throw new Error('No user data returned');
-
-    // Create user profile
-    const { data: profile, error: profileError } = await supabase
-      .from('users')
-      .insert({
-        id: authData.user.id,
-        email: authData.user.email!,
-        full_name: userData.full_name || '',
-        role: userData.role || 'student',
-        avatar_url: userData.avatar_url
-      })
-      .select()
-      .single();
-
-    if (profileError) throw profileError;
-    return profile;
-  },
-
   // Sign in with email and password
   async signIn(email: string, password: string) {
     const { data, error } = await supabase.auth.signInWithPassword({
