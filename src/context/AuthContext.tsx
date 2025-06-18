@@ -1,6 +1,7 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { multiProjectAuth } from "@/lib/auth/multi-project-auth";
+import { dynamicSupabase } from "@/lib/supabase/dynamic-client";
 import { User } from "@/types";
 
 interface AuthContextType {
@@ -11,6 +12,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   students: User[];
+  currentProject: string | null;
+  currentDomain: string | null;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -20,7 +23,9 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {},
   isAuthenticated: false,
   isAdmin: false,
-  students: []
+  students: [],
+  currentProject: null,
+  currentDomain: null
 });
 
 // Mock student data for admin users
@@ -63,106 +68,88 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [students, setStudents] = useState<User[]>([]);
+  const [currentProject, setCurrentProject] = useState<string | null>(null);
+  const [currentDomain, setCurrentDomain] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if user is stored in localStorage
-    const storedUser = localStorage.getItem("pathwayUser");
-    
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      
-      // If admin, load students in their class
-      if (parsedUser.role === "admin" && parsedUser.classId) {
-        setStudents(mockStudents.filter(student => student.classId === parsedUser.classId));
+    // Initialize from localStorage and restore project context
+    const initializeAuth = async () => {
+      try {
+        // Try to restore project from storage first
+        dynamicSupabase.initializeFromStorage();
+        
+        // Check if user is stored in localStorage
+        const storedUser = localStorage.getItem("pathwayUser");
+        
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          setCurrentProject(parsedUser.project || null);
+          setCurrentDomain(parsedUser.domain || null);
+          
+          // If admin, load students in their class
+          if (parsedUser.role === "admin" && parsedUser.classId) {
+            setStudents(mockStudents.filter(student => student.classId === parsedUser.classId));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to initialize auth:", error);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    
-    setIsLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
     
     try {
-      console.log("Attempting login with email:", email);
+      console.log("Attempting multi-project login with email:", email);
       
-      // First, try to find the user in the students table (lowercase)
-      const { data: studentData, error: studentError } = await supabase
-        .from('students')
-        .select('*')
-        .eq('email', email)
-        .eq('password', password);
-
-      if (studentError) {
-        console.error("Student query error:", studentError);
+      const userResult = await multiProjectAuth.signIn(email, password);
+      const project = multiProjectAuth.getCurrentProject();
+      
+      console.log("Multi-project login successful:", userResult);
+      
+      const userObj: User = {
+        id: userResult.id,
+        name: userResult.name,
+        email: userResult.email,
+        role: userResult.role,
+        avatar: userResult.role === "admin" 
+          ? "/lovable-uploads/7aff8652-12ca-4080-b580-d23a64527cd3.png"
+          : "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
+        classId: userResult.classId,
+        project: userResult.project,
+        domain: userResult.domain
+      };
+      
+      // If admin, load students in their class
+      if (userObj.role === "admin" && userObj.classId) {
+        setStudents(mockStudents.filter(student => student.classId === userObj.classId));
       }
-
-      if (!studentError && studentData && studentData.length > 0) {
-        const student = studentData[0];
-        console.log("Student login successful:", student.email);
-        const userObj: User = {
-          id: student.sid,
-          name: student.name,
-          email: student.email,
-          role: "student",
-          avatar: "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
-          classId: student.class
-        };
-        
-        localStorage.setItem("pathwayUser", JSON.stringify(userObj));
-        setUser(userObj);
-        setIsLoading(false);
-        return;
-      }
-
-      // If not found in students, try teachers table (lowercase)
-      const { data: teacherData, error: teacherError } = await supabase
-        .from('teachers')
-        .select('*')
-        .eq('email', email)
-        .eq('password', password);
-
-      if (teacherError) {
-        console.error("Teacher query error:", teacherError);
-      }
-
-      if (!teacherError && teacherData && teacherData.length > 0) {
-        const teacher = teacherData[0];
-        console.log("Teacher login successful:", teacher.email);
-        const userObj: User = {
-          id: teacher.email,
-          name: teacher.name,
-          email: teacher.email,
-          role: "admin",
-          avatar: "/lovable-uploads/7aff8652-12ca-4080-b580-d23a64527cd3.png",
-          classId: teacher.classes
-        };
-        
-        // If admin, load students in their class
-        setStudents(mockStudents.filter(student => student.classId === teacher.classes));
-        
-        localStorage.setItem("pathwayUser", JSON.stringify(userObj));
-        setUser(userObj);
-        setIsLoading(false);
-        return;
-      }
-
-      // If neither student nor teacher found, throw error
-      console.log("Login failed - no matching credentials found");
-      throw new Error("Invalid email or password");
+      
+      localStorage.setItem("pathwayUser", JSON.stringify(userObj));
+      setUser(userObj);
+      setCurrentProject(project?.projectName || null);
+      setCurrentDomain(project?.domain || null);
       
     } catch (error) {
-      console.error("Login error:", error);
-      setIsLoading(false);
+      console.error("Multi-project login error:", error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = () => {
-    localStorage.removeItem("pathwayUser");
+    multiProjectAuth.signOut();
     setUser(null);
     setStudents([]);
+    setCurrentProject(null);
+    setCurrentDomain(null);
   };
 
   return (
@@ -174,7 +161,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         isAuthenticated: !!user,
         isAdmin: user?.role === "admin",
-        students
+        students,
+        currentProject,
+        currentDomain
       }}
     >
       {children}

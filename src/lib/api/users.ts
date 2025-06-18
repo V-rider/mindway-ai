@@ -1,5 +1,5 @@
 
-import { supabase } from '../supabase/client';
+import { getCurrentSupabaseClient } from '../supabase/dynamic-client';
 
 export const userApi = {
   // Get current user from localStorage
@@ -8,11 +8,13 @@ export const userApi = {
     return storedUser ? JSON.parse(storedUser) : null;
   },
 
-  // Get user by ID - search in both Students and Teachers tables
+  // Get user by ID - search in both students and teachers tables
   async getUserById(id: string) {
-    // First try Students table
+    const supabase = getCurrentSupabaseClient();
+    
+    // First try students table
     const { data: studentData, error: studentError } = await supabase
-      .from('Students')
+      .from('students')
       .select('*')
       .eq('sid', id)
       .single();
@@ -27,9 +29,9 @@ export const userApi = {
       };
     }
 
-    // Then try Teachers table
+    // Then try teachers table
     const { data: teacherData, error: teacherError } = await supabase
-      .from('Teachers')
+      .from('teachers')
       .select('*')
       .eq('email', id) // Using email as ID for teachers
       .single();
@@ -49,8 +51,10 @@ export const userApi = {
 
   // Get all students
   async getAllStudents() {
+    const supabase = getCurrentSupabaseClient();
+    
     const { data, error } = await supabase
-      .from('Students')
+      .from('students')
       .select('*')
       .order('name', { ascending: true });
 
@@ -67,8 +71,10 @@ export const userApi = {
 
   // Get all teachers
   async getAllTeachers() {
+    const supabase = getCurrentSupabaseClient();
+    
     const { data, error } = await supabase
-      .from('Teachers')
+      .from('teachers')
       .select('*')
       .order('name', { ascending: true });
 
@@ -85,8 +91,10 @@ export const userApi = {
 
   // Get students by class
   async getStudentsByClass(className: string) {
+    const supabase = getCurrentSupabaseClient();
+    
     const { data, error } = await supabase
-      .from('Students')
+      .from('students')
       .select('*')
       .eq('class', className)
       .order('name', { ascending: true });

@@ -1,7 +1,7 @@
 
 // Export all API modules
 export { userApi } from './users';
-export { auth } from '../auth/auth';
+export { multiProjectAuth as auth } from '../auth/multi-project-auth';
 export { classApi } from './classes';
 export { materialApi } from './materials';
 export { achievementApi } from './achievements';

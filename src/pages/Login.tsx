@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Loader2, BookOpen, ArrowRight, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { Loader2, BookOpen, ArrowRight, CheckCircle2, Eye, EyeOff, Building2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { getProjectByDomain, PROJECT_CONFIGS } from "@/config/projects";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -13,6 +14,9 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Get project info based on current email input
+  const currentProject = email ? getProjectByDomain(email) : null;
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,20 +30,30 @@ const Login = () => {
       return;
     }
     
+    // Check if domain is supported
+    if (!getProjectByDomain(email)) {
+      toast({
+        title: "Unsupported domain",
+        description: `Email domain not supported. Supported domains: ${PROJECT_CONFIGS.map(c => c.domain).join(', ')}`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoggingIn(true);
     
     try {
       await login(email, password);
       toast({
         title: "Welcome back!",
-        description: "Login successful. Redirecting to dashboard...",
+        description: `Login successful to ${currentProject?.projectName}. Redirecting to dashboard...`,
         variant: "default"
       });
       navigate("/dashboard");
     } catch (error) {
       toast({
         title: "Login failed",
-        description: "Invalid email or password. Try student@example.com / admin@example.com",
+        description: "Invalid email or password. Please check your credentials.",
         variant: "destructive"
       });
       console.error("Login error:", error);
@@ -75,6 +89,25 @@ const Login = () => {
               Sign in to your account
             </h2>
             
+            {/* Project Indicator */}
+            {currentProject && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mb-6 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800"
+              >
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  <span className="text-sm font-medium text-purple-800 dark:text-purple-200">
+                    Connecting to: {currentProject.projectName}
+                  </span>
+                </div>
+                <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                  Domain: {currentProject.domain}
+                </p>
+              </motion.div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label 
@@ -88,7 +121,7 @@ const Login = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder="Enter your school email"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                 />
               </div>
@@ -172,67 +205,27 @@ const Login = () => {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                    Demo Accounts
+                    Supported Schools
                   </span>
                 </div>
               </div>
               
-              <div className="mt-4 space-y-3">
-                <div className="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750">
-                  <div className="w-8 h-8 rounded-full overflow-hidden bg-purple-100 dark:bg-gray-700 flex-shrink-0">
-                    <img 
-                      src="/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png" 
-                      alt="Student" 
-                      className="w-full h-full object-cover"
-                    />
+              <div className="mt-4 space-y-2">
+                {PROJECT_CONFIGS.map((project) => (
+                  <div key={project.domain} className="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750">
+                    <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-gray-700 flex-shrink-0 flex items-center justify-center">
+                      <Building2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {project.projectName}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        @{project.domain}
+                      </p>
+                    </div>
                   </div>
-                  <div className="ml-3 flex-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      Student Account
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      student@example.com
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEmail("student@example.com");
-                      setPassword("password");
-                    }}
-                    className="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-                
-                <div className="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750">
-                  <div className="w-8 h-8 rounded-full overflow-hidden bg-purple-100 dark:bg-gray-700 flex-shrink-0">
-                    <img 
-                      src="/lovable-uploads/7aff8652-12ca-4080-b580-d23a64527cd3.png" 
-                      alt="Admin" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="ml-3 flex-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      Admin Account
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      admin@example.com
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEmail("admin@example.com");
-                      setPassword("password");
-                    }}
-                    className="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
+                ))}
               </div>
             </div>
           </div>
