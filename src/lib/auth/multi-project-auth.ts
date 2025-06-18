@@ -1,5 +1,7 @@
+
 import { dynamicSupabase, getCurrentSupabaseClient } from '../supabase/dynamic-client';
 import { getProjectByDomain } from '@/config/projects';
+import { passwordHash } from './password-hash';
 import type { Database } from '@/integrations/supabase/types';
 
 // Define user type based on actual tables structure
@@ -30,23 +32,28 @@ export const multiProjectAuth = {
       const { data: studentData, error: studentError } = await client
         .from('students')
         .select('*')
-        .eq('email', email)
-        .eq('password', password);
+        .eq('email', email);
 
       console.log("Student query result:", { data: studentData, error: studentError });
 
       if (!studentError && studentData && studentData.length > 0) {
         const student = studentData[0];
-        console.log("Student login successful:", student.email);
-        return {
-          id: student.sid,
-          name: student.name,
-          email: student.email,
-          role: "student" as const,
-          classId: student.class,
-          project: project.projectName,
-          domain: project.domain
-        };
+        
+        // Compare the provided password with the stored hash
+        const isValidPassword = await passwordHash.compare(password, student.password);
+        
+        if (isValidPassword) {
+          console.log("Student login successful:", student.email);
+          return {
+            id: student.sid,
+            name: student.name,
+            email: student.email,
+            role: "student" as const,
+            classId: student.class,
+            project: project.projectName,
+            domain: project.domain
+          };
+        }
       }
 
       // If not found in students, try teachers table
@@ -54,23 +61,28 @@ export const multiProjectAuth = {
       const { data: teacherData, error: teacherError } = await client
         .from('teachers')
         .select('*')
-        .eq('email', email)
-        .eq('password', password);
+        .eq('email', email);
 
       console.log("Teacher query result:", { data: teacherData, error: teacherError });
 
       if (!teacherError && teacherData && teacherData.length > 0) {
         const teacher = teacherData[0];
-        console.log("Teacher login successful:", teacher.email);
-        return {
-          id: teacher.email,
-          name: teacher.name,
-          email: teacher.email,
-          role: "admin" as const,
-          classId: teacher.classes,
-          project: project.projectName,
-          domain: project.domain
-        };
+        
+        // Compare the provided password with the stored hash
+        const isValidPassword = await passwordHash.compare(password, teacher.password);
+        
+        if (isValidPassword) {
+          console.log("Teacher login successful:", teacher.email);
+          return {
+            id: teacher.email,
+            name: teacher.name,
+            email: teacher.email,
+            role: "admin" as const,
+            classId: teacher.classes,
+            project: project.projectName,
+            domain: project.domain
+          };
+        }
       }
 
       // Log detailed error information
@@ -81,7 +93,7 @@ export const multiProjectAuth = {
         console.error("Teacher table error:", teacherError);
       }
 
-      // If neither found, throw error
+      // If neither found or password invalid, throw error
       throw new Error("Invalid email or password");
     } catch (error) {
       console.error("Database query error:", error);
@@ -126,5 +138,84 @@ export const multiProjectAuth = {
   // Get current supabase client
   getCurrentClient() {
     return dynamicSupabase.getCurrentClient();
+  },
+
+  // Register new user with hashed password
+  async signUp(email: string, password: string, name: string, role: 'student' | 'admin', classId?: string) {
+    console.log("MultiProjectAuth.signUp called with:", email);
+    
+    // Get the appropriate Supabase client based on email domain
+    const client = dynamicSupabase.getClientByEmail(email);
+    const project = dynamicSupabase.getCurrentProject();
+    
+    if (!client || !project) {
+      const domain = email.split('@')[1];
+      console.error(`No project configuration found for domain: ${domain}`);
+      throw new Error(`No project configuration found for domain: ${domain}`);
+    }
+
+    try {
+      // Hash the password before storing
+      const hashedPassword = await passwordHash.hash(password);
+      
+      if (role === 'student') {
+        // Generate a unique student ID
+        const sid = `student_${Date.now()}`;
+        
+        const { data, error } = await client
+          .from('students')
+          .insert({
+            sid,
+            name,
+            email,
+            password: hashedPassword,
+            class: classId || 'default-class'
+          })
+          .select()
+          .single();
+
+        if (error) {
+          throw new Error(`Failed to create student account: ${error.message}`);
+        }
+
+        return {
+          id: data.sid,
+          name: data.name,
+          email: data.email,
+          role: "student" as const,
+          classId: data.class,
+          project: project.projectName,
+          domain: project.domain
+        };
+      } else {
+        const { data, error } = await client
+          .from('teachers')
+          .insert({
+            email,
+            name,
+            password: hashedPassword,
+            classes: classId || 'default-class'
+          })
+          .select()
+          .single();
+
+        if (error) {
+          throw new Error(`Failed to create teacher account: ${error.message}`);
+        }
+
+        return {
+          id: data.email,
+          name: data.name,
+          email: data.email,
+          role: "admin" as const,
+          classId: data.classes,
+          project: project.projectName,
+          domain: project.domain
+        };
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      throw error;
+    }
   }
 };

@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { passwordHash } from './password-hash';
 import type { Database } from '@/types/database';
 
 type User = Database['public']['Tables']['users']['Row'];
@@ -13,39 +14,49 @@ export const auth = {
     const { data: studentData, error: studentError } = await supabase
       .from('students')
       .select('*')
-      .eq('email', email)
-      .eq('password', password);
+      .eq('email', email);
 
     if (!studentError && studentData && studentData.length > 0) {
       const student = studentData[0];
-      return {
-        id: student.sid,
-        name: student.name,
-        email: student.email,
-        role: "student",
-        classId: student.class
-      };
+      
+      // Compare the provided password with the stored hash
+      const isValidPassword = await passwordHash.compare(password, student.password);
+      
+      if (isValidPassword) {
+        return {
+          id: student.sid,
+          name: student.name,
+          email: student.email,
+          role: "student",
+          classId: student.class
+        };
+      }
     }
 
     // If not found in students, try teachers table (lowercase)
     const { data: teacherData, error: teacherError } = await supabase
       .from('teachers')
       .select('*')
-      .eq('email', email)
-      .eq('password', password);
+      .eq('email', email);
 
     if (!teacherError && teacherData && teacherData.length > 0) {
       const teacher = teacherData[0];
-      return {
-        id: teacher.email,
-        name: teacher.name,
-        email: teacher.email,
-        role: "admin",
-        classId: teacher.classes
-      };
+      
+      // Compare the provided password with the stored hash
+      const isValidPassword = await passwordHash.compare(password, teacher.password);
+      
+      if (isValidPassword) {
+        return {
+          id: teacher.email,
+          name: teacher.name,
+          email: teacher.email,
+          role: "admin",
+          classId: teacher.classes
+        };
+      }
     }
 
-    // If neither found, throw error
+    // If neither found or password invalid, throw error
     throw new Error("Invalid email or password");
   },
 
