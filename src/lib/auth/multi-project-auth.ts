@@ -3,7 +3,9 @@ import { dynamicSupabase, getCurrentSupabaseClient } from '../supabase/dynamic-c
 import { getProjectByDomain } from '@/config/projects';
 import type { Database } from '@/integrations/supabase/types';
 
-type User = Database['public']['Tables']['users']['Row'] | any;
+// Define user type based on actual tables structure
+type StudentUser = Database['public']['Tables']['students']['Row'];
+type TeacherUser = Database['public']['Tables']['teachers']['Row'];
 
 export const multiProjectAuth = {
   // Sign in with email and password using project-specific database
@@ -34,7 +36,7 @@ export const multiProjectAuth = {
         id: student.sid,
         name: student.name,
         email: student.email,
-        role: "student",
+        role: "student" as const,
         classId: student.class,
         project: project.projectName,
         domain: project.domain
@@ -55,7 +57,7 @@ export const multiProjectAuth = {
         id: teacher.email,
         name: teacher.name,
         email: teacher.email,
-        role: "admin",
+        role: "admin" as const,
         classId: teacher.classes,
         project: project.projectName,
         domain: project.domain

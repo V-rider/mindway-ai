@@ -113,12 +113,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log("Multi-project login successful:", userResult);
       
+      // Ensure role is properly typed as 'student' | 'admin'
+      const userRole = userResult.role === "admin" ? "admin" as const : "student" as const;
+      
       const userObj: User = {
         id: userResult.id,
         name: userResult.name,
         email: userResult.email,
-        role: userResult.role,
-        avatar: userResult.role === "admin" 
+        role: userRole,
+        avatar: userRole === "admin" 
           ? "/lovable-uploads/7aff8652-12ca-4080-b580-d23a64527cd3.png"
           : "/lovable-uploads/8ee1bdd6-bfc2-4782-a9d1-7ba12b2146e7.png",
         classId: userResult.classId,
