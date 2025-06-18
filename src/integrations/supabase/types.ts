@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      students: {
+        Row: {
+          class: string
+          email: string
+          name: string
+          password: string
+          sid: string
+        }
+        Insert: {
+          class: string
+          email: string
+          name: string
+          password: string
+          sid: string
+        }
+        Update: {
+          class?: string
+          email?: string
+          name?: string
+          password?: string
+          sid?: string
+        }
+        Relationships: []
+      }
       Students: {
         Row: {
           class: string
@@ -33,7 +57,7 @@ export type Database = {
         }
         Relationships: []
       }
-      Teachers: {
+      teachers: {
         Row: {
           classes: string
           email: string

@@ -85,48 +85,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     
     try {
-      console.log("=== LOGIN ATTEMPT START ===");
       console.log("Attempting login with email:", email);
-      console.log("Password length:", password?.length || 0);
       
-      // First, let's check what data exists in the Students table
-      console.log("=== DIAGNOSTIC: Checking all Students ===");
-      const { data: allStudents, error: allStudentsError } = await supabase
-        .from('Students')
-        .select('*');
-      
-      console.log("All students in database:", { 
-        data: allStudents, 
-        error: allStudentsError,
-        count: allStudents?.length || 0 
-      });
-      
-      // Check if there are any students with similar email
-      if (allStudents && allStudents.length > 0) {
-        console.log("Student emails in database:", allStudents.map(s => s.email));
-        const emailMatch = allStudents.find(s => s.email === email);
-        console.log("Exact email match found:", !!emailMatch);
-        if (emailMatch) {
-          console.log("Found student with matching email:", emailMatch);
-          console.log("Password in database:", emailMatch.password);
-          console.log("Password provided:", password);
-          console.log("Password match:", emailMatch.password === password);
-        }
-      }
-      
-      // Now try the regular query
-      console.log("=== REGULAR LOGIN QUERY: Students ===");
+      // First, try to find the user in the Students table
       const { data: studentData, error: studentError } = await supabase
         .from('Students')
         .select('*')
         .eq('email', email)
         .eq('password', password);
-
-      console.log("Student query result:", { 
-        data: studentData, 
-        error: studentError,
-        count: studentData?.length || 0 
-      });
 
       if (studentError) {
         console.error("Student query error:", studentError);
@@ -134,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (!studentError && studentData && studentData.length > 0) {
         const student = studentData[0];
-        console.log("Student found:", student);
+        console.log("Student login successful:", student.email);
         const userObj: User = {
           id: student.sid,
           name: student.name,
@@ -147,46 +113,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem("pathwayUser", JSON.stringify(userObj));
         setUser(userObj);
         setIsLoading(false);
-        console.log("=== LOGIN SUCCESS (STUDENT) ===");
         return;
       }
 
       // If not found in Students, try Teachers table
-      console.log("=== DIAGNOSTIC: Checking all Teachers ===");
-      const { data: allTeachers, error: allTeachersError } = await supabase
-        .from('Teachers')
-        .select('*');
-      
-      console.log("All teachers in database:", { 
-        data: allTeachers, 
-        error: allTeachersError,
-        count: allTeachers?.length || 0 
-      });
-      
-      if (allTeachers && allTeachers.length > 0) {
-        console.log("Teacher emails in database:", allTeachers.map(t => t.email));
-        const emailMatch = allTeachers.find(t => t.email === email);
-        console.log("Exact email match found:", !!emailMatch);
-        if (emailMatch) {
-          console.log("Found teacher with matching email:", emailMatch);
-          console.log("Password in database:", emailMatch.password);
-          console.log("Password provided:", password);
-          console.log("Password match:", emailMatch.password === password);
-        }
-      }
-
-      console.log("=== REGULAR LOGIN QUERY: Teachers ===");
       const { data: teacherData, error: teacherError } = await supabase
         .from('Teachers')
         .select('*')
         .eq('email', email)
         .eq('password', password);
-
-      console.log("Teacher query result:", { 
-        data: teacherData, 
-        error: teacherError,
-        count: teacherData?.length || 0 
-      });
 
       if (teacherError) {
         console.error("Teacher query error:", teacherError);
@@ -194,9 +129,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (!teacherError && teacherData && teacherData.length > 0) {
         const teacher = teacherData[0];
-        console.log("Teacher found:", teacher);
+        console.log("Teacher login successful:", teacher.email);
         const userObj: User = {
-          id: teacher.email, // Using email as ID since no specific ID field
+          id: teacher.email,
           name: teacher.name,
           email: teacher.email,
           role: "admin",
@@ -210,15 +145,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem("pathwayUser", JSON.stringify(userObj));
         setUser(userObj);
         setIsLoading(false);
-        console.log("=== LOGIN SUCCESS (TEACHER) ===");
         return;
       }
 
       // If neither student nor teacher found, throw error
-      console.log("=== LOGIN FAILED ===");
-      console.log("No user found with provided credentials");
-      console.log("Email searched:", email);
-      console.log("Password searched:", password);
+      console.log("Login failed - no matching credentials found");
       throw new Error("Invalid email or password");
       
     } catch (error) {
