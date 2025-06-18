@@ -7,7 +7,7 @@ type StudentUser = Database['public']['Tables']['students']['Row'];
 type TeacherUser = Database['public']['Tables']['teachers']['Row'];
 
 export const multiProjectAuth = {
-  // Sign in with email and password using project-specific database
+  // Sign in with email and password using project-specific database with secure password verification
   async signIn(email: string, password: string) {
     console.log("MultiProjectAuth.signIn called with:", email);
     
@@ -30,13 +30,31 @@ export const multiProjectAuth = {
       const { data: studentData, error: studentError } = await client
         .from('students')
         .select('*')
-        .eq('email', email)
-        .eq('password', password);
+        .eq('email', email);
 
       console.log("Student query result:", { data: studentData, error: studentError });
 
       if (!studentError && studentData && studentData.length > 0) {
         const student = studentData[0];
+        
+        // Verify password using the Edge Function
+        const { data: verifyResult, error: verifyError } = await client.functions.invoke('auth-password', {
+          body: {
+            action: 'verify',
+            password: password,
+            storedHash: student.hashed_password
+          }
+        });
+
+        if (verifyError) {
+          console.error("Password verification error:", verifyError);
+          throw new Error("Authentication failed");
+        }
+
+        if (!verifyResult?.isValid) {
+          throw new Error("Invalid email or password");
+        }
+
         console.log("Student login successful:", student.email);
         return {
           id: student.sid,
@@ -54,13 +72,31 @@ export const multiProjectAuth = {
       const { data: teacherData, error: teacherError } = await client
         .from('teachers')
         .select('*')
-        .eq('email', email)
-        .eq('password', password);
+        .eq('email', email);
 
       console.log("Teacher query result:", { data: teacherData, error: teacherError });
 
       if (!teacherError && teacherData && teacherData.length > 0) {
         const teacher = teacherData[0];
+        
+        // Verify password using the Edge Function
+        const { data: verifyResult, error: verifyError } = await client.functions.invoke('auth-password', {
+          body: {
+            action: 'verify',
+            password: password,
+            storedHash: teacher.hashed_password
+          }
+        });
+
+        if (verifyError) {
+          console.error("Password verification error:", verifyError);
+          throw new Error("Authentication failed");
+        }
+
+        if (!verifyResult?.isValid) {
+          throw new Error("Invalid email or password");
+        }
+
         console.log("Teacher login successful:", teacher.email);
         return {
           id: teacher.email,
