@@ -86,15 +86,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     try {
       console.log("Attempting login with email:", email);
+      console.log("Using Supabase URL:", supabase.supabaseUrl);
       
       // First, try to find the user in the Students table
+      console.log("Querying Students table...");
       const { data: studentData, error: studentError } = await supabase
         .from('Students')
         .select('*')
         .eq('email', email)
         .eq('password', password);
 
-      console.log("Student query result:", { studentData, studentError });
+      console.log("Student query result:", { 
+        data: studentData, 
+        error: studentError,
+        count: studentData?.length || 0 
+      });
+
+      if (studentError) {
+        console.error("Student query error:", studentError);
+      }
 
       if (!studentError && studentData && studentData.length > 0) {
         const student = studentData[0];
@@ -115,13 +125,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // If not found in Students, try Teachers table
+      console.log("Querying Teachers table...");
       const { data: teacherData, error: teacherError } = await supabase
         .from('Teachers')
         .select('*')
         .eq('email', email)
         .eq('password', password);
 
-      console.log("Teacher query result:", { teacherData, teacherError });
+      console.log("Teacher query result:", { 
+        data: teacherData, 
+        error: teacherError,
+        count: teacherData?.length || 0 
+      });
+
+      if (teacherError) {
+        console.error("Teacher query error:", teacherError);
+      }
 
       if (!teacherError && teacherData && teacherData.length > 0) {
         const teacher = teacherData[0];
@@ -146,6 +165,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // If neither student nor teacher found, throw error
       console.log("No user found with provided credentials");
+      console.log("Email searched:", email);
+      console.log("Password searched:", password);
       throw new Error("Invalid email or password");
       
     } catch (error) {
