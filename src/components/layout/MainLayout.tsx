@@ -19,7 +19,7 @@ import { ROUTES, USER_ROLES, STORAGE_KEYS, APP_CONFIG } from "@/utils/constants"
 
 // Create a function to get menu items based on user role
 const getMenuItems = (isAdmin: boolean, isStudent: boolean) => {
-  const baseItems = [
+  const baseItems: MenuItem[] = [
     {
       title: "Dashboard",
       path: ROUTES.DASHBOARD,
@@ -84,7 +84,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   // Determine if the user is a student (not an admin)
   const isStudent = user && user.role === USER_ROLES.STUDENT;
   
-  const menuItems = getMenuItems(isAdmin, isStudent);
+  const menuItems = getMenuItems(isAdmin, !!isStudent);
   
   const handleLogout = () => {
     logout();

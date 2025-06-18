@@ -21,22 +21,42 @@ export const authService = {
       const { data, error } = await supabase.auth.signInWithPassword(credentials);
       if (error) throw new ApiError(error.message);
       
-      // Fetch user profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', data.user?.id)
-        .single();
+      // Try to fetch user profile, but handle case where profiles table doesn't exist
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles' as any)
+          .select('*')
+          .eq('id', data.user?.id)
+          .single();
+          
+        if (profileError || !profile) {
+          // Return basic user info if profile doesn't exist
+          return {
+            id: data.user!.id,
+            email: data.user!.email!,
+            name: data.user!.email!.split('@')[0], // Use email username as fallback
+            role: 'student', // Default role
+            avatar: undefined
+          };
+        }
         
-      if (profileError) throw new ApiError(profileError.message);
-      
-      return {
-        id: data.user!.id,
-        email: data.user!.email!,
-        name: profile.name,
-        role: profile.role,
-        avatar: profile.avatar
-      };
+        return {
+          id: data.user!.id,
+          email: data.user!.email!,
+          name: profile.name || data.user!.email!.split('@')[0],
+          role: profile.role || 'student',
+          avatar: profile.avatar
+        };
+      } catch (profileError) {
+        // Return basic user info if profiles table doesn't exist
+        return {
+          id: data.user!.id,
+          email: data.user!.email!,
+          name: data.user!.email!.split('@')[0],
+          role: 'student',
+          avatar: undefined
+        };
+      }
     } catch (error) {
       handleApiError(error);
       throw error;
@@ -53,21 +73,41 @@ export const authService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles' as any)
+          .select('*')
+          .eq('id', user.id)
+          .single();
 
-      if (error) return null;
+        if (error || !profile) {
+          // Return basic user info if profile doesn't exist
+          return {
+            id: user.id,
+            email: user.email!,
+            name: user.email!.split('@')[0],
+            role: 'student',
+            avatar: undefined
+          };
+        }
 
-      return {
-        id: user.id,
-        email: user.email!,
-        name: profile.name,
-        role: profile.role,
-        avatar: profile.avatar
-      };
+        return {
+          id: user.id,
+          email: user.email!,
+          name: profile.name || user.email!.split('@')[0],
+          role: profile.role || 'student',
+          avatar: profile.avatar
+        };
+      } catch {
+        // Return basic user info if profiles table doesn't exist
+        return {
+          id: user.id,
+          email: user.email!,
+          name: user.email!.split('@')[0],
+          role: 'student',
+          avatar: undefined
+        };
+      }
     } catch {
       return null;
     }

@@ -17,7 +17,7 @@ export const ROUTES = {
   E_LEARNING: '/e-learning',
   ACHIEVEMENTS: '/achievements',
   MATH_CHALLENGE: '/math-challenge'
-} as const;
+};
 
 export const USER_ROLES = {
   ADMIN: 'admin',
