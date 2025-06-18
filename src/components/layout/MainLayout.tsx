@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -15,14 +14,13 @@ import {
 import { MenuItem } from "@/types";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
-import { ROUTES, USER_ROLES, STORAGE_KEYS, APP_CONFIG } from "@/utils/constants";
 
 // Create a function to get menu items based on user role
 const getMenuItems = (isAdmin: boolean, isStudent: boolean) => {
-  const baseItems: MenuItem[] = [
+  const baseItems = [
     {
       title: "Dashboard",
-      path: ROUTES.DASHBOARD,
+      path: "/dashboard",
       icon: LayoutDashboard
     }
   ];
@@ -32,12 +30,12 @@ const getMenuItems = (isAdmin: boolean, isStudent: boolean) => {
     baseItems.push(
       {
         title: "Upload Tests",
-        path: ROUTES.UPLOAD,
+        path: "/upload",
         icon: Upload
       },
       {
         title: "Students",
-        path: ROUTES.STUDENTS,
+        path: "/students",
         icon: Users
       }
     );
@@ -48,12 +46,12 @@ const getMenuItems = (isAdmin: boolean, isStudent: boolean) => {
     baseItems.push(
       {
         title: "E-Learning",
-        path: ROUTES.E_LEARNING,
+        path: "/e-learning",
         icon: GraduationCap
       },
       {
         title: "Learning Pathway",
-        path: ROUTES.LEARNING_PATHWAY,
+        path: "/learning-pathway",
         icon: BookOpen
       }
     );
@@ -73,27 +71,27 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   
   // Initialize sidebar state from localStorage or default based on current route
   const [sidebarOpen, setSidebarOpen] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.SIDEBAR_OPEN);
+    const saved = localStorage.getItem('sidebar-open');
     if (saved !== null) {
       return JSON.parse(saved);
     }
     // Default to open only on dashboard
-    return location.pathname === ROUTES.DASHBOARD;
+    return location.pathname === '/dashboard';
   });
   
   // Determine if the user is a student (not an admin)
-  const isStudent = user && user.role === USER_ROLES.STUDENT;
+  const isStudent = user && user.role === 'student';
   
-  const menuItems = getMenuItems(isAdmin, !!isStudent);
+  const menuItems = getMenuItems(isAdmin, isStudent);
   
   const handleLogout = () => {
     logout();
-    navigate(ROUTES.HOME);
+    navigate("/");
   };
   
   // Save sidebar state to localStorage
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.SIDEBAR_OPEN, JSON.stringify(sidebarOpen));
+    localStorage.setItem('sidebar-open', JSON.stringify(sidebarOpen));
   }, [sidebarOpen]);
   
   // Prevent keyboard shortcuts from interfering
@@ -121,7 +119,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         menuItems={menuItems}
         user={user}
         onLogout={handleLogout}
-        appConfig={APP_CONFIG}
       />
       
       <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}>

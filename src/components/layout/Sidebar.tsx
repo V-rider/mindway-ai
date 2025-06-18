@@ -15,7 +15,6 @@ import { SidebarMenu } from "./SidebarMenu";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { X } from "lucide-react";
-import { ROUTES } from "@/utils/constants";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -23,27 +22,16 @@ interface SidebarProps {
   menuItems: any;
   user: any;
   onLogout: () => void;
-  appConfig: {
-    name: string;
-    description: string;
-  };
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ 
-  isOpen, 
-  onClose, 
-  menuItems, 
-  user, 
-  onLogout,
-  appConfig 
-}) => {
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, menuItems, user, onLogout }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   const handleLogout = () => {
     onLogout();
-    navigate(ROUTES.HOME);
+    navigate("/");
   };
 
   // Close sidebar on mobile when route changes
@@ -99,10 +87,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Logo and App Name */}
           <div className="px-6 mb-6 mt-2">
             <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-              {appConfig.name}
+              Mindway AI
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {appConfig.description}
+              Analytics & Insights
             </p>
           </div>
 
