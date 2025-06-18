@@ -94,13 +94,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     localStorage.setItem('sidebar-open', JSON.stringify(sidebarOpen));
   }, [sidebarOpen]);
   
-  // Auto-open sidebar when dashboard is reached
-  useEffect(() => {
-    if (location.pathname === '/dashboard') {
-      setSidebarOpen(true);
-    }
-  }, [location.pathname]);
-  
   // Prevent keyboard shortcuts from interfering
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
