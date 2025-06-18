@@ -80,12 +80,11 @@ export const migrateTeacherPasswords = async () => {
   
   console.log("Starting teacher password migration...");
   
-  // Get all teachers with temporary hashes
+  // Get all teachers with null hashed_password or temporary hashes
   const { data: teachers, error: fetchError } = await supabase
     .from('teachers')
     .select('*')
-    .where('hashed_password', 'is', null)
-    .or('hashed_password.eq.temp_salt:temp_hash');
+    .or('hashed_password.is.null,hashed_password.eq.temp_salt:temp_hash');
 
   if (fetchError) {
     console.error("Error fetching teachers:", fetchError);
