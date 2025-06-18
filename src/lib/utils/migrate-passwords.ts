@@ -5,7 +5,7 @@ import { getCurrentSupabaseClient } from '../supabase/dynamic-client';
 export const migrateStudentPasswords = async () => {
   const supabase = getCurrentSupabaseClient();
   
-  console.log("Starting password migration...");
+  console.log("Starting student password migration...");
   
   // Get all students with temporary hashes
   const { data: students, error: fetchError } = await supabase
@@ -71,7 +71,7 @@ export const migrateStudentPasswords = async () => {
     }
   }
 
-  console.log("Password migration completed");
+  console.log("Student password migration completed");
 };
 
 // Similar function for teachers
@@ -80,31 +80,43 @@ export const migrateTeacherPasswords = async () => {
   
   console.log("Starting teacher password migration...");
   
-  // Get all teachers with null hashed_password or temporary hashes
+  // Get all teachers with temporary hashes OR bcrypt hashes that need to be converted
   const { data: teachers, error: fetchError } = await supabase
     .from('teachers')
     .select('*')
-    .or('hashed_password.is.null,hashed_password.eq.temp_salt:temp_hash');
+    .or('hashed_password.eq.temp_salt:temp_hash,hashed_password.like.$2%');
 
   if (fetchError) {
     console.error("Error fetching teachers:", fetchError);
     return;
   }
 
-  // Known passwords for teachers
+  console.log(`Found ${teachers?.length || 0} teachers to migrate`);
+
+  // Known passwords for teachers - including CFSS teachers
   const knownPasswords: Record<string, string> = {
     'admin@example.com': 'password',
-    'teacher@example.com': 'password'
+    'teacher@example.com': 'password',
+    // Add CFSS teacher passwords here when known
+    // 'teacher@cfss.edu.hk': 'their_password'
   };
 
   if (!teachers || teachers.length === 0) {
-    console.log("No teachers found with temporary passwords");
+    console.log("No teachers found that need migration");
     return;
   }
 
   // Process each teacher
   for (const teacher of teachers) {
-    const plainPassword = knownPasswords[teacher.email];
+    // For CFSS teachers, we'll use their existing plain text password from the password column
+    let plainPassword = knownPasswords[teacher.email];
+    
+    // If this is a CFSS teacher (domain check) and we don't have a known password, 
+    // use their existing password column value
+    if (!plainPassword && teacher.email.includes('@cfss.edu.hk')) {
+      plainPassword = teacher.password;
+      console.log(`Using existing password column for CFSS teacher: ${teacher.email}`);
+    }
     
     if (!plainPassword) {
       console.warn(`No known password for ${teacher.email}, skipping...`);
