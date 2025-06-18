@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -94,13 +93,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('sidebar-open', JSON.stringify(sidebarOpen));
   }, [sidebarOpen]);
-  
-  // Auto-open sidebar when navigating to dashboard
-  useEffect(() => {
-    if (location.pathname === '/dashboard' && !sidebarOpen) {
-      setSidebarOpen(true);
-    }
-  }, [location.pathname, sidebarOpen]);
   
   // Prevent keyboard shortcuts from interfering
   useEffect(() => {
