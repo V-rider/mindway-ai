@@ -7,11 +7,11 @@ export const migrateStudentPasswords = async () => {
   
   console.log("Starting student password migration...");
   
-  // Get all students with temporary hashes
+  // Get all students with temporary hashes or null hashed passwords
   const { data: students, error: fetchError } = await supabase
     .from('students')
     .select('*')
-    .eq('hashed_password', 'temp_salt:temp_hash');
+    .or('hashed_password.eq.temp_salt:temp_hash,hashed_password.is.null');
 
   if (fetchError) {
     console.error("Error fetching students:", fetchError);
@@ -20,32 +20,35 @@ export const migrateStudentPasswords = async () => {
 
   console.log(`Found ${students?.length || 0} students to migrate`);
 
-  // Known passwords for the sample data - both CFSS and MAX
-  const knownPasswords: Record<string, string> = {
-    // CFSS students
-    'gay.jasper@cfss.edu.hk': 'P9mK2xL4',
-    'student@example.com': 'password',
-    'jane@example.com': 'password',
-    // MAX students (add known passwords here)
-    'student1@max.edu.hk': 'password123',
-    'student2@max.edu.hk': 'password123'
-  };
-
   if (!students || students.length === 0) {
     console.log("No students found with temporary passwords");
     return;
   }
 
-  // Process each student
+  // Process each student - use their existing password column value
   for (const student of students) {
-    const plainPassword = knownPasswords[student.email];
+    // For MAX project, use the existing password column directly
+    // For CFSS project, may need known passwords if password column doesn't exist
+    let plainPassword = student.password;
+    
+    // Fallback to known passwords if no password column exists (CFSS case)
+    if (!plainPassword) {
+      const knownPasswords: Record<string, string> = {
+        'gay.jasper@cfss.edu.hk': 'P9mK2xL4',
+        'student@example.com': 'password',
+        'jane@example.com': 'password'
+      };
+      plainPassword = knownPasswords[student.email];
+    }
     
     if (!plainPassword) {
-      console.warn(`No known password for ${student.email}, skipping...`);
+      console.warn(`No password found for ${student.email}, skipping...`);
       continue;
     }
 
     try {
+      console.log(`Attempting to hash password for student: ${student.email}`);
+      
       // Hash the password using the Edge Function
       const { data: hashResult, error: hashError } = await supabase.functions.invoke('auth-password', {
         body: {
@@ -58,6 +61,8 @@ export const migrateStudentPasswords = async () => {
         console.error(`Error hashing password for ${student.email}:`, hashError);
         continue;
       }
+
+      console.log(`Successfully hashed password for ${student.email}, updating database...`);
 
       // Update the student record with the hashed password
       const { error: updateError } = await supabase
