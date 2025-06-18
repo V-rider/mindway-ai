@@ -74,17 +74,17 @@ export const migrateStudentPasswords = async () => {
   console.log("Student password migration completed");
 };
 
-// Similar function for teachers
+// Enhanced function for teachers including CFSS teachers
 export const migrateTeacherPasswords = async () => {
   const supabase = getCurrentSupabaseClient();
   
   console.log("Starting teacher password migration...");
   
-  // Get all teachers with temporary hashes OR bcrypt hashes that need to be converted
+  // Get all teachers that need migration (either temp hash or no hashed_password)
   const { data: teachers, error: fetchError } = await supabase
     .from('teachers')
     .select('*')
-    .or('hashed_password.eq.temp_salt:temp_hash,hashed_password.like.$2%');
+    .or('hashed_password.eq.temp_salt:temp_hash,hashed_password.is.null');
 
   if (fetchError) {
     console.error("Error fetching teachers:", fetchError);
@@ -93,14 +93,6 @@ export const migrateTeacherPasswords = async () => {
 
   console.log(`Found ${teachers?.length || 0} teachers to migrate`);
 
-  // Known passwords for teachers - including CFSS teachers
-  const knownPasswords: Record<string, string> = {
-    'admin@example.com': 'password',
-    'teacher@example.com': 'password',
-    // Add CFSS teacher passwords here when known
-    // 'teacher@cfss.edu.hk': 'their_password'
-  };
-
   if (!teachers || teachers.length === 0) {
     console.log("No teachers found that need migration");
     return;
@@ -108,22 +100,19 @@ export const migrateTeacherPasswords = async () => {
 
   // Process each teacher
   for (const teacher of teachers) {
-    // For CFSS teachers, we'll use their existing plain text password from the password column
-    let plainPassword = knownPasswords[teacher.email];
+    // For CFSS teachers or any teacher, use their existing password column value
+    let plainPassword = teacher.password;
     
-    // If this is a CFSS teacher (domain check) and we don't have a known password, 
-    // use their existing password column value
-    if (!plainPassword && teacher.email.includes('@cfss.edu.hk')) {
-      plainPassword = teacher.password;
-      console.log(`Using existing password column for CFSS teacher: ${teacher.email}`);
-    }
+    console.log(`Processing teacher: ${teacher.email} with password from DB`);
     
     if (!plainPassword) {
-      console.warn(`No known password for ${teacher.email}, skipping...`);
+      console.warn(`No password found for ${teacher.email}, skipping...`);
       continue;
     }
 
     try {
+      console.log(`Attempting to hash password for ${teacher.email}`);
+      
       // Hash the password using the Edge Function
       const { data: hashResult, error: hashError } = await supabase.functions.invoke('auth-password', {
         body: {
@@ -136,6 +125,8 @@ export const migrateTeacherPasswords = async () => {
         console.error(`Error hashing password for ${teacher.email}:`, hashError);
         continue;
       }
+
+      console.log(`Successfully hashed password for ${teacher.email}, updating database...`);
 
       // Update the teacher record with the hashed password
       const { error: updateError } = await supabase
