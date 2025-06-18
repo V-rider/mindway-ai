@@ -87,9 +87,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log("Attempting login with email:", email);
       
-      // First, try to find the user in the Students table
+      // First, try to find the user in the students table (lowercase)
       const { data: studentData, error: studentError } = await supabase
-        .from('Students')
+        .from('students')
         .select('*')
         .eq('email', email)
         .eq('password', password);
@@ -116,9 +116,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      // If not found in Students, try Teachers table
+      // If not found in students, try teachers table (lowercase)
       const { data: teacherData, error: teacherError } = await supabase
-        .from('Teachers')
+        .from('teachers')
         .select('*')
         .eq('email', email)
         .eq('password', password);

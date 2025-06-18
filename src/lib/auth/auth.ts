@@ -9,9 +9,9 @@ export const auth = {
   async signIn(email: string, password: string) {
     console.log("Auth.signIn called with:", email);
     
-    // First, try to find the user in the Students table
+    // First, try to find the user in the students table (lowercase)
     const { data: studentData, error: studentError } = await supabase
-      .from('Students')
+      .from('students')
       .select('*')
       .eq('email', email)
       .eq('password', password);
@@ -27,9 +27,9 @@ export const auth = {
       };
     }
 
-    // If not found in Students, try Teachers table
+    // If not found in students, try teachers table (lowercase)
     const { data: teacherData, error: teacherError } = await supabase
-      .from('Teachers')
+      .from('teachers')
       .select('*')
       .eq('email', email)
       .eq('password', password);

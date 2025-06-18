@@ -33,30 +33,6 @@ export type Database = {
         }
         Relationships: []
       }
-      Students: {
-        Row: {
-          class: string
-          email: string
-          name: string
-          password: string
-          sid: string
-        }
-        Insert: {
-          class: string
-          email: string
-          name: string
-          password: string
-          sid: string
-        }
-        Update: {
-          class?: string
-          email?: string
-          name?: string
-          password?: string
-          sid?: string
-        }
-        Relationships: []
-      }
       teachers: {
         Row: {
           classes: string
