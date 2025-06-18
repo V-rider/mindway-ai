@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   name: string;
@@ -6,6 +5,8 @@ export interface User {
   role: 'student' | 'admin';
   avatar?: string;
   classId?: string;
+  project?: string;
+  domain?: string;
 }
 
 export interface TestMeta {
