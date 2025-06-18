@@ -8,7 +8,7 @@ export const auth = {
   // Sign in with email and password using existing database structure
   async signIn(email: string, password: string) {
     console.log("Auth.signIn called with:", email);
-    console.log("Using Supabase URL:", supabase.supabaseUrl);
+    console.log("Password length:", password?.length || 0);
     
     // First, try to find the user in the Students table
     console.log("Querying Students table...");

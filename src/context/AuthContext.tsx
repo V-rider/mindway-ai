@@ -86,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     try {
       console.log("Attempting login with email:", email);
-      console.log("Using Supabase URL:", supabase.supabaseUrl);
+      console.log("Password length:", password?.length || 0);
       
       // First, try to find the user in the Students table
       console.log("Querying Students table...");
