@@ -1,8 +1,8 @@
-
 import { supabase, handleSupabaseError } from '../supabase/client';
 import type { Database } from '@/types/database';
 
 type User = Database['public']['Tables']['users']['Row'];
+type UserInsert = Database['public']['Tables']['users']['Insert'];
 type UserUpdate = Database['public']['Tables']['users']['Update'];
 
 export const userApi = {
@@ -40,6 +40,18 @@ export const userApi = {
       .from('users')
       .select('*')
       .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Create new user
+  async createUser(userData: UserInsert) {
+    const { data, error } = await supabase
+      .from('users')
+      .insert(userData)
+      .select()
+      .single();
 
     if (error) throw error;
     return data;
@@ -92,4 +104,4 @@ export const userApi = {
     if (error) throw error;
     return data;
   }
-};
+}; 
