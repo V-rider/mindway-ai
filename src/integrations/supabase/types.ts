@@ -13,25 +13,22 @@ export type Database = {
         Row: {
           class: string
           email: string
-          hashed_password: string | null
+          hashed_password: string
           name: string
-          password: string
           sid: string
         }
         Insert: {
           class: string
           email: string
-          hashed_password?: string | null
+          hashed_password: string
           name: string
-          password: string
           sid: string
         }
         Update: {
           class?: string
           email?: string
-          hashed_password?: string | null
+          hashed_password?: string
           name?: string
-          password?: string
           sid?: string
         }
         Relationships: []
