@@ -1,4 +1,3 @@
-
 import { dynamicSupabase, getCurrentSupabaseClient } from '../supabase/dynamic-client';
 import { getProjectByDomain } from '@/config/projects';
 import type { Database } from '@/integrations/supabase/types';
@@ -17,55 +16,77 @@ export const multiProjectAuth = {
     const project = dynamicSupabase.getCurrentProject();
     
     if (!client || !project) {
-      throw new Error(`No project configuration found for domain: ${email.split('@')[1]}`);
+      const domain = email.split('@')[1];
+      console.error(`No project configuration found for domain: ${domain}`);
+      throw new Error(`No project configuration found for domain: ${domain}`);
     }
 
     console.log(`Using project: ${project.projectName} for domain: ${project.domain}`);
+    console.log(`Supabase URL: ${project.supabaseUrl}`);
     
-    // First, try to find the user in the students table
-    const { data: studentData, error: studentError } = await client
-      .from('students')
-      .select('*')
-      .eq('email', email)
-      .eq('password', password);
+    try {
+      // First, try to find the user in the students table
+      console.log("Attempting to find user in students table...");
+      const { data: studentData, error: studentError } = await client
+        .from('students')
+        .select('*')
+        .eq('email', email)
+        .eq('password', password);
 
-    if (!studentError && studentData && studentData.length > 0) {
-      const student = studentData[0];
-      console.log("Student login successful:", student.email);
-      return {
-        id: student.sid,
-        name: student.name,
-        email: student.email,
-        role: "student" as const,
-        classId: student.class,
-        project: project.projectName,
-        domain: project.domain
-      };
+      console.log("Student query result:", { data: studentData, error: studentError });
+
+      if (!studentError && studentData && studentData.length > 0) {
+        const student = studentData[0];
+        console.log("Student login successful:", student.email);
+        return {
+          id: student.sid,
+          name: student.name,
+          email: student.email,
+          role: "student" as const,
+          classId: student.class,
+          project: project.projectName,
+          domain: project.domain
+        };
+      }
+
+      // If not found in students, try teachers table
+      console.log("Attempting to find user in teachers table...");
+      const { data: teacherData, error: teacherError } = await client
+        .from('teachers')
+        .select('*')
+        .eq('email', email)
+        .eq('password', password);
+
+      console.log("Teacher query result:", { data: teacherData, error: teacherError });
+
+      if (!teacherError && teacherData && teacherData.length > 0) {
+        const teacher = teacherData[0];
+        console.log("Teacher login successful:", teacher.email);
+        return {
+          id: teacher.email,
+          name: teacher.name,
+          email: teacher.email,
+          role: "admin" as const,
+          classId: teacher.classes,
+          project: project.projectName,
+          domain: project.domain
+        };
+      }
+
+      // Log detailed error information
+      if (studentError) {
+        console.error("Student table error:", studentError);
+      }
+      if (teacherError) {
+        console.error("Teacher table error:", teacherError);
+      }
+
+      // If neither found, throw error
+      throw new Error("Invalid email or password");
+    } catch (error) {
+      console.error("Database query error:", error);
+      throw error;
     }
-
-    // If not found in students, try teachers table
-    const { data: teacherData, error: teacherError } = await client
-      .from('teachers')
-      .select('*')
-      .eq('email', email)
-      .eq('password', password);
-
-    if (!teacherError && teacherData && teacherData.length > 0) {
-      const teacher = teacherData[0];
-      console.log("Teacher login successful:", teacher.email);
-      return {
-        id: teacher.email,
-        name: teacher.name,
-        email: teacher.email,
-        role: "admin" as const,
-        classId: teacher.classes,
-        project: project.projectName,
-        domain: project.domain
-      };
-    }
-
-    // If neither found, throw error
-    throw new Error("Invalid email or password");
   },
 
   // Sign out and clear project data
