@@ -10,6 +10,7 @@ import { AnimatePresence } from "framer-motion";
 import ScrollToTop from "./components/ScrollToTop";
 
 // Pages
+import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
@@ -73,7 +74,8 @@ const AppRoutes = () => {
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
         
         <Route 
           path="/admin-utils" 
