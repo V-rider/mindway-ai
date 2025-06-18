@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +10,7 @@ import { AnimatePresence } from "framer-motion";
 import ScrollToTop from "./components/ScrollToTop";
 
 // Pages
+import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
@@ -22,6 +24,7 @@ import Students from "./pages/Students";
 import TestAnalytics from "./pages/TestAnalytics";
 import StudentProfile from "./pages/StudentProfile";
 import Achievements from "./pages/Achievements";
+import AdminUtils from "./pages/AdminUtils";
 
 // Create a new QueryClient
 const queryClient = new QueryClient();
@@ -71,7 +74,13 @@ const AppRoutes = () => {
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        
+        <Route 
+          path="/admin-utils" 
+          element={<AdminUtils />} 
+        />
         
         <Route 
           path="/dashboard" 
