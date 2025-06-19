@@ -49,6 +49,15 @@ interface PerformanceOverviewProps {
   onDetailReport?: (grade: string) => void;
 }
 
+// Helper to safely call .includes on any value
+function safeIncludes(val: unknown, search: string) {
+  try {
+    return String(val).includes(search);
+  } catch {
+    return false;
+  }
+}
+
 export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({ 
   school, 
   classPerformances,
@@ -77,7 +86,14 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
         
         console.log("Teacher data found:", result);
         setTeacherName(result.teacherName);
-        setTeacherClasses(result.classes);
+        setTeacherClasses(
+          Array.isArray(result.classes)
+            ? result.classes.map(c => String(c.class_name)).filter(Boolean)
+            : []
+        );
+        setTimeout(() => {
+          console.log('teacherClasses after set:', teacherClasses, teacherClasses.map(c => typeof c));
+        }, 0);
         
       } catch (error) {
         console.error("Error in fetchTeacherData:", error);
@@ -151,13 +167,25 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
   // Extract unique grades for filter dropdown
   const grades = Array.from(new Set(classPerformances.map(cp => cp.grade))).sort();
   
+  // Debug log before filter
+  console.log('teacherClasses (before filter):', teacherClasses, teacherClasses.map(c => typeof c));
+
   // Filter teacher's classes by selected grade (only for teachers)
-  const teacherClassesForGrade = isAdmin ? teacherClasses.filter(className => {
-    // Check if the class name contains the grade pattern
-    return className.includes(`${selectedGrade}`) || 
-           classPerformances.some(cp => cp.name === className && cp.grade === selectedGrade);
-  }) : [];
+  let teacherClassesForGrade = [];
+  if (isAdmin) {
+    try {
+      teacherClassesForGrade = teacherClasses.filter(className => {
+        return safeIncludes(className, `${selectedGrade}`) ||
+               classPerformances.some(cp => safeIncludes(cp.name, className) && cp.grade === selectedGrade);
+      });
+    } catch (e) {
+      console.error('Error in teacherClassesForGrade filter:', e, teacherClasses);
+      teacherClassesForGrade = [];
+    }
+  }
     
+  console.log('teacherClasses:', teacherClasses);
+  
   return (
     <div className="space-y-6">
       {/* School Overview Card */}
