@@ -25,11 +25,9 @@ export const classApi = {
       }
 
       // Get all students and find unique classes
-      // Since there's no direct TID in teachers table, we'll need to match by some other method
-      // For now, let's get all classes from students table and filter based on teacher assignment
       const { data: classData, error: classError } = await supabase
         .from('students')
-        .select('class, tid');
+        .select('class');
 
       if (classError) {
         console.error('Error fetching classes:', classError);
@@ -41,8 +39,7 @@ export const classApi = {
       
       return {
         teacherName: teacherData?.name,
-        classes: uniqueClasses,
-        tid: null // No TID available in teachers table
+        classes: uniqueClasses
       };
     } catch (error) {
       console.error('Error in getTeacherClasses:', error);
@@ -81,21 +78,5 @@ export const classApi = {
     const uniqueClasses = Array.from(new Set(data?.map(student => student.class) || []));
     
     return uniqueClasses;
-  },
-
-  // Get students by teacher TID
-  async getStudentsByTeacherTID(tid: string) {
-    const { data, error } = await supabase
-      .from('students')
-      .select('*')
-      .eq('tid', tid)
-      .order('name');
-
-    if (error) {
-      console.error('Error fetching students by teacher TID:', error);
-      throw error;
-    }
-
-    return data;
   }
 };

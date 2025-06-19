@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { classApi } from "@/lib/api/classes";
 
 interface PerformanceOverviewProps {
   school: School;
@@ -57,15 +57,15 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
   selectedGrade = "6",
   onDetailReport
 }) => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [teacherClasses, setTeacherClasses] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [teacherName, setTeacherName] = useState<string | null>(null);
   
-  // Fetch teacher's classes from database
+  // Fetch teacher's classes from database (only for admin/teacher accounts)
   useEffect(() => {
     const fetchTeacherData = async () => {
-      if (!user?.email) {
+      if (!user?.email || !isAdmin) {
         setLoading(false);
         return;
       }
@@ -73,48 +73,12 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
       try {
         console.log("Fetching teacher data for email:", user.email);
         
-        // Get the teacher's information from the teachers table
-        const { data: teacherData, error: teacherError } = await supabase
-          .from('teachers')
-          .select('name, email')
-          .eq('email', user.email)
-          .single();
-
-        if (teacherError) {
-          console.error("Error fetching teacher data:", teacherError);
-          setTeacherClasses([]);
-          setLoading(false);
-          return;
-        }
-
-        if (!teacherData) {
-          console.log("No teacher found for this email");
-          setTeacherClasses([]);
-          setLoading(false);
-          return;
-        }
-
-        console.log("Teacher data found:", teacherData);
-        setTeacherName(teacherData.name);
-
-        // For now, get all unique classes from students table
-        // In a real scenario, you'd need a way to link teachers to specific classes
-        const { data: classData, error: classError } = await supabase
-          .from('students')
-          .select('class');
-
-        if (classError) {
-          console.error("Error fetching classes:", classError);
-          setTeacherClasses([]);
-        } else if (classData && classData.length > 0) {
-          // Get unique class names
-          const uniqueClasses = Array.from(new Set(classData.map(student => student.class)));
-          console.log("Available classes:", uniqueClasses);
-          setTeacherClasses(uniqueClasses);
-        } else {
-          console.log("No classes found");
-          setTeacherClasses([]);
-        }
+        const result = await classApi.getTeacherClasses(user.email);
+        
+        console.log("Teacher data found:", result);
+        setTeacherName(result.teacherName);
+        setTeacherClasses(result.classes);
+        
       } catch (error) {
         console.error("Error in fetchTeacherData:", error);
         setTeacherClasses([]);
@@ -124,7 +88,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
     };
 
     fetchTeacherData();
-  }, [user?.email]);
+  }, [user?.email, isAdmin]);
   
   // Filter classes by grade
   const filteredClasses = classPerformances.filter(cp => cp.grade === selectedGrade);
@@ -159,8 +123,8 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
     .sort((a, b) => b.count - a.count || b.avgPercentage - a.avgPercentage)
     .slice(0, 3);
   
-  // Check if a class is taught by the logged-in teacher
-  const isTeacherClass = (className: string) => teacherClasses.includes(className);
+  // Check if a class is taught by the logged-in teacher (only for teachers)
+  const isTeacherClass = (className: string) => isAdmin && teacherClasses.includes(className);
   
   // Data for charts
   const classBarChartData = filteredClasses.map(classData => {
@@ -187,12 +151,12 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
   // Extract unique grades for filter dropdown
   const grades = Array.from(new Set(classPerformances.map(cp => cp.grade))).sort();
   
-  // Filter teacher's classes by selected grade
-  const teacherClassesForGrade = teacherClasses.filter(className => {
+  // Filter teacher's classes by selected grade (only for teachers)
+  const teacherClassesForGrade = isAdmin ? teacherClasses.filter(className => {
     // Check if the class name contains the grade pattern
     return className.includes(`${selectedGrade}`) || 
            classPerformances.some(cp => cp.name === className && cp.grade === selectedGrade);
-  });
+  }) : [];
     
   return (
     <div className="space-y-6">
@@ -224,10 +188,12 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
           </div>
           
           <div className="flex items-center gap-2 ml-auto">
-            <p className="text-gray-600 dark:text-gray-400 text-sm hidden md:block">
-              <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500 inline" />
-              Classes you teach are highlighted in purple
-            </p>
+            {isAdmin && (
+              <p className="text-gray-600 dark:text-gray-400 text-sm hidden md:block">
+                <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500 inline" />
+                Classes you teach are highlighted in purple
+              </p>
+            )}
             
             {/* Grade filter */}
             <div className="flex items-center gap-2">
@@ -301,9 +267,11 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
               <BarChart3 className="w-5 h-5 mr-2 text-blue-500" />
               Class Performance
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-              Classes you teach are highlighted in purple
-            </p>
+            {isAdmin && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                Classes you teach are highlighted in purple
+              </p>
+            )}
             
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -367,6 +335,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
           
           {/* Areas of Concern */}
           <div>
+            {/* Areas of Concern collapsible */}
             <Collapsible className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden">
               <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left">
                 <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 flex items-center">
@@ -495,64 +464,66 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
               </CollapsibleContent>
             </Collapsible>
             
-            {/* Your Classes Section */}
-            <div className="mt-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4 shadow-sm">
-              <h4 className="font-medium text-purple-800 dark:text-purple-400 mb-3 text-sm flex items-center">
-                <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500" />
-                Your Classes {loading && "(Loading...)"}
-                {teacherName && (
-                  <span className="ml-2 text-xs text-purple-600 dark:text-purple-400">
-                    (Teacher: {teacherName})
-                  </span>
-                )}
-              </h4>
-              
-              {loading ? (
-                <div className="text-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mx-auto"></div>
-                </div>
-              ) : (
-                <div className="space-y-2.5">
-                  {teacherClassesForGrade.length > 0 ? (
-                    teacherClassesForGrade.map((className, i) => {
-                      const classData = classPerformances.find(c => c.name === className);
-                      return (
-                        <div 
-                          key={i} 
-                          className="flex items-center justify-between cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900/30 p-2 rounded-md"
-                          onClick={() => {
-                            if (classData) {
-                              onClassSelect(classData.id);
-                            }
-                          }}
-                        >
-                          <span className="text-sm text-purple-700 dark:text-purple-300 font-medium flex items-center">
-                            <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500" />
-                            {className}
-                          </span>
-                          <span className="text-xs text-purple-600 dark:text-purple-400">
-                            {classData ? "View details →" : "No data"}
-                          </span>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-purple-600 dark:text-purple-400">
-                        {teacherClasses.length === 0 
-                          ? "No classes assigned to you" 
-                          : `No classes found for Grade ${selectedGrade}`}
-                      </p>
-                      {teacherClasses.length > 0 && (
-                        <p className="text-xs text-purple-500 dark:text-purple-500 mt-1">
-                          You teach: {teacherClasses.join(", ")}
-                        </p>
-                      )}
-                    </div>
+            {/* Your Classes Section - Only show for teachers */}
+            {isAdmin && (
+              <div className="mt-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4 shadow-sm">
+                <h4 className="font-medium text-purple-800 dark:text-purple-400 mb-3 text-sm flex items-center">
+                  <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500" />
+                  Your Classes {loading && "(Loading...)"}
+                  {teacherName && (
+                    <span className="ml-2 text-xs text-purple-600 dark:text-purple-400">
+                      (Teacher: {teacherName})
+                    </span>
                   )}
-                </div>
-              )}
-            </div>
+                </h4>
+                
+                {loading ? (
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mx-auto"></div>
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {teacherClassesForGrade.length > 0 ? (
+                      teacherClassesForGrade.map((className, i) => {
+                        const classData = classPerformances.find(c => c.name === className);
+                        return (
+                          <div 
+                            key={i} 
+                            className="flex items-center justify-between cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900/30 p-2 rounded-md"
+                            onClick={() => {
+                              if (classData) {
+                                onClassSelect(classData.id);
+                              }
+                            }}
+                          >
+                            <span className="text-sm text-purple-700 dark:text-purple-300 font-medium flex items-center">
+                              <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500" />
+                              {className}
+                            </span>
+                            <span className="text-xs text-purple-600 dark:text-purple-400">
+                              {classData ? "View details →" : "No data"}
+                            </span>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-center py-4">
+                        <p className="text-sm text-purple-600 dark:text-purple-400">
+                          {teacherClasses.length === 0 
+                            ? "No classes assigned to you" 
+                            : `No classes found for Grade ${selectedGrade}`}
+                        </p>
+                        {teacherClasses.length > 0 && (
+                          <p className="text-xs text-purple-500 dark:text-purple-500 mt-1">
+                            You teach: {teacherClasses.join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </motion.div>
