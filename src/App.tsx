@@ -73,8 +73,8 @@ const AppRoutes = () => {
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/portal" element={<Index />} />
         
         <Route 
           path="/dashboard" 

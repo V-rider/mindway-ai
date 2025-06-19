@@ -33,7 +33,7 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               <Button 
-                onClick={() => navigate('/login')} 
+                onClick={() => navigate('/')} 
                 className="w-full"
               >
                 Student Login
@@ -53,7 +53,7 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               <Button 
-                onClick={() => navigate('/login')} 
+                onClick={() => navigate('/')} 
                 className="w-full"
                 variant="outline"
               >
