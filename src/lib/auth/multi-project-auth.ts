@@ -1,3 +1,4 @@
+
 import { dynamicSupabase, getCurrentSupabaseClient } from '../supabase/dynamic-client';
 import { getProjectByDomain } from '@/config/projects';
 import type { Database } from '@/integrations/supabase/types';
@@ -79,7 +80,7 @@ export const multiProjectAuth = {
       if (!teacherError && teacherData && teacherData.length > 0) {
         const teacher = teacherData[0];
         
-        // Verify password using the Edge Function
+        // Verify password using the Edge Function with the hashed_password column
         const { data: verifyResult, error: verifyError } = await client.functions.invoke('auth-password', {
           body: {
             action: 'verify',
