@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -36,6 +35,14 @@ const mockSchool: School = {
   id: "school-1",
   name: "Riverdale Elementary",
   classes: [
+    { id: "class-1-1", name: "Class 1A", grade: "1", studentCount: 20 },
+    { id: "class-1-2", name: "Class 1B", grade: "1", studentCount: 18 },
+    { id: "class-1-3", name: "Class 1C", grade: "1", studentCount: 19 },
+    { id: "class-1-4", name: "Class 1D", grade: "1", studentCount: 21 },
+    { id: "class-2-1", name: "Class 2A", grade: "2", studentCount: 22 },
+    { id: "class-2-2", name: "Class 2B", grade: "2", studentCount: 20 },
+    { id: "class-2-3", name: "Class 2C", grade: "2", studentCount: 21 },
+    { id: "class-2-4", name: "Class 2D", grade: "2", studentCount: 23 },
     { id: "class-1", name: "Class 3A", grade: "3", studentCount: 24 },
     { id: "class-2", name: "Class 3B", grade: "3", studentCount: 22 },
     { id: "class-3", name: "Class 3C", grade: "3", studentCount: 23 },
@@ -56,6 +63,144 @@ const mockSchool: School = {
 };
 
 const mockClassPerformances: ClassPerformance[] = [
+  // Grade 1 classes
+  {
+    id: "class-1-1",
+    name: "Class 1A",
+    grade: "1",
+    averageScore: 78,
+    topicMastery: [
+      { topic: "Number Recognition", mastery: 85 },
+      { topic: "Basic Addition", mastery: 75 },
+      { topic: "Basic Subtraction", mastery: 70 },
+      { topic: "Counting", mastery: 88 },
+    ],
+    errorPatterns: [
+      { pattern: "Number confusion (6 vs 9)", percentage: 35 },
+      { pattern: "Addition errors", percentage: 28 },
+      { pattern: "Counting sequence mistakes", percentage: 22 },
+    ]
+  },
+  {
+    id: "class-1-2",
+    name: "Class 1B",
+    grade: "1",
+    averageScore: 72,
+    topicMastery: [
+      { topic: "Number Recognition", mastery: 80 },
+      { topic: "Basic Addition", mastery: 68 },
+      { topic: "Basic Subtraction", mastery: 65 },
+      { topic: "Counting", mastery: 82 },
+    ],
+    errorPatterns: [
+      { pattern: "Addition calculation errors", percentage: 40 },
+      { pattern: "Number sequence confusion", percentage: 32 },
+      { pattern: "Subtraction understanding", percentage: 28 },
+    ]
+  },
+  {
+    id: "class-1-3",
+    name: "Class 1C",
+    grade: "1",
+    averageScore: 76,
+    topicMastery: [
+      { topic: "Number Recognition", mastery: 83 },
+      { topic: "Basic Addition", mastery: 72 },
+      { topic: "Basic Subtraction", mastery: 68 },
+      { topic: "Counting", mastery: 85 },
+    ],
+    errorPatterns: [
+      { pattern: "Basic arithmetic errors", percentage: 33 },
+      { pattern: "Number writing confusion", percentage: 25 },
+      { pattern: "Counting backwards difficulty", percentage: 20 },
+    ]
+  },
+  {
+    id: "class-1-4",
+    name: "Class 1D",
+    grade: "1",
+    averageScore: 80,
+    topicMastery: [
+      { topic: "Number Recognition", mastery: 87 },
+      { topic: "Basic Addition", mastery: 78 },
+      { topic: "Basic Subtraction", mastery: 74 },
+      { topic: "Counting", mastery: 90 },
+    ],
+    errorPatterns: [
+      { pattern: "Subtraction concept confusion", percentage: 30 },
+      { pattern: "Addition with regrouping", percentage: 25 },
+      { pattern: "Number place value", percentage: 18 },
+    ]
+  },
+  // Grade 2 classes
+  {
+    id: "class-2-1",
+    name: "Class 2A",
+    grade: "2",
+    averageScore: 82,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 88 },
+      { topic: "Basic Multiplication", mastery: 75 },
+      { topic: "Place Value", mastery: 80 },
+      { topic: "Basic Geometry", mastery: 85 },
+    ],
+    errorPatterns: [
+      { pattern: "Multiplication table confusion", percentage: 38 },
+      { pattern: "Place value misunderstanding", percentage: 30 },
+      { pattern: "Word problem interpretation", percentage: 25 },
+    ]
+  },
+  {
+    id: "class-2-2",
+    name: "Class 2B",
+    grade: "2",
+    averageScore: 75,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 82 },
+      { topic: "Basic Multiplication", mastery: 68 },
+      { topic: "Place Value", mastery: 72 },
+      { topic: "Basic Geometry", mastery: 78 },
+    ],
+    errorPatterns: [
+      { pattern: "Multiplication concept errors", percentage: 45 },
+      { pattern: "Place value confusion", percentage: 35 },
+      { pattern: "Geometry shape recognition", percentage: 28 },
+    ]
+  },
+  {
+    id: "class-2-3",
+    name: "Class 2C",
+    grade: "2",
+    averageScore: 79,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 85 },
+      { topic: "Basic Multiplication", mastery: 72 },
+      { topic: "Place Value", mastery: 76 },
+      { topic: "Basic Geometry", mastery: 82 },
+    ],
+    errorPatterns: [
+      { pattern: "Multiplication skip counting", percentage: 40 },
+      { pattern: "Place value tens/ones", percentage: 32 },
+      { pattern: "Geometry measurement", percentage: 24 },
+    ]
+  },
+  {
+    id: "class-2-4",
+    name: "Class 2D",
+    grade: "2",
+    averageScore: 84,
+    topicMastery: [
+      { topic: "Addition & Subtraction", mastery: 90 },
+      { topic: "Basic Multiplication", mastery: 78 },
+      { topic: "Place Value", mastery: 82 },
+      { topic: "Basic Geometry", mastery: 88 },
+    ],
+    errorPatterns: [
+      { pattern: "Advanced multiplication", percentage: 35 },
+      { pattern: "Place value in larger numbers", percentage: 28 },
+      { pattern: "Geometry problem solving", percentage: 22 },
+    ]
+  },
   {
     id: "class-1",
     name: "Class 3A",
@@ -485,6 +630,88 @@ const mockStudentProfile: StudentProfile = {
 };
 
 const mockHeatmapData: HeatmapData[] = [
+  // Grade 1 heatmap data
+  {
+    className: "Class 1A",
+    grade: "1",
+    topics: [
+      { name: "Number Recognition", performance: 85 },
+      { name: "Basic Addition", performance: 75 },
+      { name: "Basic Subtraction", performance: 70 },
+      { name: "Counting", performance: 88 },
+    ],
+  },
+  {
+    className: "Class 1B",
+    grade: "1",
+    topics: [
+      { name: "Number Recognition", performance: 80 },
+      { name: "Basic Addition", performance: 68 },
+      { name: "Basic Subtraction", performance: 65 },
+      { name: "Counting", performance: 82 },
+    ],
+  },
+  {
+    className: "Class 1C",
+    grade: "1",
+    topics: [
+      { name: "Number Recognition", performance: 83 },
+      { name: "Basic Addition", performance: 72 },
+      { name: "Basic Subtraction", performance: 68 },
+      { name: "Counting", performance: 85 },
+    ],
+  },
+  {
+    className: "Class 1D",
+    grade: "1",
+    topics: [
+      { name: "Number Recognition", performance: 87 },
+      { name: "Basic Addition", performance: 78 },
+      { name: "Basic Subtraction", performance: 74 },
+      { name: "Counting", performance: 90 },
+    ],
+  },
+  // Grade 2 heatmap data
+  {
+    className: "Class 2A",
+    grade: "2",
+    topics: [
+      { name: "Addition & Subtraction", performance: 88 },
+      { name: "Basic Multiplication", performance: 75 },
+      { name: "Place Value", performance: 80 },
+      { name: "Basic Geometry", performance: 85 },
+    ],
+  },
+  {
+    className: "Class 2B",
+    grade: "2",
+    topics: [
+      { name: "Addition & Subtraction", performance: 82 },
+      { name: "Basic Multiplication", performance: 68 },
+      { name: "Place Value", performance: 72 },
+      { name: "Basic Geometry", performance: 78 },
+    ],
+  },
+  {
+    className: "Class 2C",
+    grade: "2",
+    topics: [
+      { name: "Addition & Subtraction", performance: 85 },
+      { name: "Basic Multiplication", performance: 72 },
+      { name: "Place Value", performance: 76 },
+      { name: "Basic Geometry", performance: 82 },
+    ],
+  },
+  {
+    className: "Class 2D",
+    grade: "2",
+    topics: [
+      { name: "Addition & Subtraction", performance: 90 },
+      { name: "Basic Multiplication", performance: 78 },
+      { name: "Place Value", performance: 82 },
+      { name: "Basic Geometry", performance: 88 },
+    ],
+  },
   {
     className: "Class 3A",
     grade: "3",
@@ -722,8 +949,8 @@ const mockReportTemplates: ReportTemplate[] = [
   },
 ];
 
-// Grade and subjects list for filters
-const gradesList = ["3", "4", "5", "6"];
+// Grade and subjects list for filters - Updated to include grades 1 and 2
+const gradesList = ["1", "2", "3", "4", "5", "6"];
 const subjectsList = ["Mathematics", "Arithmetic", "Geometry", "Pre-Algebra"];
 
 // View states
@@ -737,7 +964,7 @@ const Dashboard = () => {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [showReportGenerator, setShowReportGenerator] = useState(false);
   const isMobile = useIsMobile();
-  const [selectedGrade, setSelectedGrade] = useState<string>("6"); // New state to track selected grade
+  const [selectedGrade, setSelectedGrade] = useState<string>("1"); // Changed default to Grade 1 to show the new functionality
   
   // Handle view changes with scroll to top
   const handleViewClass = (classId: string) => {
