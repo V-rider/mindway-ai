@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -70,14 +69,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Initialize sidebar state from localStorage with a default of false (closed)
+  // Initialize sidebar state from localStorage or default based on current route
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('sidebar-open');
     if (saved !== null) {
       return JSON.parse(saved);
     }
-    // Default to closed
-    return false;
+    // Default to open only on dashboard
+    return location.pathname === '/dashboard';
   });
   
   // Determine if the user is a student (not an admin)
