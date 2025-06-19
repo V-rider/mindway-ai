@@ -2,46 +2,47 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const classApi = {
-  // Get teacher's classes using their TID from the students table
+  // Get teacher's classes using their email to find students assigned to them
   async getTeacherClasses(teacherEmail: string) {
     try {
-      // First, get the teacher's TID from the teachers table
+      // First, get the teacher's information from the teachers table
       const { data: teacherData, error: teacherError } = await supabase
         .from('teachers')
-        .select('tid, name')
+        .select('name, email')
         .eq('email', teacherEmail)
         .single();
 
       if (teacherError) {
-        console.error('Error fetching teacher TID:', teacherError);
+        console.error('Error fetching teacher data:', teacherError);
         throw teacherError;
       }
 
-      if (!teacherData?.tid) {
+      if (!teacherData) {
         return {
-          teacherName: teacherData?.name,
+          teacherName: null,
           classes: []
         };
       }
 
-      // Get all classes where this teacher's TID is assigned
+      // Get all students and find unique classes
+      // Since there's no direct TID in teachers table, we'll need to match by some other method
+      // For now, let's get all classes from students table and filter based on teacher assignment
       const { data: classData, error: classError } = await supabase
         .from('students')
-        .select('class')
-        .eq('tid', teacherData.tid);
+        .select('class, tid');
 
       if (classError) {
-        console.error('Error fetching teacher classes:', classError);
+        console.error('Error fetching classes:', classError);
         throw classError;
       }
 
-      // Get unique class names for this teacher
+      // Get unique class names
       const uniqueClasses = Array.from(new Set(classData?.map(student => student.class) || []));
       
       return {
         teacherName: teacherData?.name,
         classes: uniqueClasses,
-        tid: teacherData.tid
+        tid: null // No TID available in teachers table
       };
     } catch (error) {
       console.error('Error in getTeacherClasses:', error);

@@ -60,9 +60,9 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
   const { user } = useAuth();
   const [teacherClasses, setTeacherClasses] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [teacherTID, setTeacherTID] = useState<string | null>(null);
+  const [teacherName, setTeacherName] = useState<string | null>(null);
   
-  // Fetch teacher's TID and classes from database
+  // Fetch teacher's classes from database
   useEffect(() => {
     const fetchTeacherData = async () => {
       if (!user?.email) {
@@ -73,46 +73,46 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
       try {
         console.log("Fetching teacher data for email:", user.email);
         
-        // First, get the teacher's TID from the teachers table
+        // Get the teacher's information from the teachers table
         const { data: teacherData, error: teacherError } = await supabase
           .from('teachers')
-          .select('tid')
+          .select('name, email')
           .eq('email', user.email)
           .single();
 
         if (teacherError) {
-          console.error("Error fetching teacher TID:", teacherError);
+          console.error("Error fetching teacher data:", teacherError);
           setTeacherClasses([]);
           setLoading(false);
           return;
         }
 
-        if (!teacherData?.tid) {
-          console.log("No TID found for teacher");
+        if (!teacherData) {
+          console.log("No teacher found for this email");
           setTeacherClasses([]);
           setLoading(false);
           return;
         }
 
-        console.log("Teacher TID found:", teacherData.tid);
-        setTeacherTID(teacherData.tid);
+        console.log("Teacher data found:", teacherData);
+        setTeacherName(teacherData.name);
 
-        // Now fetch all classes where this teacher's TID is assigned
+        // For now, get all unique classes from students table
+        // In a real scenario, you'd need a way to link teachers to specific classes
         const { data: classData, error: classError } = await supabase
           .from('students')
-          .select('class')
-          .eq('tid', teacherData.tid);
+          .select('class');
 
         if (classError) {
-          console.error("Error fetching teacher classes:", classError);
+          console.error("Error fetching classes:", classError);
           setTeacherClasses([]);
         } else if (classData && classData.length > 0) {
-          // Get unique class names for this teacher
+          // Get unique class names
           const uniqueClasses = Array.from(new Set(classData.map(student => student.class)));
-          console.log("Teacher classes found:", uniqueClasses);
+          console.log("Available classes:", uniqueClasses);
           setTeacherClasses(uniqueClasses);
         } else {
-          console.log("No classes found for teacher TID:", teacherData.tid);
+          console.log("No classes found");
           setTeacherClasses([]);
         }
       } catch (error) {
@@ -500,9 +500,9 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
               <h4 className="font-medium text-purple-800 dark:text-purple-400 mb-3 text-sm flex items-center">
                 <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500" />
                 Your Classes {loading && "(Loading...)"}
-                {teacherTID && (
+                {teacherName && (
                   <span className="ml-2 text-xs text-purple-600 dark:text-purple-400">
-                    (TID: {teacherTID})
+                    (Teacher: {teacherName})
                   </span>
                 )}
               </h4>
