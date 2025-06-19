@@ -24,7 +24,6 @@ import Students from "./pages/Students";
 import TestAnalytics from "./pages/TestAnalytics";
 import StudentProfile from "./pages/StudentProfile";
 import Achievements from "./pages/Achievements";
-import AdminUtils from "./pages/AdminUtils";
 
 // Create a new QueryClient
 const queryClient = new QueryClient();
@@ -76,11 +75,6 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
-        
-        <Route 
-          path="/admin-utils" 
-          element={<AdminUtils />} 
-        />
         
         <Route 
           path="/dashboard" 

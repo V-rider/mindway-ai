@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, Users, Database } from 'lucide-react';
+import { Settings, Users } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -58,27 +58,6 @@ const Index = () => {
                 variant="outline"
               >
                 Teacher Login
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5" />
-                Admin Utilities
-              </CardTitle>
-              <CardDescription>
-                System administration and password migration tools
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button 
-                onClick={() => navigate('/admin-utils')} 
-                className="w-full"
-                variant="secondary"
-              >
-                Access Admin Tools
               </Button>
             </CardContent>
           </Card>
