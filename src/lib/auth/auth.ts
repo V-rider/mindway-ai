@@ -54,7 +54,7 @@ export const auth = {
     if (!teacherError && teacherData && teacherData.length > 0) {
       const teacher = teacherData[0];
       
-      // Verify password using the Edge Function with hashed_password column
+      // Verify password using the Edge Function
       const { data: verifyResult, error: verifyError } = await supabase.functions.invoke('auth-password', {
         body: {
           action: 'verify',
