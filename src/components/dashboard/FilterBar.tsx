@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Filter, ChevronDown, X, Search, SlidersHorizontal } from 'lucide-react';
+import { Filter, ChevronDown, X, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -10,7 +10,6 @@ interface FilterBarProps {
     grade?: string;
     subject?: string;
     dateRange?: { start: string; end: string };
-    search?: string;
   }) => void;
   grades: string[];
   subjects: string[];
@@ -29,7 +28,6 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       start: '',
       end: '',
     },
-    search: '',
   });
   
   const handleFilterChange = (key: string, value: string) => {
@@ -58,7 +56,6 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         start: '',
         end: '',
       },
-      search: '',
     };
     setFilters(emptyFilters);
     onFilterChange(emptyFilters);
@@ -73,26 +70,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   return (
     <div className="mb-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-md">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
-          </div>
-          <Input
-            type="search"
-            className="pl-10 pr-10"
-            placeholder="Search students, classes, topics..."
-            value={filters.search}
-            onChange={(e) => handleFilterChange('search', e.target.value)}
-          />
-          {filters.search && (
-            <button
-              onClick={() => handleFilterChange('search', '')}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          )}
-        </div>
+        <div className="flex-1"></div>
         
         <div className="flex items-center gap-3">
           <Button

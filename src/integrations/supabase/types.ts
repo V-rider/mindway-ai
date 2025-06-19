@@ -37,21 +37,21 @@ export type Database = {
         Row: {
           classes: string
           email: string
-          hashed_password: string | null
+          hashed_password: string
           name: string
           password: string
         }
         Insert: {
           classes: string
           email: string
-          hashed_password?: string | null
+          hashed_password: string
           name: string
           password: string
         }
         Update: {
           classes?: string
           email?: string
-          hashed_password?: string | null
+          hashed_password?: string
           name?: string
           password?: string
         }
