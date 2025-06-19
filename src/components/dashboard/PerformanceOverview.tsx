@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { School, ClassPerformance } from "@/types";
 import { motion } from "framer-motion";
@@ -61,46 +60,70 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
   const { user } = useAuth();
   const [teacherClasses, setTeacherClasses] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [teacherTID, setTeacherTID] = useState<string | null>(null);
   
-  // Fetch teacher's classes from database
+  // Fetch teacher's TID and classes from database
   useEffect(() => {
-    const fetchTeacherClasses = async () => {
+    const fetchTeacherData = async () => {
       if (!user?.email) {
         setLoading(false);
         return;
       }
 
       try {
-        console.log("Fetching classes for teacher:", user.email);
+        console.log("Fetching teacher data for email:", user.email);
         
-        // Fetch teacher data to get their assigned classes
-        const { data: teacherData, error } = await supabase
+        // First, get the teacher's TID from the teachers table
+        const { data: teacherData, error: teacherError } = await supabase
           .from('teachers')
-          .select('classes')
+          .select('tid')
           .eq('email', user.email)
           .single();
 
-        if (error) {
-          console.error("Error fetching teacher classes:", error);
+        if (teacherError) {
+          console.error("Error fetching teacher TID:", teacherError);
           setTeacherClasses([]);
-        } else if (teacherData?.classes) {
-          // Parse the classes string - assuming it's comma-separated
-          const classes = teacherData.classes.split(',').map(cls => cls.trim());
-          console.log("Teacher classes found:", classes);
-          setTeacherClasses(classes);
+          setLoading(false);
+          return;
+        }
+
+        if (!teacherData?.tid) {
+          console.log("No TID found for teacher");
+          setTeacherClasses([]);
+          setLoading(false);
+          return;
+        }
+
+        console.log("Teacher TID found:", teacherData.tid);
+        setTeacherTID(teacherData.tid);
+
+        // Now fetch all classes where this teacher's TID is assigned
+        const { data: classData, error: classError } = await supabase
+          .from('students')
+          .select('class')
+          .eq('tid', teacherData.tid);
+
+        if (classError) {
+          console.error("Error fetching teacher classes:", classError);
+          setTeacherClasses([]);
+        } else if (classData && classData.length > 0) {
+          // Get unique class names for this teacher
+          const uniqueClasses = Array.from(new Set(classData.map(student => student.class)));
+          console.log("Teacher classes found:", uniqueClasses);
+          setTeacherClasses(uniqueClasses);
         } else {
-          console.log("No classes found for teacher");
+          console.log("No classes found for teacher TID:", teacherData.tid);
           setTeacherClasses([]);
         }
       } catch (error) {
-        console.error("Error in fetchTeacherClasses:", error);
+        console.error("Error in fetchTeacherData:", error);
         setTeacherClasses([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTeacherClasses();
+    fetchTeacherData();
   }, [user?.email]);
   
   // Filter classes by grade
@@ -477,6 +500,11 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
               <h4 className="font-medium text-purple-800 dark:text-purple-400 mb-3 text-sm flex items-center">
                 <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500" />
                 Your Classes {loading && "(Loading...)"}
+                {teacherTID && (
+                  <span className="ml-2 text-xs text-purple-600 dark:text-purple-400">
+                    (TID: {teacherTID})
+                  </span>
+                )}
               </h4>
               
               {loading ? (
