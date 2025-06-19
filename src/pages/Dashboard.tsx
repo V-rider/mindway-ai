@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -19,7 +20,6 @@ import { FilterBar } from "@/components/dashboard/FilterBar";
 import { ReportGenerator } from "@/components/dashboard/ReportGenerator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PaperMiscorrectionChecker } from "@/components/dashboard/PaperMiscorrectionChecker";
-import { ProjectIndicator } from "@/components/layout/ProjectIndicator";
 
 import { Button } from "@/components/ui/button";
 import { 
@@ -889,11 +889,6 @@ const Dashboard = () => {
         {/* Overview Dashboard */}
         {viewState === "overview" && (
           <div className="space-y-8">
-            {/* Project Indicator */}
-            <div className="flex justify-center">
-              <ProjectIndicator />
-            </div>
-            
             <PerformanceOverview 
               school={mockSchool} 
               classPerformances={mockClassPerformances}
