@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -35,10 +36,6 @@ const mockSchool: School = {
   id: "school-1",
   name: "Riverdale Elementary",
   classes: [
-    { id: "class-0", name: "Class 1A", grade: "1", studentCount: 20 },
-    { id: "class-00", name: "Class 1B", grade: "1", studentCount: 22 },
-    { id: "class-000", name: "Class 2A", grade: "2", studentCount: 24 },
-    { id: "class-0000", name: "Class 2B", grade: "2", studentCount: 23 },
     { id: "class-1", name: "Class 3A", grade: "3", studentCount: 24 },
     { id: "class-2", name: "Class 3B", grade: "3", studentCount: 22 },
     { id: "class-3", name: "Class 3C", grade: "3", studentCount: 23 },
@@ -59,78 +56,6 @@ const mockSchool: School = {
 };
 
 const mockClassPerformances: ClassPerformance[] = [
-  {
-    id: "class-0",
-    name: "Class 1A",
-    grade: "1",
-    averageScore: 78,
-    topicMastery: [
-      { topic: "Number Recognition", mastery: 85 },
-      { topic: "Counting", mastery: 82 },
-      { topic: "Basic Addition", mastery: 70 },
-      { topic: "Basic Subtraction", mastery: 65 },
-      { topic: "Shapes", mastery: 88 },
-    ],
-    errorPatterns: [
-      { pattern: "Number formation errors", percentage: 35 },
-      { pattern: "Counting sequence mistakes", percentage: 28 },
-      { pattern: "Addition with fingers confusion", percentage: 25 },
-    ]
-  },
-  {
-    id: "class-00",
-    name: "Class 1B",
-    grade: "1",
-    averageScore: 82,
-    topicMastery: [
-      { topic: "Number Recognition", mastery: 90 },
-      { topic: "Counting", mastery: 88 },
-      { topic: "Basic Addition", mastery: 78 },
-      { topic: "Basic Subtraction", mastery: 72 },
-      { topic: "Shapes", mastery: 85 },
-    ],    
-    errorPatterns: [
-      { pattern: "Subtraction borrowing confusion", percentage: 30 },
-      { pattern: "Number formation errors", percentage: 25 },
-      { pattern: "Skip counting difficulties", percentage: 22 },
-    ]
-  },
-  {
-    id: "class-000",
-    name: "Class 2A", 
-    grade: "2",
-    averageScore: 75,
-    topicMastery: [
-      { topic: "Addition & Subtraction", mastery: 82 },
-      { topic: "Place Value", mastery: 75 },
-      { topic: "Time & Money", mastery: 68 },
-      { topic: "Measurement", mastery: 72 },
-      { topic: "Geometry", mastery: 78 },
-    ],
-    errorPatterns: [
-      { pattern: "Place value confusion", percentage: 42 },
-      { pattern: "Time reading difficulties", percentage: 38 },
-      { pattern: "Money counting errors", percentage: 32 },
-    ]
-  },
-  {
-    id: "class-0000",
-    name: "Class 2B",
-    grade: "2", 
-    averageScore: 79,
-    topicMastery: [
-      { topic: "Addition & Subtraction", mastery: 85 },
-      { topic: "Place Value", mastery: 78 },
-      { topic: "Time & Money", mastery: 72 },
-      { topic: "Measurement", mastery: 76 },
-      { topic: "Geometry", mastery: 82 },
-    ],
-    errorPatterns: [
-      { pattern: "Place value confusion", percentage: 35 },
-      { pattern: "Measurement unit errors", percentage: 30 },
-      { pattern: "Time reading difficulties", percentage: 28 },
-    ]
-  },
   {
     id: "class-1",
     name: "Class 3A",
@@ -561,50 +486,6 @@ const mockStudentProfile: StudentProfile = {
 
 const mockHeatmapData: HeatmapData[] = [
   {
-    className: "Class 1A",
-    grade: "1",
-    topics: [
-      { name: "Number Recognition", performance: 85 },
-      { name: "Counting", performance: 82 },
-      { name: "Basic Addition", performance: 70 },
-      { name: "Basic Subtraction", performance: 65 },
-      { name: "Shapes", performance: 88 },
-    ],
-  },
-  {
-    className: "Class 1B",
-    grade: "1",
-    topics: [
-      { name: "Number Recognition", performance: 90 },
-      { name: "Counting", performance: 88 },
-      { name: "Basic Addition", performance: 78 },
-      { name: "Basic Subtraction", performance: 72 },
-      { name: "Shapes", performance: 85 },
-    ],
-  },
-  {
-    className: "Class 2A",
-    grade: "2",
-    topics: [
-      { name: "Addition & Subtraction", performance: 82 },
-      { name: "Place Value", performance: 75 },
-      { name: "Time & Money", performance: 68 },
-      { name: "Measurement", performance: 72 },
-      { name: "Geometry", performance: 78 },
-    ],
-  },
-  {
-    className: "Class 2B",
-    grade: "2",
-    topics: [
-      { name: "Addition & Subtraction", performance: 85 },
-      { name: "Place Value", performance: 78 },
-      { name: "Time & Money", performance: 72 },
-      { name: "Measurement", performance: 76 },
-      { name: "Geometry", performance: 82 },
-    ],
-  },
-  {
     className: "Class 3A",
     grade: "3",
     topics: [
@@ -842,7 +723,7 @@ const mockReportTemplates: ReportTemplate[] = [
 ];
 
 // Grade and subjects list for filters
-const gradesList = ["1", "2", "3", "4", "5", "6"];
+const gradesList = ["3", "4", "5", "6"];
 const subjectsList = ["Mathematics", "Arithmetic", "Geometry", "Pre-Algebra"];
 
 // View states
