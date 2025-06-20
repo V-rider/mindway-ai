@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ClassPerformance, StudentPerformance } from '@/types';
 import { motion } from 'framer-motion';
 import { 
@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { useNavigate } from 'react-router-dom';
+import { classApi } from '@/lib/api/classes';
 import {
   ResponsiveContainer,
   BarChart,
@@ -41,12 +42,21 @@ interface ClassPerformanceCardProps {
   onStudentSelect: (studentId: string) => void;
 }
 
+interface DatabaseStudent {
+  SID: number;
+  name: string;
+  email: string;
+  class_id: number;
+}
+
 export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   classData,
   students,
   onStudentSelect,
 }) => {
   const navigate = useNavigate();
+  const [realStudents, setRealStudents] = useState<DatabaseStudent[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
   
   // State for assessments section
   const [searchTerm, setSearchTerm] = useState("");
@@ -56,7 +66,40 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   
   // State for performance trend time period
   const [timePeriod, setTimePeriod] = useState<"week" | "month" | "year">("month");
-  
+
+  // Fetch real students for the class
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        setLoadingStudents(true);
+        console.log('Fetching students for class:', classData.id);
+        const studentsData = await classApi.getStudentsByClass(classData.id);
+        console.log('Students data received:', studentsData);
+        setRealStudents(studentsData);
+      } catch (error) {
+        console.error('Error fetching students:', error);
+        setRealStudents([]);
+      } finally {
+        setLoadingStudents(false);
+      }
+    };
+
+    if (classData.id) {
+      fetchStudents();
+    }
+  }, [classData.id]);
+
+  // Convert database students to display format with mock performance data
+  const displayStudents = realStudents.map(student => ({
+    id: student.SID.toString(),
+    name: student.name,
+    email: student.email,
+    averageScore: Math.floor(Math.random() * 30) + 70, // Mock score between 70-100
+    improvement: Math.floor(Math.random() * 21) - 10, // Mock improvement between -10 to +10
+    strengths: ["Math Basics", "Problem Solving"],
+    weaknesses: ["Advanced Topics", "Time Management"],
+  }));
+
   // Mock assessments data for each class
   const classAssessments = {
     recentTests: [
@@ -106,7 +149,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   const classPerformanceTrend = performanceTrendData[timePeriod];
 
   // Sort students by average score descending
-  const sortedStudents = [...students].sort((a, b) => b.averageScore - a.averageScore);
+  const sortedStudents = [...displayStudents].sort((a, b) => b.averageScore - a.averageScore);
   
   // Sort topic mastery data from highest to lowest percentage
   const sortedTopicMastery = [...classData.topicMastery].sort((a, b) => b.mastery - a.mastery);
@@ -222,7 +265,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
             {classData.name}
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Grade {classData.grade} • {students.length} students
+            Grade {classData.grade} • {loadingStudents ? "Loading..." : `${realStudents.length} students`}
           </p>
         </div>
         <div className="mt-4 md:mt-0 flex items-center gap-3">
@@ -336,8 +379,8 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                   layout="vertical"
                   data={sortedTopicMastery}
                   margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
-                  barSize={18} // Further reduced bar size for more spacing
-                  barGap={16} // Increased bar gap for better spacing
+                  barSize={18}
+                  barGap={16}
                 >
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" domain={[0, 100]} />
@@ -345,7 +388,6 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     dataKey="topic" 
                     type="category" 
                     tick={(props) => {
-                      // Custom tick renderer to prevent line breaks in the topic names
                       const topic = props.payload.value;
                       return (
                         <text 
@@ -361,8 +403,8 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                       );
                     }}
                     width={120}
-                    interval={0} // Ensure all ticks are shown
-                    tickMargin={10} // Add margin to ticks
+                    interval={0}
+                    tickMargin={10}
                   />
                   <Tooltip 
                     formatter={(value) => [`${value}%`, 'Mastery']}
@@ -374,7 +416,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     {sortedTopicMastery.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={entry.mastery >= 70 ? "#16a34a" : "#f97316"} // Dark green (#16a34a) for ≥70%, Orange for <70%
+                        fill={entry.mastery >= 70 ? "#16a34a" : "#f97316"}
                       />
                     ))}
                     <LabelList 
@@ -390,7 +432,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
             </div>
           </div>
           
-          {/* Common Error Patterns - Now a full pie chart instead of donut */}
+          {/* Common Error Patterns */}
           <div className="lg:col-span-1">
             <h4 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">
               Common Error Patterns
@@ -405,7 +447,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                     outerRadius={80}
                     paddingAngle={2}
                     dataKey="value"
-                    nameKey="subject" // Changed from "name" to "subject" to display pattern names
+                    nameKey="subject"
                     label={false}
                   >
                     {errorChartData.map((entry, index) => (
@@ -414,13 +456,12 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                   </Pie>
                   <Tooltip 
                     formatter={(value) => [`${value}%`, `${errorChartData.find(item => item.value === value)?.subject || 'Error'}`]}
-                    labelFormatter={(label) => `${label}`} // This will display the subject name
+                    labelFormatter={(label) => `${label}`}
                   />
                 </PieChart>
               </ResponsiveContainer>
             </div>
             
-            {/* Error patterns legend with progress bars */}
             <div className="mt-4 space-y-4">
               {classData.errorPatterns.map((error, index) => (
                 <div key={index} className="space-y-1">
@@ -452,7 +493,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
         </div>
       </motion.div>
 
-      {/* Recent Tests/Assessments - Exactly like Reports page */}
+      {/* Recent Tests/Assessments */}
       <motion.div 
         className="glass-card rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
@@ -614,7 +655,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
         </div>
       </motion.div>
       
-      {/* Student List */}
+      {/* Student List - Updated to use real data */}
       <motion.div 
         className="glass-card rounded-xl p-6"
         initial={{ opacity: 0, y: 20 }}
@@ -625,76 +666,88 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
           Students
         </h3>
         
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {sortedStudents.map((student) => (
-            <motion.div
-              key={student.id}
-              className="py-4 first:pt-0 last:pb-0 cursor-pointer"
-              onClick={() => onStudentSelect(student.id)}
-              whileHover={{ x: 5 }}
-            >
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-purple-100 dark:bg-gray-700 flex items-center justify-center mr-4">
-                  {student.avatar ? (
-                    <img 
-                      src={student.avatar} 
-                      alt={student.name} 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
+        {loadingStudents ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-gray-500 dark:text-gray-400">Loading students...</div>
+          </div>
+        ) : realStudents.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="flex flex-col items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+                <User className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-2">
+                No students found
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                This class doesn't have any students enrolled yet.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            {sortedStudents.map((student) => (
+              <motion.div
+                key={student.id}
+                className="py-4 first:pt-0 last:pb-0 cursor-pointer"
+                onClick={() => onStudentSelect(student.id)}
+                whileHover={{ x: 5 }}
+              >
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-purple-100 dark:bg-gray-700 flex items-center justify-center mr-4">
                     <User className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  )}
-                </div>
-                
-                <div className="flex-1">
-                  <h4 className="text-base font-medium text-gray-800 dark:text-gray-200">
-                    {student.name}
-                  </h4>
-                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    <div className="flex items-center">
-                      <span>Average: </span>
-                      <span className={`ml-1 ${
-                        student.averageScore >= 75 
-                          ? "text-green-600 dark:text-green-400" 
-                          : student.averageScore >= 60
-                          ? "text-yellow-600 dark:text-yellow-400"
-                          : "text-red-600 dark:text-red-400"
-                      }`}>
-                        {student.averageScore}%
-                      </span>
-                    </div>
-                    <div className="flex items-center ml-4">
-                      <span>Growth: </span>
-                      <div className={`ml-1 flex items-center ${
-                        student.improvement > 0 
-                          ? "text-green-600 dark:text-green-400" 
-                          : student.improvement < 0
-                          ? "text-red-600 dark:text-red-400"
-                          : "text-gray-600 dark:text-gray-400"
-                      }`}>
-                        {student.improvement > 0 ? (
-                          <>
-                            <TrendingUp className="w-3 h-3 mr-1" />
-                            {student.improvement}%
-                          </>
-                        ) : student.improvement < 0 ? (
-                          <>
-                            <TrendingDown className="w-3 h-3 mr-1" />
-                            {Math.abs(student.improvement)}%
-                          </>
-                        ) : (
-                          "0%"
-                        )}
+                  </div>
+                  
+                  <div className="flex-1">
+                    <h4 className="text-base font-medium text-gray-800 dark:text-gray-200">
+                      {student.name}
+                    </h4>
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      <div className="flex items-center">
+                        <span>Average: </span>
+                        <span className={`ml-1 ${
+                          student.averageScore >= 75 
+                            ? "text-green-600 dark:text-green-400" 
+                            : student.averageScore >= 60
+                            ? "text-yellow-600 dark:text-yellow-400"
+                            : "text-red-600 dark:text-red-400"
+                        }`}>
+                          {student.averageScore}%
+                        </span>
+                      </div>
+                      <div className="flex items-center ml-4">
+                        <span>Growth: </span>
+                        <div className={`ml-1 flex items-center ${
+                          student.improvement > 0 
+                            ? "text-green-600 dark:text-green-400" 
+                            : student.improvement < 0
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-gray-600 dark:text-gray-400"
+                        }`}>
+                          {student.improvement > 0 ? (
+                            <>
+                              <TrendingUp className="w-3 h-3 mr-1" />
+                              {student.improvement}%
+                            </>
+                          ) : student.improvement < 0 ? (
+                            <>
+                              <TrendingDown className="w-3 h-3 mr-1" />
+                              {Math.abs(student.improvement)}%
+                            </>
+                          ) : (
+                            "0%"
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
+                  
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
                 </div>
-                
-                <ChevronRight className="w-5 h-5 text-gray-400" />
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </motion.div>
     </div>
   );
