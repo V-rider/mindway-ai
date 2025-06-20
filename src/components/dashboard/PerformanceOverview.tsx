@@ -299,7 +299,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
             </h3>
             {isAdmin && (
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                Classes you teach have a purple outline
+                Classes you teach have a purple outline and are clickable
               </p>
             )}
             
@@ -340,12 +340,20 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                     dataKey="score" 
                     name="Average Score"
                     onClick={(data) => {
-                      const classData = filteredClasses.find(c => c.name === data.name);
-                      if (classData) {
-                        onClassSelect(classData.id);
+                      // Only allow clicking if it's a teacher's class
+                      const barData = classBarChartData.find(item => item.name === data.name);
+                      if (barData?.isTeaching) {
+                        const classData = filteredClasses.find(c => c.name === data.name);
+                        if (classData) {
+                          onClassSelect(classData.id);
+                        }
                       }
                     }}
-                    cursor="pointer"
+                    cursor={(data) => {
+                      // Only show pointer cursor for teacher's classes
+                      const barData = classBarChartData.find(item => item.name === data.name);
+                      return barData?.isTeaching ? "pointer" : "default";
+                    }}
                   >
                     {classBarChartData.map((entry, index) => (
                       <Cell 
@@ -360,7 +368,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
               </ResponsiveContainer>
             </div>
             <div className="text-center mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Click on a bar to view detailed class data
+              {isAdmin ? "Click on your classes (purple outline) to view detailed data" : "Click on a bar to view detailed class data"}
             </div>
           </div>
           
