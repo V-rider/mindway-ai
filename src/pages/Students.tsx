@@ -56,10 +56,17 @@ const Students = () => {
         // Get all students from all teacher's classes
         const allStudents = [];
         for (const classItem of teacherData.classes) {
-          console.log('Fetching students for class:', classItem.class_name);
-          const classStudents = await classApi.getStudentsByClass(classItem.class_name);
+          console.log('Fetching students for class ID:', classItem.class_id);
+          const classStudents = await classApi.getStudentsByClass(classItem.class_id);
           console.log('Students in class', classItem.class_name, ':', classStudents);
-          allStudents.push(...classStudents);
+          
+          // Add class name to each student for display
+          const studentsWithClassName = classStudents.map(student => ({
+            ...student,
+            className: classItem.class_name
+          }));
+          
+          allStudents.push(...studentsWithClassName);
         }
         
         console.log('All students found:', allStudents);
@@ -69,7 +76,7 @@ const Students = () => {
           id: student.SID.toString(),
           name: student.name,
           email: student.email,
-          className: student.class || 'Unknown Class'
+          className: student.className || 'Unknown Class'
         }));
         
         console.log('Formatted students:', formattedStudents);

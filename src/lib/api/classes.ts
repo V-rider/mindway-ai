@@ -3,7 +3,7 @@ import { dynamicSupabase } from '@/lib/supabase/dynamic-client';
 import type { Database } from '@/types/database';
 
 export const classApi = {
-  // Get teacher's classes using their email to find classes assigned to them
+  // Get teacher's classes using their TID to find classes assigned to them
   async getTeacherClasses(teacherEmail: string) {
     const supabase = dynamicSupabase.getCurrentClient();
     if (!supabase) {
@@ -13,10 +13,10 @@ export const classApi = {
     try {
       console.log('Fetching teacher classes for:', teacherEmail);
       
-      // 1. Get teacher info by email
+      // 1. Get teacher info by email to get their TID
       const { data: teacherData, error: teacherError } = await supabase
         .from('teachers')
-        .select('name, classes')
+        .select('TID, name')
         .eq('email', teacherEmail)
         .single();
 
@@ -32,16 +32,26 @@ export const classApi = {
 
       console.log('Teacher data:', teacherData);
 
-      // 2. Parse classes string (assuming it's comma-separated)
-      const classNames = teacherData.classes.split(',').map(c => c.trim());
+      // 2. Get classes assigned to this teacher using their TID
+      const { data: classesData, error: classesError } = await supabase
+        .from('class')
+        .select('class_id, class_name, academic_year')
+        .eq('teacher_id', teacherData.TID);
+
+      if (classesError) {
+        console.error('Classes error:', classesError);
+        throw classesError;
+      }
+
+      console.log('Classes data:', classesData);
       
       // 3. Return formatted data
       return {
         teacherName: teacherData.name,
-        classes: classNames.map(className => ({
-          class_name: className,
-          class_id: className, // Using class name as ID for now
-          academic_year: new Date().getFullYear().toString()
+        classes: (classesData || []).map(classItem => ({
+          class_name: classItem.class_name,
+          class_id: classItem.class_id.toString(),
+          academic_year: classItem.academic_year
         }))
       };
     } catch (error) {
@@ -50,21 +60,21 @@ export const classApi = {
     }
   },
 
-  // Get all students for a specific class (by class name)
-  async getStudentsByClass(className: string) {
+  // Get all students for a specific class (by class_id)
+  async getStudentsByClass(classId: string) {
     const supabase = dynamicSupabase.getCurrentClient();
     if (!supabase) {
       throw new Error('No Supabase client for current project');
     }
     
     try {
-      console.log('Fetching students for class:', className);
+      console.log('Fetching students for class ID:', classId);
       
-      // Get students in this class
+      // Get students in this class using class_id
       const { data: students, error: studentsError } = await supabase
         .from('students')
-        .select('sid, name, email, class')
-        .eq('class', className);
+        .select('SID, name, email, class_id, class_no')
+        .eq('class_id', parseInt(classId));
 
       if (studentsError) {
         console.error('Error fetching students:', studentsError);
@@ -74,10 +84,10 @@ export const classApi = {
       console.log('Students found:', students);
 
       return (students || []).map(student => ({
-        SID: student.sid,
+        SID: student.SID,
         name: student.name,
         email: student.email,
-        class: student.class
+        class_id: student.class_id
       }));
     } catch (error) {
       console.error('Error in getStudentsByClass:', error);
@@ -85,7 +95,7 @@ export const classApi = {
     }
   },
 
-  // Get all classes from the teachers table (since there's no separate class table)
+  // Get all classes from the class table
   async getAllClasses() {
     const supabase = dynamicSupabase.getCurrentClient();
     if (!supabase) {
@@ -95,28 +105,22 @@ export const classApi = {
     try {
       console.log('Fetching all classes');
       
-      const { data: teachers, error } = await supabase
-        .from('teachers')
-        .select('classes, name');
+      const { data: classes, error } = await supabase
+        .from('class')
+        .select('class_id, class_name, academic_year, teacher_id');
         
       if (error) {
-        console.error('Error fetching teachers:', error);
+        console.error('Error fetching classes:', error);
         throw error;
       }
       
-      console.log('Teachers data:', teachers);
+      console.log('Classes data:', classes);
       
-      // Extract unique classes from all teachers
-      const allClasses = new Set();
-      teachers?.forEach(teacher => {
-        const classNames = teacher.classes.split(',').map(c => c.trim());
-        classNames.forEach(className => allClasses.add(className));
-      });
-      
-      return Array.from(allClasses).map(className => ({
-        class_id: className,
-        class_name: className,
-        academic_year: new Date().getFullYear().toString()
+      return (classes || []).map(classItem => ({
+        class_id: classItem.class_id.toString(),
+        class_name: classItem.class_name,
+        academic_year: classItem.academic_year,
+        teacher_id: classItem.teacher_id
       }));
     } catch (error) {
       console.error('Error in getAllClasses:', error);
