@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -19,6 +19,7 @@ import { FilterBar } from "@/components/dashboard/FilterBar";
 import { ReportGenerator } from "@/components/dashboard/ReportGenerator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PaperMiscorrectionChecker } from "@/components/dashboard/PaperMiscorrectionChecker";
+import { classApi } from "@/lib/api/classes";
 
 import { Button } from "@/components/ui/button";
 import { 
@@ -677,9 +678,9 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "2",
     topics: [
       { name: "Addition & Subtraction", performance: 88 },
-      { name: "Basic Multiplication", performance: 75 },
-      { name: "Place Value", performance: 80 },
-      { name: "Basic Geometry", performance: 85 },
+      { topic: "Basic Multiplication", performance: 75 },
+      { topic: "Place Value", performance: 80 },
+      { topic: "Basic Geometry", performance: 85 },
     ],
   },
   {
@@ -687,9 +688,9 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "2",
     topics: [
       { name: "Addition & Subtraction", performance: 82 },
-      { name: "Basic Multiplication", performance: 68 },
-      { name: "Place Value", performance: 72 },
-      { name: "Basic Geometry", performance: 78 },
+      { topic: "Basic Multiplication", performance: 68 },
+      { topic: "Place Value", performance: 72 },
+      { topic: "Basic Geometry", performance: 78 },
     ],
   },
   {
@@ -697,9 +698,9 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "2",
     topics: [
       { name: "Addition & Subtraction", performance: 85 },
-      { name: "Basic Multiplication", performance: 72 },
-      { name: "Place Value", performance: 76 },
-      { name: "Basic Geometry", performance: 82 },
+      { topic: "Basic Multiplication", performance: 72 },
+      { topic: "Place Value", performance: 76 },
+      { topic: "Basic Geometry", performance: 82 },
     ],
   },
   {
@@ -707,9 +708,9 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "2",
     topics: [
       { name: "Addition & Subtraction", performance: 90 },
-      { name: "Basic Multiplication", performance: 78 },
-      { name: "Place Value", performance: 82 },
-      { name: "Basic Geometry", performance: 88 },
+      { topic: "Basic Multiplication", performance: 78 },
+      { topic: "Place Value", performance: 82 },
+      { topic: "Basic Geometry", performance: 88 },
     ],
   },
   {
@@ -717,10 +718,10 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "3",
     topics: [
       { name: "Addition & Subtraction", performance: 85 },
-      { name: "Multiplication", performance: 76 },
-      { name: "Division", performance: 65 },
-      { name: "Fractions", performance: 58 },
-      { name: "Geometry", performance: 74 },
+      { topic: "Multiplication", performance: 76 },
+      { topic: "Division", performance: 65 },
+      { topic: "Fractions", performance: 58 },
+      { topic: "Geometry", performance: 74 },
     ],
   },
   {
@@ -728,10 +729,10 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "3",
     topics: [
       { name: "Addition & Subtraction", performance: 88 },
-      { name: "Multiplication", performance: 80 },
-      { name: "Division", performance: 70 },
-      { name: "Fractions", performance: 65 },
-      { name: "Geometry", performance: 78 },
+      { topic: "Multiplication", performance: 80 },
+      { topic: "Division", performance: 70 },
+      { topic: "Fractions", performance: 65 },
+      { topic: "Geometry", performance: 78 },
     ],
   },
   {
@@ -739,10 +740,10 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "3",
     topics: [
       { name: "Addition & Subtraction", performance: 80 },
-      { name: "Multiplication", performance: 72 },
-      { name: "Division", performance: 60 },
-      { name: "Fractions", performance: 55 },
-      { name: "Geometry", performance: 70 },
+      { topic: "Multiplication", performance: 72 },
+      { topic: "Division", performance: 60 },
+      { topic: "Fractions", performance: 55 },
+      { topic: "Geometry", performance: 70 },
     ],
   },
   {
@@ -750,10 +751,10 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "3",
     topics: [
       { name: "Addition & Subtraction", performance: 92 },
-      { name: "Multiplication", performance: 85 },
-      { name: "Division", performance: 75 },
-      { name: "Fractions", performance: 72 },
-      { name: "Geometry", performance: 82 },
+      { topic: "Multiplication", performance: 85 },
+      { topic: "Division", performance: 75 },
+      { topic: "Fractions", performance: 72 },
+      { topic: "Geometry", performance: 82 },
     ],
   },
   {
@@ -761,11 +762,11 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "4",
     topics: [
       { name: "Addition & Subtraction", performance: 92 },
-      { name: "Multiplication", performance: 84 },
-      { name: "Division", performance: 76 },
-      { name: "Fractions", performance: 65 },
-      { name: "Decimals", performance: 60 },
-      { name: "Geometry", performance: 72 },
+      { topic: "Multiplication", performance: 84 },
+      { topic: "Division", performance: 76 },
+      { topic: "Fractions", performance: 65 },
+      { topic: "Decimals", performance: 60 },
+      { topic: "Geometry", performance: 72 },
     ],
   },
   {
@@ -773,11 +774,11 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "4",
     topics: [
       { name: "Addition & Subtraction", performance: 90 },
-      { name: "Multiplication", performance: 82 },
-      { name: "Division", performance: 72 },
-      { name: "Fractions", performance: 60 },
-      { name: "Decimals", performance: 55 },
-      { name: "Geometry", performance: 65 },
+      { topic: "Multiplication", performance: 82 },
+      { topic: "Division", performance: 72 },
+      { topic: "Fractions", performance: 60 },
+      { topic: "Decimals", performance: 55 },
+      { topic: "Geometry", performance: 65 },
     ],
   },
   {
@@ -785,11 +786,11 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "4",
     topics: [
       { name: "Addition & Subtraction", performance: 95 },
-      { name: "Multiplication", performance: 88 },
-      { name: "Division", performance: 80 },
-      { name: "Fractions", performance: 75 },
-      { name: "Decimals", performance: 70 },
-      { name: "Geometry", performance: 85 },
+      { topic: "Multiplication", performance: 88 },
+      { topic: "Division", performance: 80 },
+      { topic: "Fractions", performance: 75 },
+      { topic: "Decimals", performance: 70 },
+      { topic: "Geometry", performance: 85 },
     ],
   },
   {
@@ -797,11 +798,11 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "4",
     topics: [
       { name: "Addition & Subtraction", performance: 88 },
-      { name: "Multiplication", performance: 78 },
-      { name: "Division", performance: 68 },
-      { name: "Fractions", performance: 62 },
-      { name: "Decimals", performance: 58 },
-      { name: "Geometry", performance: 70 },
+      { topic: "Multiplication", performance: 78 },
+      { topic: "Division", performance: 68 },
+      { topic: "Fractions", performance: 62 },
+      { topic: "Decimals", performance: 58 },
+      { topic: "Geometry", performance: 70 },
     ],
   },
   {
@@ -809,12 +810,12 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "5",
     topics: [
       { name: "Addition & Subtraction", performance: 96 },
-      { name: "Multiplication", performance: 92 },
-      { name: "Division", performance: 85 },
-      { name: "Fractions", performance: 80 },
-      { name: "Decimals", performance: 75 },
-      { name: "Percentages", performance: 72 },
-      { name: "Geometry", performance: 88 },
+      { topic: "Multiplication", performance: 92 },
+      { topic: "Division", performance: 85 },
+      { topic: "Fractions", performance: 80 },
+      { topic: "Decimals", performance: 75 },
+      { topic: "Percentages", performance: 72 },
+      { topic: "Geometry", performance: 88 },
     ],
   },
   {
@@ -822,12 +823,12 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "5",
     topics: [
       { name: "Addition & Subtraction", performance: 90 },
-      { name: "Multiplication", performance: 85 },
-      { name: "Division", performance: 78 },
-      { name: "Fractions", performance: 72 },
-      { name: "Decimals", performance: 68 },
-      { name: "Percentages", performance: 63 },
-      { name: "Geometry", performance: 75 },
+      { topic: "Multiplication", performance: 85 },
+      { topic: "Division", performance: 78 },
+      { topic: "Fractions", performance: 72 },
+      { topic: "Decimals", performance: 68 },
+      { topic: "Percentages", performance: 63 },
+      { topic: "Geometry", performance: 75 },
     ],
   },
   {
@@ -835,12 +836,12 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "5",
     topics: [
       { name: "Addition & Subtraction", performance: 94 },
-      { name: "Multiplication", performance: 88 },
-      { name: "Division", performance: 82 },
-      { name: "Fractions", performance: 75 },
-      { name: "Decimals", performance: 70 },
-      { name: "Percentages", performance: 68 },
-      { name: "Geometry", performance: 80 },
+      { topic: "Multiplication", performance: 88 },
+      { topic: "Division", performance: 82 },
+      { topic: "Fractions", performance: 75 },
+      { topic: "Decimals", performance: 70 },
+      { topic: "Percentages", performance: 68 },
+      { topic: "Geometry", performance: 80 },
     ],
   },
   {
@@ -848,12 +849,12 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "5",
     topics: [
       { name: "Addition & Subtraction", performance: 95 },
-      { name: "Multiplication", performance: 90 },
-      { name: "Division", performance: 84 },
-      { name: "Fractions", performance: 78 },
-      { name: "Decimals", performance: 72 },
-      { name: "Percentages", performance: 70 },
-      { name: "Geometry", performance: 82 },
+      { topic: "Multiplication", performance: 90 },
+      { topic: "Division", performance: 84 },
+      { topic: "Fractions", performance: 78 },
+      { topic: "Decimals", performance: 72 },
+      { topic: "Percentages", performance: 70 },
+      { topic: "Geometry", performance: 82 },
     ],
   },
   {
@@ -861,13 +862,13 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "6",
     topics: [
       { name: "Addition & Subtraction", performance: 96 },
-      { name: "Multiplication", performance: 92 },
-      { name: "Division", performance: 88 },
-      { name: "Fractions", performance: 85 },
-      { name: "Decimals", performance: 82 },
-      { name: "Percentages", performance: 78 },
-      { name: "Pre-Algebra", performance: 75 },
-      { name: "Geometry", performance: 84 },
+      { topic: "Multiplication", performance: 92 },
+      { topic: "Division", performance: 88 },
+      { topic: "Fractions", performance: 85 },
+      { topic: "Decimals", performance: 82 },
+      { topic: "Percentages", performance: 78 },
+      { topic: "Pre-Algebra", performance: 75 },
+      { topic: "Geometry", performance: 84 },
     ],
   },
   {
@@ -875,13 +876,13 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "6",
     topics: [
       { name: "Addition & Subtraction", performance: 94 },
-      { name: "Multiplication", performance: 88 },
-      { name: "Division", performance: 82 },
-      { name: "Fractions", performance: 78 },
-      { name: "Decimals", performance: 74 },
-      { name: "Percentages", performance: 70 },
-      { name: "Pre-Algebra", performance: 62 },
-      { name: "Geometry", performance: 75 },
+      { topic: "Multiplication", performance: 88 },
+      { topic: "Division", performance: 82 },
+      { topic: "Fractions", performance: 78 },
+      { topic: "Decimals", performance: 74 },
+      { topic: "Percentages", performance: 70 },
+      { topic: "Pre-Algebra", performance: 62 },
+      { topic: "Geometry", performance: 75 },
     ],
   },
   {
@@ -889,13 +890,13 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "6",
     topics: [
       { name: "Addition & Subtraction", performance: 95 },
-      { name: "Multiplication", performance: 90 },
-      { name: "Division", performance: 85 },
-      { name: "Fractions", performance: 80 },
-      { name: "Decimals", performance: 78 },
-      { name: "Percentages", performance: 73 },
-      { name: "Pre-Algebra", performance: 68 },
-      { name: "Geometry", performance: 82 },
+      { topic: "Multiplication", performance: 90 },
+      { topic: "Division", performance: 85 },
+      { topic: "Fractions", performance: 80 },
+      { topic: "Decimals", performance: 78 },
+      { topic: "Percentages", performance: 73 },
+      { topic: "Pre-Algebra", performance: 68 },
+      { topic: "Geometry", performance: 82 },
     ],
   },
   {
@@ -903,13 +904,13 @@ const mockHeatmapData: HeatmapData[] = [
     grade: "6",
     topics: [
       { name: "Addition & Subtraction", performance: 97 },
-      { name: "Multiplication", performance: 93 },
-      { name: "Division", performance: 87 },
-      { name: "Fractions", performance: 83 },
-      { name: "Decimals", performance: 80 },
-      { name: "Percentages", performance: 75 },
-      { name: "Pre-Algebra", performance: 72 },
-      { name: "Geometry", performance: 88 },
+      { topic: "Multiplication", performance: 93 },
+      { topic: "Division", performance: 87 },
+      { topic: "Fractions", performance: 83 },
+      { topic: "Decimals", performance: 80 },
+      { topic: "Percentages", performance: 75 },
+      { topic: "Pre-Algebra", performance: 72 },
+      { topic: "Geometry", performance: 88 },
     ],
   },
 ];
@@ -957,14 +958,54 @@ const subjectsList = ["Mathematics", "Arithmetic", "Geometry", "Pre-Algebra"];
 type ViewState = "overview" | "class" | "student" | "miscorrection";
 
 const Dashboard = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, user } = useAuth();
   const navigate = useNavigate();
   const [viewState, setViewState] = useState<ViewState>("overview");
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [showReportGenerator, setShowReportGenerator] = useState(false);
   const isMobile = useIsMobile();
-  const [selectedGrade, setSelectedGrade] = useState<string>("1"); // Changed default to Grade 1 to show the new functionality
+  const [selectedGrade, setSelectedGrade] = useState<string>("1");
+  
+  // Add state for real student data
+  const [realStudents, setRealStudents] = useState<StudentPerformance[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+  
+  // Fetch real students when a class is selected
+  useEffect(() => {
+    const fetchClassStudents = async () => {
+      if (!selectedClassId || !user?.email) return;
+      
+      try {
+        setLoadingStudents(true);
+        console.log('Fetching students for class ID:', selectedClassId);
+        
+        const students = await classApi.getStudentsByClass(selectedClassId);
+        console.log('Real students data:', students);
+        
+        // Transform the student data to match StudentPerformance format
+        const transformedStudents: StudentPerformance[] = students.map(student => ({
+          id: student.SID.toString(),
+          name: student.name,
+          averageScore: Math.floor(Math.random() * 40) + 60, // Mock score for now
+          improvement: Math.floor(Math.random() * 21) - 10, // Mock improvement
+          strengths: ["Mathematics"], // Mock strengths
+          weaknesses: ["Problem Solving"], // Mock weaknesses
+        }));
+        
+        setRealStudents(transformedStudents);
+      } catch (error) {
+        console.error('Error fetching class students:', error);
+        setRealStudents([]);
+      } finally {
+        setLoadingStudents(false);
+      }
+    };
+
+    if (viewState === "class" && selectedClassId) {
+      fetchClassStudents();
+    }
+  }, [selectedClassId, viewState, user?.email]);
   
   // Handle view changes with scroll to top
   const handleViewClass = (classId: string) => {
@@ -983,6 +1024,7 @@ const Dashboard = () => {
     setViewState("overview");
     setSelectedClassId(null);
     setSelectedStudentId(null);
+    setRealStudents([]); // Clear real students data
     window.scrollTo(0, 0);
   };
   
@@ -1024,6 +1066,12 @@ const Dashboard = () => {
   
   // Get the selected class details if in class view
   const selectedClass = mockClassPerformances.find(c => c.id === selectedClassId);
+  
+  // Create updated class data with real student count
+  const selectedClassWithRealData = selectedClass ? {
+    ...selectedClass,
+    studentCount: realStudents.length // Use real student count
+  } : null;
   
   // Render different views based on viewState
   return (
@@ -1139,11 +1187,12 @@ const Dashboard = () => {
         )}
         
         {/* Class Dashboard */}
-        {viewState === "class" && selectedClass && (
+        {viewState === "class" && selectedClassWithRealData && (
           <ClassPerformanceCard
-            classData={selectedClass}
-            students={mockStudents}
+            classData={selectedClassWithRealData}
+            students={realStudents} // Use real students data
             onStudentSelect={handleViewStudent}
+            loading={loadingStudents} // Pass loading state
           />
         )}
         
