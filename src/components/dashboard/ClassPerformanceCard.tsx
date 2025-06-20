@@ -58,6 +58,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   const [realStudents, setRealStudents] = useState<DatabaseStudent[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [classesByGrade, setClassesByGrade] = useState<Record<string, any[]>>({});
+  const [maxSectionsAcrossGrades, setMaxSectionsAcrossGrades] = useState<number>(4);
   const [dynamicTopicMastery, setDynamicTopicMastery] = useState<Array<{topic: string, mastery: number}>>([]);
   const [dynamicErrorPatterns, setDynamicErrorPatterns] = useState<Array<{pattern: string, percentage: number}>>([]);
   
@@ -87,19 +88,23 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
         console.log('Classes by grade data:', classesData);
         setClassesByGrade(classesData);
 
+        // Get maximum sections across all grades
+        const maxSections = await classApi.getMaxSectionsAcrossGrades();
+        console.log('Max sections across all grades:', maxSections);
+        setMaxSectionsAcrossGrades(maxSections);
+
         // Extract grade from current class name
         const gradeMatch = classData.name.match(/(\d+)/);
         const currentGrade = gradeMatch ? gradeMatch[1] : '7';
         
-        // Get classes for current grade to determine section count
-        const gradeClasses = classesData[currentGrade] || [];
-        const sectionCount = gradeClasses.length;
-        
-        console.log(`Grade ${currentGrade} has ${sectionCount} classes`);
+        console.log(`Current grade: ${currentGrade}, Max sections: ${maxSections}`);
 
-        // Generate dynamic topic mastery and error patterns
-        const topicMastery = classApi.getDynamicTopicMastery(currentGrade, sectionCount);
-        const errorPatterns = classApi.getDynamicErrorPatterns(currentGrade, sectionCount);
+        // Generate dynamic topic mastery and error patterns using max sections
+        const topicMastery = classApi.getDynamicTopicMastery(currentGrade, maxSections);
+        const errorPatterns = classApi.getDynamicErrorPatterns(currentGrade, maxSections);
+        
+        console.log('Generated topic mastery:', topicMastery);
+        console.log('Generated error patterns:', errorPatterns);
         
         setDynamicTopicMastery(topicMastery);
         setDynamicErrorPatterns(errorPatterns);
@@ -227,7 +232,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
       case "Average":
         return "text-yellow-500 dark:text-yellow-400";
       case "Below Average":
-        return "text-yellow-600 dark:text-yellow-500";
+        return "text-yellow-600 dark:text-yellow-400";
       case "Needs Improvement":
         return "text-yellow-600 dark:text-yellow-500";
       case "Needs Support":

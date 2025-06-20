@@ -1,4 +1,3 @@
-
 import { dynamicSupabase } from '@/lib/supabase/dynamic-client';
 import type { Database } from '@/types/database';
 
@@ -171,7 +170,7 @@ export const classApi = {
       const classesByGrade: Record<string, any[]> = {};
       
       (classes || []).forEach(classItem => {
-        // Extract grade number from class_name (e.g., "Math 7A" -> "7", "Science 8B" -> "8")
+        // Extract grade number from class_name (e.g., "Math 7A" -> "7", "Science 8B" -> "8", "1A" -> "1")
         const gradeMatch = classItem.class_name.match(/(\d+)/);
         const grade = gradeMatch ? gradeMatch[1] : 'Unknown';
         
@@ -195,14 +194,60 @@ export const classApi = {
     }
   },
 
+  // Get the maximum number of sections across all grades
+  async getMaxSectionsAcrossGrades() {
+    const supabase = dynamicSupabase.getCurrentClient();
+    if (!supabase) {
+      throw new Error('No Supabase client for current project');
+    }
+    
+    try {
+      console.log('Fetching max sections across all grades');
+      
+      const { data: classes, error } = await supabase
+        .from('class')
+        .select('class_name');
+        
+      if (error) {
+        console.error('Error fetching classes for max sections:', error);
+        throw error;
+      }
+      
+      console.log('All classes data for max sections:', classes);
+      
+      // Extract all sections and find the maximum
+      let maxSectionCount = 1;
+      const allSections = new Set<string>();
+      
+      (classes || []).forEach(classItem => {
+        const section = this.extractSection(classItem.class_name);
+        allSections.add(section);
+      });
+      
+      // Convert sections to numbers and find max (A=1, B=2, C=3, D=4, E=5, etc.)
+      allSections.forEach(section => {
+        const sectionNumber = section.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+        maxSectionCount = Math.max(maxSectionCount, sectionNumber);
+      });
+      
+      console.log('Max sections found across all grades:', maxSectionCount, 'All sections:', Array.from(allSections));
+      
+      return maxSectionCount;
+    } catch (error) {
+      console.error('Error in getMaxSectionsAcrossGrades:', error);
+      // Return default of 4 sections if error occurs
+      return 4;
+    }
+  },
+
   // Helper function to extract section (A, B, C, etc.) from class name
   extractSection(className: string): string {
     const sectionMatch = className.match(/([A-Z])(?:\s|$)/);
     return sectionMatch ? sectionMatch[1] : 'A';
   },
 
-  // Get dynamic topic mastery based on grade level
-  getDynamicTopicMastery(grade: string, sectionCount: number) {
+  // Get dynamic topic mastery based on grade level and max sections
+  getDynamicTopicMastery(grade: string, maxSections: number) {
     const gradeNum = parseInt(grade);
     let topics: Array<{topic: string, mastery: number}> = [];
     
@@ -213,7 +258,9 @@ export const classApi = {
         { topic: "Basic Subtraction", mastery: 82 + Math.random() * 10 },
         { topic: "Multiplication Tables", mastery: 78 + Math.random() * 15 },
         { topic: "Division Basics", mastery: 75 + Math.random() * 15 },
-        { topic: "Fractions Intro", mastery: 70 + Math.random() * 20 }
+        { topic: "Fractions Intro", mastery: 70 + Math.random() * 20 },
+        { topic: "Word Problems", mastery: 68 + Math.random() * 20 },
+        { topic: "Number Patterns", mastery: 73 + Math.random() * 15 }
       ];
     } else if (gradeNum <= 8) {
       // Middle school topics
@@ -222,7 +269,9 @@ export const classApi = {
         { topic: "Ratios & Proportions", mastery: 76 + Math.random() * 12 },
         { topic: "Geometry Fundamentals", mastery: 74 + Math.random() * 14 },
         { topic: "Statistics & Data", mastery: 78 + Math.random() * 12 },
-        { topic: "Pre-Calculus Concepts", mastery: 68 + Math.random() * 18 }
+        { topic: "Pre-Calculus Concepts", mastery: 68 + Math.random() * 18 },
+        { topic: "Equations & Inequalities", mastery: 70 + Math.random() * 16 },
+        { topic: "Functions & Graphs", mastery: 69 + Math.random() * 17 }
       ];
     } else {
       // High school topics
@@ -231,20 +280,22 @@ export const classApi = {
         { topic: "Trigonometry", mastery: 68 + Math.random() * 22 },
         { topic: "Calculus Basics", mastery: 65 + Math.random() * 25 },
         { topic: "Statistics Analysis", mastery: 72 + Math.random() * 18 },
-        { topic: "Mathematical Proofs", mastery: 60 + Math.random() * 25 }
+        { topic: "Mathematical Proofs", mastery: 60 + Math.random() * 25 },
+        { topic: "Complex Numbers", mastery: 63 + Math.random() * 22 },
+        { topic: "Linear Algebra", mastery: 66 + Math.random() * 20 }
       ];
     }
     
-    // Adjust number of topics based on section count
-    const topicCount = Math.min(sectionCount + 2, topics.length);
+    // Adjust number of topics based on max sections across all grades
+    const topicCount = Math.min(maxSections + 2, topics.length);
     return topics.slice(0, topicCount).map(topic => ({
       ...topic,
       mastery: Math.round(topic.mastery)
     }));
   },
 
-  // Get dynamic error patterns based on grade level
-  getDynamicErrorPatterns(grade: string, sectionCount: number) {
+  // Get dynamic error patterns based on grade level and max sections
+  getDynamicErrorPatterns(grade: string, maxSections: number) {
     const gradeNum = parseInt(grade);
     let patterns: Array<{pattern: string, percentage: number}> = [];
     
@@ -252,27 +303,30 @@ export const classApi = {
       patterns = [
         { pattern: "Calculation Errors", percentage: 35 },
         { pattern: "Number Recognition", percentage: 25 },
-        { pattern: "Basic Operations", percentage: 40 }
+        { pattern: "Basic Operations", percentage: 40 },
+        { pattern: "Reading Comprehension", percentage: 30 },
+        { pattern: "Place Value Confusion", percentage: 20 }
       ];
     } else if (gradeNum <= 8) {
       patterns = [
         { pattern: "Algebraic Mistakes", percentage: 30 },
         { pattern: "Formula Application", percentage: 35 },
-        { pattern: "Problem Interpretation", percentage: 35 }
+        { pattern: "Problem Interpretation", percentage: 35 },
+        { pattern: "Sign Errors", percentage: 25 },
+        { pattern: "Order of Operations", percentage: 20 }
       ];
     } else {
       patterns = [
         { pattern: "Complex Problem Solving", percentage: 40 },
         { pattern: "Advanced Concepts", percentage: 35 },
-        { pattern: "Mathematical Reasoning", percentage: 25 }
+        { pattern: "Mathematical Reasoning", percentage: 25 },
+        { pattern: "Graphical Interpretation", percentage: 30 },
+        { pattern: "Abstract Thinking", percentage: 22 }
       ];
     }
     
-    // Adjust based on section count - more sections might indicate more diverse error patterns
-    if (sectionCount > 3) {
-      patterns.push({ pattern: "Time Management", percentage: 20 });
-    }
-    
-    return patterns;
+    // Adjust based on max sections - more sections might indicate more diverse error patterns
+    const patternCount = Math.min(maxSections, patterns.length);
+    return patterns.slice(0, patternCount);
   }
 };
