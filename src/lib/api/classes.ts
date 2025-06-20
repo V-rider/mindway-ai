@@ -70,11 +70,29 @@ export const classApi = {
     try {
       console.log('Fetching students for class ID:', classId);
       
+      // Convert mock class ID format to actual database class_id
+      let actualClassId: number;
+      
+      // Check if classId is in mock format like "class-1-1" or "math-7a"
+      if (classId.includes('-') || isNaN(Number(classId))) {
+        // For mock data, we'll try to extract a number or map to a default
+        const match = classId.match(/\d+/);
+        actualClassId = match ? parseInt(match[0]) : 1; // Default to 1 if no number found
+        console.log('Converted mock class ID', classId, 'to actual class ID:', actualClassId);
+      } else {
+        actualClassId = parseInt(classId);
+      }
+      
+      if (isNaN(actualClassId)) {
+        console.error('Invalid class ID:', classId);
+        return [];
+      }
+      
       // Get students in this class using class_id
       const { data: students, error: studentsError } = await supabase
         .from('students')
         .select('SID, name, email, class_id, class_no')
-        .eq('class_id', parseInt(classId));
+        .eq('class_id', actualClassId);
 
       if (studentsError) {
         console.error('Error fetching students:', studentsError);
