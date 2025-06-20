@@ -57,6 +57,9 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   const navigate = useNavigate();
   const [realStudents, setRealStudents] = useState<DatabaseStudent[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
+  const [classesByGrade, setClassesByGrade] = useState<Record<string, any[]>>({});
+  const [dynamicTopicMastery, setDynamicTopicMastery] = useState<Array<{topic: string, mastery: number}>>([]);
+  const [dynamicErrorPatterns, setDynamicErrorPatterns] = useState<Array<{pattern: string, percentage: number}>>([]);
   
   // State for assessments section
   const [searchTerm, setSearchTerm] = useState("");
@@ -67,27 +70,55 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   // State for performance trend time period
   const [timePeriod, setTimePeriod] = useState<"week" | "month" | "year">("month");
 
-  // Fetch real students for the class
+  // Fetch real students and classes data
   useEffect(() => {
-    const fetchStudents = async () => {
+    const fetchData = async () => {
       try {
         setLoadingStudents(true);
-        console.log('Fetching students for class:', classData.id);
+        console.log('Fetching students and classes data for class:', classData.id);
+        
+        // Fetch students for this class
         const studentsData = await classApi.getStudentsByClass(classData.id);
         console.log('Students data received:', studentsData);
         setRealStudents(studentsData);
+
+        // Fetch classes grouped by grade
+        const classesData = await classApi.getClassesByGrade();
+        console.log('Classes by grade data:', classesData);
+        setClassesByGrade(classesData);
+
+        // Extract grade from current class name
+        const gradeMatch = classData.name.match(/(\d+)/);
+        const currentGrade = gradeMatch ? gradeMatch[1] : '7';
+        
+        // Get classes for current grade to determine section count
+        const gradeClasses = classesData[currentGrade] || [];
+        const sectionCount = gradeClasses.length;
+        
+        console.log(`Grade ${currentGrade} has ${sectionCount} classes`);
+
+        // Generate dynamic topic mastery and error patterns
+        const topicMastery = classApi.getDynamicTopicMastery(currentGrade, sectionCount);
+        const errorPatterns = classApi.getDynamicErrorPatterns(currentGrade, sectionCount);
+        
+        setDynamicTopicMastery(topicMastery);
+        setDynamicErrorPatterns(errorPatterns);
+
       } catch (error) {
-        console.error('Error fetching students:', error);
+        console.error('Error fetching data:', error);
         setRealStudents([]);
+        // Set fallback data
+        setDynamicTopicMastery(classData.topicMastery || []);
+        setDynamicErrorPatterns(classData.errorPatterns || []);
       } finally {
         setLoadingStudents(false);
       }
     };
 
     if (classData.id) {
-      fetchStudents();
+      fetchData();
     }
-  }, [classData.id]);
+  }, [classData.id, classData.name]);
 
   // Convert database students to display format with mock performance data
   const displayStudents = realStudents.map(student => ({
@@ -152,14 +183,14 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   const sortedStudents = [...displayStudents].sort((a, b) => b.averageScore - a.averageScore);
   
   // Sort topic mastery data from highest to lowest percentage
-  const sortedTopicMastery = [...classData.topicMastery].sort((a, b) => b.mastery - a.mastery);
+  const sortedTopicMastery = [...dynamicTopicMastery].sort((a, b) => b.mastery - a.mastery);
   
   // Prepare data for the error patterns pie chart with subject names
-  const errorChartData = classData.errorPatterns.map((error, index) => ({
+  const errorChartData = dynamicErrorPatterns.map((error, index) => ({
     name: error.pattern,
     value: error.percentage,
-    subject: error.pattern, // Adding subject field which contains the pattern name
-    fill: ['#FF6B81', '#FF9F43', '#FFCC29'][index % 3] // Pink, Orange, Yellow colors similar to the image
+    subject: error.pattern,
+    fill: ['#FF6B81', '#FF9F43', '#FFCC29', '#4ECDC4', '#45B7D1'][index % 5]
   }));
 
   // Function to format date based on time period
@@ -267,6 +298,16 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Grade {classData.grade} • {loadingStudents ? "Loading..." : `${realStudents.length} students`}
           </p>
+          {Object.keys(classesByGrade).length > 0 && (
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+              {(() => {
+                const gradeMatch = classData.name.match(/(\d+)/);
+                const currentGrade = gradeMatch ? gradeMatch[1] : '';
+                const gradeClasses = classesByGrade[currentGrade] || [];
+                return `${gradeClasses.length} classes in Grade ${currentGrade}`;
+              })()}
+            </p>
+          )}
         </div>
         <div className="mt-4 md:mt-0 flex items-center gap-3">
           <div className="px-4 py-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
@@ -463,12 +504,12 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
             </div>
             
             <div className="mt-4 space-y-4">
-              {classData.errorPatterns.map((error, index) => (
+              {dynamicErrorPatterns.map((error, index) => (
                 <div key={index} className="space-y-1">
                   <div className="flex items-center gap-2">
                     <div 
                       className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: ['#FF6B81', '#FF9F43', '#FFCC29'][index % 3] }} 
+                      style={{ backgroundColor: ['#FF6B81', '#FF9F43', '#FFCC29', '#4ECDC4', '#45B7D1'][index % 5] }} 
                     />
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       {error.pattern}
@@ -479,7 +520,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                       className="h-2 rounded-full" 
                       style={{ 
                         width: `${error.percentage}%`,
-                        backgroundColor: ['#FF6B81', '#FF9F43', '#FFCC29'][index % 3]
+                        backgroundColor: ['#FF6B81', '#FF9F43', '#FFCC29', '#4ECDC4', '#45B7D1'][index % 5]
                       }} 
                     />
                   </div>
