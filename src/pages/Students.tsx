@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuth } from "@/context/AuthContext";
 import { Navigate, Link } from "react-router-dom";
@@ -12,24 +12,99 @@ import {
   BookOpen,
   FileText,
   User,
-  X,
-  PlusCircle
+  X
 } from "lucide-react";
+import { classApi } from "@/lib/api/classes";
 
 const Students = () => {
-  const { isAdmin, students } = useAuth();
+  const { isAdmin, user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   // Redirect non-admin users
   if (!isAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
+
+  // Fetch students for the teacher's classes
+  useEffect(() => {
+    const fetchStudents = async () => {
+      if (!user?.email) return;
+      
+      try {
+        setLoading(true);
+        const teacherData = await classApi.getTeacherClasses(user.email);
+        
+        // Get all students from all teacher's classes
+        const allStudents = [];
+        for (const classItem of teacherData.classes) {
+          const classStudents = await classApi.getStudentsByClass(classItem.class_name);
+          allStudents.push(...classStudents);
+        }
+        
+        // Transform students data to match expected format
+        const formattedStudents = allStudents.map(student => ({
+          id: student.SID.toString(),
+          name: student.name,
+          email: student.email,
+          className: student.class || 'Unknown Class'
+        }));
+        
+        setStudents(formattedStudents);
+      } catch (err) {
+        console.error('Error fetching students:', err);
+        setError('Failed to load students');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, [user?.email]);
   
   // Filter students based on search term
   const filteredStudents = students.filter(student => 
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.email.toLowerCase().includes(searchTerm.toLowerCase())
+    student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    student.className.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="space-y-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+              Students
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Loading students...
+            </p>
+          </div>
+          <div className="flex justify-center items-center h-32">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="space-y-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+              Students
+            </h1>
+            <p className="text-red-600 mt-1">{error}</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
   
   return (
     <MainLayout>
@@ -40,7 +115,7 @@ const Students = () => {
             Students
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Manage and monitor all students in your class.
+            Manage and monitor all students in your classes ({students.length} total).
           </p>
         </div>
         
@@ -53,7 +128,7 @@ const Students = () => {
             <input
               type="search"
               className="block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-              placeholder="Search students by name or email..."
+              placeholder="Search students by name, email, or class..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -66,13 +141,6 @@ const Students = () => {
               </button>
             )}
           </div>
-          
-          <button
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:ring-4 focus:ring-purple-300 rounded-lg"
-          >
-            <PlusCircle className="w-4 h-4 mr-2" />
-            Add Student
-          </button>
         </div>
         
         {/* Student List */}
@@ -86,15 +154,7 @@ const Students = () => {
               >
                 <div className="flex items-center">
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-purple-100 dark:bg-gray-700 flex items-center justify-center mr-4">
-                    {student.avatar ? (
-                      <img 
-                        src={student.avatar} 
-                        alt={student.name} 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <User className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                    )}
+                    <User className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100">
@@ -102,6 +162,9 @@ const Students = () => {
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {student.email}
+                    </p>
+                    <p className="text-xs text-purple-600 dark:text-purple-400">
+                      Class: {student.className}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -140,17 +203,11 @@ const Students = () => {
                 <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-2">
                   No students found
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                <p className="text-gray-600 dark:text-gray-400">
                   {searchTerm
                     ? "No students match your search criteria. Try a different search term."
-                    : "You don't have any students in your class yet."}
+                    : "You don't have any students in your classes yet."}
                 </p>
-                <button
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg"
-                >
-                  <PlusCircle className="w-4 h-4 mr-2" />
-                  Add First Student
-                </button>
               </div>
             </div>
           )}
