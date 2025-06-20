@@ -12,28 +12,28 @@ export const userApi = {
   async getUserById(id: string) {
     const supabase = getCurrentSupabaseClient();
     
-    // First try students table
+    // First try students table using SID
     const { data: studentData, error: studentError } = await supabase
       .from('students')
-      .select('*')
-      .eq('sid', id)
+      .select('SID, name, email, class_id')
+      .eq('SID', id)
       .single();
 
     if (!studentError && studentData) {
       return {
-        id: studentData.sid,
+        id: studentData.SID.toString(),
         name: studentData.name,
         email: studentData.email,
         role: "student",
-        classId: studentData.class
+        classId: studentData.class_id.toString()
       };
     }
 
-    // Then try teachers table
+    // Then try teachers table using email as ID
     const { data: teacherData, error: teacherError } = await supabase
       .from('teachers')
-      .select('*')
-      .eq('email', id) // Using email as ID for teachers
+      .select('TID, name, email')
+      .eq('email', id)
       .single();
 
     if (!teacherError && teacherData) {
@@ -42,7 +42,7 @@ export const userApi = {
         name: teacherData.name,
         email: teacherData.email,
         role: "admin",
-        classId: teacherData.classes
+        classId: teacherData.TID
       };
     }
 
@@ -55,17 +55,17 @@ export const userApi = {
     
     const { data, error } = await supabase
       .from('students')
-      .select('*')
+      .select('SID, name, email, class_id')
       .order('name', { ascending: true });
 
     if (error) throw error;
     
     return data.map(student => ({
-      id: student.sid,
+      id: student.SID.toString(),
       name: student.name,
       email: student.email,
       role: "student" as const,
-      classId: student.class
+      classId: student.class_id.toString()
     }));
   },
 
@@ -75,7 +75,7 @@ export const userApi = {
     
     const { data, error } = await supabase
       .from('teachers')
-      .select('*')
+      .select('TID, name, email')
       .order('name', { ascending: true });
 
     if (error) throw error;
@@ -85,28 +85,28 @@ export const userApi = {
       name: teacher.name,
       email: teacher.email,
       role: "admin" as const,
-      classId: teacher.classes
+      classId: teacher.TID
     }));
   },
 
-  // Get students by class
-  async getStudentsByClass(className: string) {
+  // Get students by class ID
+  async getStudentsByClass(classId: string) {
     const supabase = getCurrentSupabaseClient();
     
     const { data, error } = await supabase
       .from('students')
-      .select('*')
-      .eq('class', className)
+      .select('SID, name, email, class_id, class_no')
+      .eq('class_id', parseInt(classId))
       .order('name', { ascending: true });
 
     if (error) throw error;
     
     return data.map(student => ({
-      id: student.sid,
+      id: student.SID.toString(),
       name: student.name,
       email: student.email,
       role: "student" as const,
-      classId: student.class
+      classId: student.class_id.toString()
     }));
   }
 };

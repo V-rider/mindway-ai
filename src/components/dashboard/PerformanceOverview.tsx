@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { School, ClassPerformance } from "@/types";
 import { motion } from "framer-motion";
@@ -86,6 +87,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
         
         console.log("Teacher data found:", result);
         setTeacherName(result.teacherName);
+        // Extract class names from the database response
         setTeacherClasses(
           Array.isArray(result.classes)
             ? result.classes.map(c => String(c.class_name)).filter(Boolean)
@@ -201,7 +203,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
               <SchoolIcon className="h-6 w-6 mr-2 text-purple-500" />
-              {/* {school.name} Overview */}
+              Performance Overview
             </h2>
             
             {/* Detail Report Button */}

@@ -1,3 +1,4 @@
+
 import { dynamicSupabase } from '@/lib/supabase/dynamic-client';
 import type { Database } from '@/types/database';
 
@@ -9,7 +10,7 @@ export const classApi = {
       throw new Error('No Supabase client for current project');
     }
     try {
-      // 1. Get teacher info
+      // 1. Get teacher info by email
       const { data: teacherData, error: teacherError } = await supabase
         .from('teachers')
         .select('TID, name')
@@ -19,7 +20,7 @@ export const classApi = {
       if (teacherError) throw teacherError;
       if (!teacherData) return { teacherName: null, classes: [] };
 
-      // 2. Get classes for this teacher
+      // 2. Get classes for this teacher using TID
       const { data: classData, error: classError } = await supabase
         .from('class')
         .select('class_id, class_name, academic_year')
@@ -27,7 +28,7 @@ export const classApi = {
 
       if (classError) throw classError;
 
-      // 3. Return
+      // 3. Return formatted data
       return {
         teacherName: teacherData.name,
         classes: classData || []
@@ -44,58 +45,58 @@ export const classApi = {
     if (!supabase) {
       throw new Error('No Supabase client for current project');
     }
-    // First, get the class id by name
-    const { data: classData, error: classError } = await supabase
-      .from('classes')
-      .select('id')
-      .eq('name', className)
-      .single();
-    if (classError) {
-      console.error('Error fetching class by name:', classError);
-      throw classError;
+    
+    try {
+      // First, get the class by name
+      const { data: classData, error: classError } = await supabase
+        .from('class')
+        .select('class_id')
+        .eq('class_name', className)
+        .single();
+
+      if (classError) {
+        console.error('Error fetching class by name:', classError);
+        throw classError;
+      }
+      if (!classData) {
+        return [];
+      }
+
+      // Get students in this class
+      const { data: students, error: studentsError } = await supabase
+        .from('students')
+        .select('SID, name, email, class_id, class_no')
+        .eq('class_id', classData.class_id);
+
+      if (studentsError) {
+        console.error('Error fetching students:', studentsError);
+        throw studentsError;
+      }
+
+      return students || [];
+    } catch (error) {
+      console.error('Error in getStudentsByClass:', error);
+      throw error;
     }
-    if (!classData) {
-      return [];
-    }
-    // Get students enrolled in this class
-    const { data: enrollments, error: enrollmentsError } = await supabase
-      .from('class_enrollments')
-      .select('student_id')
-      .eq('class_id', classData.id);
-    if (enrollmentsError) {
-      console.error('Error fetching enrollments:', enrollmentsError);
-      throw enrollmentsError;
-    }
-    if (!enrollments || enrollments.length === 0) {
-      return [];
-    }
-    // Get student details from users table
-    const studentIds = enrollments.map(e => e.student_id);
-    const { data: students, error: studentsError } = await supabase
-      .from('users')
-      .select('*')
-      .in('id', studentIds);
-    if (studentsError) {
-      console.error('Error fetching students:', studentsError);
-      throw studentsError;
-    }
-    return students;
   },
 
-  // Get all classes from the classes table
+  // Get all classes from the class table
   async getAllClasses() {
     const supabase = dynamicSupabase.getCurrentClient() as import('@supabase/supabase-js').SupabaseClient<Database>;
     if (!supabase) {
       throw new Error('No Supabase client for current project');
     }
+    
     const { data, error } = await supabase
-      .from('classes')
-      .select('id, name')
-      .order('name');
+      .from('class')
+      .select('class_id, class_name, academic_year')
+      .order('class_name');
+      
     if (error) {
       console.error('Error fetching all classes:', error);
       throw error;
     }
+    
     return data || [];
   }
 };
