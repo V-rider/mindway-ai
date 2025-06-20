@@ -14,7 +14,7 @@ export const userApi = {
           email,
           class_no,
           class_id,
-          class!students_Class_ID_fkey (
+          class!students_class_id_fkey (
             class_id,
             class_name,
             academic_year
@@ -40,7 +40,7 @@ export const userApi = {
           email,
           class_no,
           class_id,
-          class!students_Class_ID_fkey (
+          class!students_class_id_fkey (
             class_id,
             class_name,
             academic_year,

@@ -73,6 +73,42 @@ export const classApi = {
     }
   },
 
+  // Get teacher's classes by email
+  async getTeacherClasses(teacherEmail: string) {
+    try {
+      // First get teacher by email
+      const { data: teacher, error: teacherError } = await supabase
+        .from('teachers')
+        .select('TID, name')
+        .eq('email', teacherEmail)
+        .single();
+
+      if (teacherError) throw teacherError;
+      if (!teacher) return { teacherName: null, classes: [] };
+
+      // Then get classes by teacher ID
+      const { data: classes, error: classesError } = await supabase
+        .from('class')
+        .select(`
+          class_id,
+          class_name,
+          teacher_id,
+          academic_year
+        `)
+        .eq('teacher_id', teacher.TID);
+
+      if (classesError) throw classesError;
+
+      return {
+        teacherName: teacher.name,
+        classes: classes || []
+      };
+    } catch (error) {
+      handleSupabaseError(error);
+      return { teacherName: null, classes: [] };
+    }
+  },
+
   // Get students in a class
   async getStudents(classId: number) {
     try {

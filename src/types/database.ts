@@ -30,6 +30,58 @@ export interface Database {
           academic_year?: string
         }
       }
+      students: {
+        Row: {
+          class_id: number
+          class_no: number
+          SID: number
+          name: string
+          email: string
+          password: string
+          hashed_password: string
+        }
+        Insert: {
+          class_id: number
+          class_no: number
+          SID: number
+          name: string
+          email: string
+          password: string
+          hashed_password: string
+        }
+        Update: {
+          class_id?: number
+          class_no?: number
+          SID?: number
+          name?: string
+          email?: string
+          password?: string
+          hashed_password?: string
+        }
+      }
+      teachers: {
+        Row: {
+          TID: string
+          name: string
+          email: string
+          password: string
+          hashed_password: string
+        }
+        Insert: {
+          TID: string
+          name: string
+          email: string
+          password: string
+          hashed_password: string
+        }
+        Update: {
+          TID?: string
+          name?: string
+          email?: string
+          password?: string
+          hashed_password?: string
+        }
+      }
       error_type: {
         Row: {
           error_id: number
@@ -164,58 +216,6 @@ export interface Database {
         Update: {
           score_id?: number
           error_id?: number
-        }
-      }
-      students: {
-        Row: {
-          class_id: number
-          class_no: number
-          SID: number
-          name: string
-          email: string
-          password: string
-          hashed_password: string
-        }
-        Insert: {
-          class_id: number
-          class_no: number
-          SID: number
-          name: string
-          email: string
-          password: string
-          hashed_password: string
-        }
-        Update: {
-          class_id?: number
-          class_no?: number
-          SID?: number
-          name?: string
-          email?: string
-          password?: string
-          hashed_password?: string
-        }
-      }
-      teachers: {
-        Row: {
-          TID: string
-          name: string
-          email: string
-          password: string
-          hashed_password: string
-        }
-        Insert: {
-          TID: string
-          name: string
-          email: string
-          password: string
-          hashed_password: string
-        }
-        Update: {
-          TID?: string
-          name?: string
-          email?: string
-          password?: string
-          hashed_password?: string
         }
       }
     }

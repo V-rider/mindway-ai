@@ -1,205 +1,90 @@
-import { supabase } from '../supabase/client';
-import type { Database } from '@/types/database';
 
-type Challenge = Database['public']['Tables']['math_challenges']['Row'];
-type ChallengeInsert = Database['public']['Tables']['math_challenges']['Insert'];
-type ChallengeUpdate = Database['public']['Tables']['math_challenges']['Update'];
-type ChallengeAttempt = Database['public']['Tables']['challenge_attempts']['Row'];
+import { supabase } from '@/integrations/supabase/client';
+import { handleSupabaseError } from '@/lib/supabase/client';
+
+// Note: math_challenges and challenge_attempts tables don't exist in the current schema
+// This is a placeholder API that returns empty data until those tables are created
 
 export const challengeApi = {
-  // Get all challenges
+  // Get all challenges - returns empty array since table doesn't exist
   async getChallenges() {
-    const { data, error } = await supabase
-      .from('math_challenges')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+    console.warn('Math challenges table not implemented in current database schema');
+    return [];
   },
 
-  // Get challenge by ID
+  // Get challenge by ID - returns null since table doesn't exist
   async getChallengeById(id: string) {
-    const { data, error } = await supabase
-      .from('math_challenges')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) throw error;
-    return data;
+    console.warn('Math challenges table not implemented in current database schema');
+    return null;
   },
 
-  // Create new challenge
-  async createChallenge(challengeData: ChallengeInsert) {
-    const { data, error } = await supabase
-      .from('math_challenges')
-      .insert(challengeData)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+  // Create new challenge - returns null since table doesn't exist
+  async createChallenge(challengeData: any) {
+    console.warn('Math challenges table not implemented in current database schema');
+    return null;
   },
 
-  // Update challenge
-  async updateChallenge(id: string, challengeData: ChallengeUpdate) {
-    const { data, error } = await supabase
-      .from('math_challenges')
-      .update(challengeData)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+  // Update challenge - returns null since table doesn't exist
+  async updateChallenge(id: string, challengeData: any) {
+    console.warn('Math challenges table not implemented in current database schema');
+    return null;
   },
 
-  // Delete challenge
+  // Delete challenge - no-op since table doesn't exist
   async deleteChallenge(id: string) {
-    const { error } = await supabase
-      .from('math_challenges')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    console.warn('Math challenges table not implemented in current database schema');
   },
 
-  // Get challenges by difficulty
+  // Get challenges by difficulty - returns empty array since table doesn't exist
   async getChallengesByDifficulty(difficulty: number) {
-    const { data, error } = await supabase
-      .from('math_challenges')
-      .select('*')
-      .eq('difficulty_level', difficulty)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+    console.warn('Math challenges table not implemented in current database schema');
+    return [];
   },
 
-  // Submit challenge attempt
+  // Submit challenge attempt - returns null since table doesn't exist
   async submitAttempt(
     studentId: string,
     challengeId: string,
     attemptText: string,
     isCorrect: boolean
   ) {
-    const { data, error } = await supabase
-      .from('challenge_attempts')
-      .insert({
-        student_id: studentId,
-        challenge_id: challengeId,
-        attempt_text: attemptText,
-        is_correct: isCorrect
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+    console.warn('Challenge attempts table not implemented in current database schema');
+    return null;
   },
 
-  // Get student attempts
+  // Get student attempts - returns empty array since table doesn't exist
   async getStudentAttempts(studentId: string) {
-    const { data, error } = await supabase
-      .from('challenge_attempts')
-      .select(`
-        *,
-        challenge:math_challenges (
-          id,
-          title,
-          description,
-          difficulty_level
-        )
-      `)
-      .eq('student_id', studentId)
-      .order('attempted_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+    console.warn('Challenge attempts table not implemented in current database schema');
+    return [];
   },
 
-  // Get challenge attempts
+  // Get challenge attempts - returns empty array since table doesn't exist
   async getChallengeAttempts(challengeId: string) {
-    const { data, error } = await supabase
-      .from('challenge_attempts')
-      .select(`
-        *,
-        student:users (
-          id,
-          full_name,
-          email,
-          avatar_url
-        )
-      `)
-      .eq('challenge_id', challengeId)
-      .order('attempted_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+    console.warn('Challenge attempts table not implemented in current database schema');
+    return [];
   },
 
-  // Get student success rate
+  // Get student success rate - returns 0 since table doesn't exist
   async getStudentSuccessRate(studentId: string) {
-    const { data, error } = await supabase
-      .from('challenge_attempts')
-      .select('is_correct')
-      .eq('student_id', studentId);
-
-    if (error) throw error;
-
-    const totalAttempts = data.length;
-    const correctAttempts = data.filter(attempt => attempt.is_correct).length;
-    
-    return totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
+    console.warn('Challenge attempts table not implemented in current database schema');
+    return 0;
   },
 
-  // Get challenge success rate
+  // Get challenge success rate - returns 0 since table doesn't exist
   async getChallengeSuccessRate(challengeId: string) {
-    const { data, error } = await supabase
-      .from('challenge_attempts')
-      .select('is_correct')
-      .eq('challenge_id', challengeId);
-
-    if (error) throw error;
-
-    const totalAttempts = data.length;
-    const correctAttempts = data.filter(attempt => attempt.is_correct).length;
-    
-    return totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
+    console.warn('Challenge attempts table not implemented in current database schema');
+    return 0;
   },
 
-  // Get recent challenges
+  // Get recent challenges - returns empty array since table doesn't exist
   async getRecentChallenges(limit: number = 5) {
-    const { data, error } = await supabase
-      .from('math_challenges')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-    return data;
+    console.warn('Math challenges table not implemented in current database schema');
+    return [];
   },
 
-  // Get popular challenges
+  // Get popular challenges - returns empty array since table doesn't exist
   async getPopularChallenges(limit: number = 5) {
-    const { data, error } = await supabase
-      .from('challenge_attempts')
-      .select('challenge_id, count')
-      .select('challenge_id')
-      .order('count', { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-
-    // Get full challenge details for the popular challenges
-    const challengeIds = data.map(item => item.challenge_id);
-    const { data: challenges, error: challengesError } = await supabase
-      .from('math_challenges')
-      .select('*')
-      .in('id', challengeIds);
-
-    if (challengesError) throw challengesError;
-    return challenges;
+    console.warn('Math challenges table not implemented in current database schema');
+    return [];
   }
-}; 
+};
