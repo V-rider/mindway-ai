@@ -1,112 +1,220 @@
 
-import { getCurrentSupabaseClient } from '../supabase/dynamic-client';
+import { supabase } from '@/integrations/supabase/client';
+import { handleSupabaseError } from '@/lib/supabase/client';
 
 export const userApi = {
-  // Get current user from localStorage
-  async getCurrentUser() {
-    const storedUser = localStorage.getItem("pathwayUser");
-    return storedUser ? JSON.parse(storedUser) : null;
-  },
-
-  // Get user by ID - search in both students and teachers tables
-  async getUserById(id: string) {
-    const supabase = getCurrentSupabaseClient();
-    
-    // First try students table using SID
-    const { data: studentData, error: studentError } = await supabase
-      .from('students')
-      .select('SID, name, email, class_id')
-      .eq('SID', id)
-      .single();
-
-    if (!studentError && studentData) {
-      return {
-        id: studentData.SID.toString(),
-        name: studentData.name,
-        email: studentData.email,
-        role: "student",
-        classId: studentData.class_id.toString()
-      };
-    }
-
-    // Then try teachers table using email as ID
-    const { data: teacherData, error: teacherError } = await supabase
-      .from('teachers')
-      .select('TID, name, email')
-      .eq('email', id)
-      .single();
-
-    if (!teacherError && teacherData) {
-      return {
-        id: teacherData.email,
-        name: teacherData.name,
-        email: teacherData.email,
-        role: "admin",
-        classId: teacherData.TID
-      };
-    }
-
-    throw new Error("User not found");
-  },
-
   // Get all students
   async getAllStudents() {
-    const supabase = getCurrentSupabaseClient();
-    
-    const { data, error } = await supabase
-      .from('students')
-      .select('SID, name, email, class_id')
-      .order('name', { ascending: true });
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .select(`
+          SID,
+          name,
+          email,
+          class_no,
+          class_id,
+          class!students_Class_ID_fkey (
+            class_id,
+            class_name,
+            academic_year
+          )
+        `)
+        .order('name');
 
-    if (error) throw error;
-    
-    return data.map(student => ({
-      id: student.SID.toString(),
-      name: student.name,
-      email: student.email,
-      role: "student" as const,
-      classId: student.class_id.toString()
-    }));
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      handleSupabaseError(error);
+    }
+  },
+
+  // Get student by ID
+  async getStudentById(studentId: number) {
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .select(`
+          SID,
+          name,
+          email,
+          class_no,
+          class_id,
+          class!students_Class_ID_fkey (
+            class_id,
+            class_name,
+            academic_year,
+            teachers!class_teacher_id_fkey (
+              TID,
+              name,
+              email
+            )
+          )
+        `)
+        .eq('SID', studentId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      handleSupabaseError(error);
+    }
   },
 
   // Get all teachers
   async getAllTeachers() {
-    const supabase = getCurrentSupabaseClient();
-    
-    const { data, error } = await supabase
-      .from('teachers')
-      .select('TID, name, email')
-      .order('name', { ascending: true });
+    try {
+      const { data, error } = await supabase
+        .from('teachers')
+        .select(`
+          TID,
+          name,
+          email
+        `)
+        .order('name');
 
-    if (error) throw error;
-    
-    return data.map(teacher => ({
-      id: teacher.email,
-      name: teacher.name,
-      email: teacher.email,
-      role: "admin" as const,
-      classId: teacher.TID
-    }));
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      handleSupabaseError(error);
+    }
   },
 
-  // Get students by class ID
-  async getStudentsByClass(classId: string) {
-    const supabase = getCurrentSupabaseClient();
-    
-    const { data, error } = await supabase
-      .from('students')
-      .select('SID, name, email, class_id, class_no')
-      .eq('class_id', parseInt(classId))
-      .order('name', { ascending: true });
+  // Get teacher by ID
+  async getTeacherById(teacherId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('teachers')
+        .select(`
+          TID,
+          name,
+          email
+        `)
+        .eq('TID', teacherId)
+        .single();
 
-    if (error) throw error;
-    
-    return data.map(student => ({
-      id: student.SID.toString(),
-      name: student.name,
-      email: student.email,
-      role: "student" as const,
-      classId: student.class_id.toString()
-    }));
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      handleSupabaseError(error);
+    }
+  },
+
+  // Create new student
+  async createStudent(studentData: {
+    SID: number;
+    name: string;
+    email: string;
+    password: string;
+    hashed_password: string;
+    class_id: number;
+    class_no: number;
+  }) {
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .insert(studentData)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      handleSupabaseError(error);
+    }
+  },
+
+  // Create new teacher
+  async createTeacher(teacherData: {
+    TID: string;
+    name: string;
+    email: string;
+    password: string;
+    hashed_password: string;
+  }) {
+    try {
+      const { data, error } = await supabase
+        .from('teachers')
+        .insert(teacherData)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      handleSupabaseError(error);
+    }
+  },
+
+  // Update student
+  async updateStudent(studentId: number, updates: {
+    name?: string;
+    email?: string;
+    class_id?: number;
+    class_no?: number;
+  }) {
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .update(updates)
+        .eq('SID', studentId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      handleSupabaseError(error);
+    }
+  },
+
+  // Update teacher
+  async updateTeacher(teacherId: string, updates: {
+    name?: string;
+    email?: string;
+  }) {
+    try {
+      const { data, error } = await supabase
+        .from('teachers')
+        .update(updates)
+        .eq('TID', teacherId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      handleSupabaseError(error);
+    }
+  },
+
+  // Delete student
+  async deleteStudent(studentId: number) {
+    try {
+      const { error } = await supabase
+        .from('students')
+        .delete()
+        .eq('SID', studentId);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      handleSupabaseError(error);
+    }
+  },
+
+  // Delete teacher
+  async deleteTeacher(teacherId: string) {
+    try {
+      const { error } = await supabase
+        .from('teachers')
+        .delete()
+        .eq('TID', teacherId);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      handleSupabaseError(error);
+    }
   }
 };
