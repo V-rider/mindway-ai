@@ -91,9 +91,6 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
             ? result.classes.map(c => String(c.class_name)).filter(Boolean)
             : []
         );
-        // setTimeout(() => {
-        //   console.log('teacherClasses after set:', teacherClasses, teacherClasses.map(c => typeof c));
-        // }, 0);
         
       } catch (error) {
         console.error("Error in fetchTeacherData:", error);
@@ -155,8 +152,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
       name: classData.name,
       score: classData.averageScore,
       grade: `Grade ${classData.grade}`,
-      fill: isTeaching ? "#8b5cf6" : // Purple for teacher's classes
-            classData.averageScore >= 80 ? "#10b981" : 
+      fill: classData.averageScore >= 80 ? "#10b981" : 
             classData.averageScore >= 65 ? "#facc15" : "#ef4444",
       isTeaching: isTeaching
     };
@@ -225,7 +221,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
             {isAdmin && (
               <p className="text-gray-600 dark:text-gray-400 text-sm hidden md:block">
                 <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500 inline" />
-                Classes you teach are highlighted in purple
+                Classes you teach have a purple outline
               </p>
             )}
             
@@ -303,7 +299,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
             </h3>
             {isAdmin && (
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                Classes you teach are highlighted in purple
+                Classes you teach have a purple outline
               </p>
             )}
             
@@ -322,7 +318,6 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                     height={70}
                     tick={props => {
                       const isTeaching = classBarChartData.find(item => item.name === props.payload.value)?.isTeaching;
-                      // Extract class name without "Class " prefix
                       const displayName = props.payload.value.replace(/^Class\s+/, '');
                       return (
                         <text 
@@ -356,8 +351,8 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                       <Cell 
                         key={`cell-${index}`} 
                         fill={entry.fill}
-                        stroke={entry.isTeaching ? "#9b87f5" : "none"}
-                        strokeWidth={entry.isTeaching ? 2 : 0}
+                        stroke={entry.isTeaching ? "#8b5cf6" : "transparent"}
+                        strokeWidth={entry.isTeaching ? 3 : 0}
                       />
                     ))}
                   </Bar>
@@ -391,7 +386,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                         <li 
                           key={classData.id} 
                           className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 p-2 rounded-md ${
-                            isTeacherClass(classData.name) ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                            isTeacherClass(classData.name) ? 'border-2 border-purple-300 dark:border-purple-600' : ''
                           }`}
                           onClick={() => onClassSelect(classData.id)}
                         >
