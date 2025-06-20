@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ClassPerformance, StudentPerformance } from '@/types';
 import { motion } from 'framer-motion';
@@ -50,196 +49,6 @@ interface DatabaseStudent {
   class_id: number;
 }
 
-// Generate dynamic topic mastery based on grade level
-const generateTopicMasteryByGrade = (grade: number) => {
-  const gradeTopics = {
-    1: ['Numbers 1-10', 'Basic Addition', 'Shapes', 'Counting'],
-    2: ['Numbers 1-100', 'Addition & Subtraction', 'Time', 'Measurement'],
-    3: ['Multiplication', 'Division', 'Fractions', 'Geometry', 'Word Problems'],
-    4: ['Multi-digit Operations', 'Decimals', 'Area & Perimeter', 'Data & Graphs'],
-    5: ['Advanced Fractions', 'Percentages', 'Volume', 'Coordinate Graphs', 'Algebra Basics'],
-    6: ['Ratios & Proportions', 'Integers', 'Equations', 'Statistics', 'Probability'],
-    7: ['Linear Equations', 'Inequalities', 'Geometry Proofs', 'Scientific Notation'],
-    8: ['Functions', 'Systems of Equations', 'Pythagorean Theorem', 'Transformations'],
-    9: ['Quadratic Functions', 'Exponential Functions', 'Trigonometry Basics', 'Statistics'],
-    10: ['Polynomials', 'Logarithms', 'Advanced Trigonometry', 'Sequences & Series'],
-    11: ['Calculus Basics', 'Limits', 'Derivatives', 'Complex Numbers'],
-    12: ['Advanced Calculus', 'Integration', 'Differential Equations', 'Statistics & Probability']
-  };
-
-  const topics = gradeTopics[grade] || gradeTopics[6]; // Default to grade 6 if not found
-  return topics.map(topic => ({
-    topic,
-    mastery: Math.floor(Math.random() * 40) + 60 // Random between 60-100
-  }));
-};
-
-// Generate dynamic error patterns based on grade level
-const generateErrorPatternsByGrade = (grade: number) => {
-  const gradeErrors = {
-    1: [
-      { pattern: 'Counting Errors', percentage: 25 },
-      { pattern: 'Number Recognition', percentage: 20 },
-      { pattern: 'Basic Addition', percentage: 15 }
-    ],
-    2: [
-      { pattern: 'Place Value', percentage: 30 },
-      { pattern: 'Borrowing/Carrying', percentage: 25 },
-      { pattern: 'Time Reading', percentage: 20 }
-    ],
-    3: [
-      { pattern: 'Multiplication Facts', percentage: 35 },
-      { pattern: 'Division Remainders', percentage: 25 },
-      { pattern: 'Fraction Concepts', percentage: 20 }
-    ],
-    4: [
-      { pattern: 'Long Division', percentage: 30 },
-      { pattern: 'Decimal Operations', percentage: 25 },
-      { pattern: 'Area Calculations', percentage: 20 }
-    ],
-    5: [
-      { pattern: 'Fraction Operations', percentage: 35 },
-      { pattern: 'Percentage Calculations', percentage: 25 },
-      { pattern: 'Volume Formulas', percentage: 15 }
-    ],
-    6: [
-      { pattern: 'Ratio Problems', percentage: 30 },
-      { pattern: 'Negative Numbers', percentage: 25 },
-      { pattern: 'Equation Solving', percentage: 20 }
-    ],
-    7: [
-      { pattern: 'Linear Equations', percentage: 35 },
-      { pattern: 'Inequality Signs', percentage: 25 },
-      { pattern: 'Geometry Proofs', percentage: 20 }
-    ],
-    8: [
-      { pattern: 'Function Notation', percentage: 30 },
-      { pattern: 'System Solutions', percentage: 25 },
-      { pattern: 'Pythagorean Theorem', percentage: 20 }
-    ],
-    9: [
-      { pattern: 'Quadratic Formula', percentage: 35 },
-      { pattern: 'Exponential Growth', percentage: 25 },
-      { pattern: 'Trigonometric Ratios', percentage: 15 }
-    ],
-    10: [
-      { pattern: 'Polynomial Factoring', percentage: 30 },
-      { pattern: 'Logarithm Properties', percentage: 25 },
-      { pattern: 'Trigonometric Identities', percentage: 20 }
-    ],
-    11: [
-      { pattern: 'Limit Calculations', percentage: 35 },
-      { pattern: 'Derivative Rules', percentage: 25 },
-      { pattern: 'Complex Number Operations', percentage: 15 }
-    ],
-    12: [
-      { pattern: 'Integration Techniques', percentage: 30 },
-      { pattern: 'Differential Equations', percentage: 25 },
-      { pattern: 'Statistical Analysis', percentage: 20 }
-    ]
-  };
-
-  return gradeErrors[grade] || gradeErrors[6]; // Default to grade 6 if not found
-};
-
-// Generate dynamic assessments based on grade level
-const generateAssessmentsByGrade = (grade: number, className: string) => {
-  const gradeAssessments = {
-    1: [
-      { name: 'Number Recognition Quiz', performance: 'Excellent' },
-      { name: 'Basic Addition Test', performance: 'Above Average' },
-      { name: 'Shape Identification', performance: 'Good' },
-      { name: 'Counting Assessment', performance: 'Excellent' }
-    ],
-    2: [
-      { name: 'Place Value Quiz', performance: 'Above Average' },
-      { name: 'Addition & Subtraction Test', performance: 'Excellent' },
-      { name: 'Time Telling Assessment', performance: 'Good' },
-      { name: 'Measurement Quiz', performance: 'Above Average' }
-    ],
-    3: [
-      { name: 'Multiplication Tables Test', performance: 'Excellent' },
-      { name: 'Division Practice Quiz', performance: 'Above Average' },
-      { name: 'Fraction Basics Assessment', performance: 'Good' },
-      { name: 'Geometry Shapes Quiz', performance: 'Excellent' }
-    ],
-    4: [
-      { name: 'Multi-digit Operations Test', performance: 'Above Average' },
-      { name: 'Decimal Operations Quiz', performance: 'Good' },
-      { name: 'Area & Perimeter Assessment', performance: 'Excellent' },
-      { name: 'Data Analysis Quiz', performance: 'Above Average' }
-    ],
-    5: [
-      { name: 'Advanced Fractions Test', performance: 'Excellent' },
-      { name: 'Percentage Problems Quiz', performance: 'Above Average' },
-      { name: 'Volume Calculations Assessment', performance: 'Good' },
-      { name: 'Coordinate Graphs Quiz', performance: 'Excellent' }
-    ],
-    6: [
-      { name: 'Ratios & Proportions Quiz', performance: 'Excellent' },
-      { name: 'Integer Operations Test', performance: 'Above Average' },
-      { name: 'Basic Equations Assessment', performance: 'Good' },
-      { name: 'Statistics & Probability Quiz', performance: 'Excellent' }
-    ],
-    7: [
-      { name: 'Linear Equations Test', performance: 'Above Average' },
-      { name: 'Inequalities Quiz', performance: 'Good' },
-      { name: 'Geometry Proofs Assessment', performance: 'Excellent' },
-      { name: 'Scientific Notation Quiz', performance: 'Above Average' }
-    ],
-    8: [
-      { name: 'Functions Assessment', performance: 'Excellent' },
-      { name: 'Systems of Equations Test', performance: 'Above Average' },
-      { name: 'Pythagorean Theorem Quiz', performance: 'Good' },
-      { name: 'Transformations Assessment', performance: 'Excellent' }
-    ],
-    9: [
-      { name: 'Quadratic Functions Test', performance: 'Above Average' },
-      { name: 'Exponential Functions Quiz', performance: 'Excellent' },
-      { name: 'Trigonometry Basics Assessment', performance: 'Good' },
-      { name: 'Advanced Statistics Quiz', performance: 'Above Average' }
-    ],
-    10: [
-      { name: 'Polynomial Operations Test', performance: 'Excellent' },
-      { name: 'Logarithms Quiz', performance: 'Above Average' },
-      { name: 'Advanced Trigonometry Assessment', performance: 'Good' },
-      { name: 'Sequences & Series Quiz', performance: 'Excellent' }
-    ],
-    11: [
-      { name: 'Calculus Limits Test', performance: 'Above Average' },
-      { name: 'Derivatives Quiz', performance: 'Excellent' },
-      { name: 'Complex Numbers Assessment', performance: 'Good' },
-      { name: 'Advanced Functions Quiz', performance: 'Above Average' }
-    ],
-    12: [
-      { name: 'Integration Techniques Test', performance: 'Excellent' },
-      { name: 'Differential Equations Quiz', performance: 'Above Average' },
-      { name: 'Statistical Analysis Assessment', performance: 'Good' },
-      { name: 'Advanced Calculus Quiz', performance: 'Excellent' }
-    ]
-  };
-
-  const assessments = gradeAssessments[grade] || gradeAssessments[6];
-  const baseId = className.toLowerCase().replace(/\s+/g, '-');
-  
-  return {
-    recentTests: assessments.slice(0, 3).map((assessment, index) => ({
-      id: `${baseId}-test-${index + 1}`,
-      name: assessment.name,
-      date: new Date(Date.now() - (index + 1) * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      performance: assessment.performance,
-      completionRate: `${Math.floor(Math.random() * 10) + 90}%`
-    })),
-    allTests: assessments.map((assessment, index) => ({
-      id: `${baseId}-test-${index + 1}`,
-      name: assessment.name,
-      date: new Date(Date.now() - (index + 1) * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      performance: assessment.performance,
-      completionRate: `${Math.floor(Math.random() * 10) + 90}%`
-    }))
-  };
-};
-
 export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   classData,
   students,
@@ -257,11 +66,6 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   
   // State for performance trend time period
   const [timePeriod, setTimePeriod] = useState<"week" | "month" | "year">("month");
-
-  // Generate dynamic data based on grade
-  const dynamicTopicMastery = generateTopicMasteryByGrade(classData.grade);
-  const dynamicErrorPatterns = generateErrorPatternsByGrade(classData.grade);
-  const dynamicAssessments = generateAssessmentsByGrade(classData.grade, classData.name);
 
   // Fetch real students for the class
   useEffect(() => {
@@ -296,24 +100,41 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
     weaknesses: ["Advanced Topics", "Time Management"],
   }));
 
+  // Mock assessments data for each class
+  const classAssessments = {
+    recentTests: [
+      { id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-1`, name: "Ratios & Proportions Quiz", date: "2023-10-25", performance: "Excellent", completionRate: "98%" },
+      { id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-2`, name: "Algebra Basics Test", date: "2023-10-10", performance: "Above Average", completionRate: "94%" },
+      { id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-3`, name: "Statistics & Data Analysis", date: "2023-09-27", performance: "Excellent", completionRate: "97%" }
+    ],
+    allTests: [
+      { id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-1`, name: "Ratios & Proportions Quiz", date: "2023-10-25", performance: "Excellent", completionRate: "98%" },
+      { id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-2`, name: "Algebra Basics Test", date: "2023-10-10", performance: "Above Average", completionRate: "94%" },
+      { id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-3`, name: "Statistics & Data Analysis", date: "2023-09-27", performance: "Excellent", completionRate: "97%" },
+      { id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-4`, name: "Geometric Formulas Assessment", date: "2023-09-12", performance: "Good", completionRate: "92%" },
+      { id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-5`, name: "Pre-Algebra Evaluation", date: "2023-08-29", performance: "Above Average", completionRate: "93%" },
+      { id: `${classData.name.toLowerCase().replace(/\s+/g, '-')}-test-6`, name: "Mathematical Reasoning Test", date: "2023-08-15", performance: "Excellent", completionRate: "96%" }
+    ]
+  };
+
   // Mock performance trend data for different time periods
   const performanceTrendData = {
     week: [
       { date: "2023-10-23", score: 74, testName: "Daily Quiz 1" },
       { date: "2023-10-24", score: 76, testName: "Daily Quiz 2" },
-      { date: "2023-10-25", score: 78, testName: "Recent Assessment" },
+      { date: "2023-10-25", score: 78, testName: "Ratios & Proportions Quiz" },
       { date: "2023-10-26", score: 75, testName: "Practice Test" },
       { date: "2023-10-27", score: 77, testName: "Weekly Assessment" },
       { date: "2023-10-28", score: 79, testName: "Review Quiz" },
       { date: "2023-10-29", score: 76, testName: "Weekend Practice" },
     ],
     month: [
-      { date: "2023-08-15", score: 68, testName: "Month 1 Assessment" },
-      { date: "2023-08-29", score: 71, testName: "Month 2 Assessment" },
-      { date: "2023-09-12", score: 69, testName: "Month 3 Assessment" },
-      { date: "2023-09-27", score: 74, testName: "Month 4 Assessment" },
-      { date: "2023-10-10", score: 72, testName: "Month 5 Assessment" },
-      { date: "2023-10-25", score: 76, testName: "Current Assessment" },
+      { date: "2023-08-15", score: 68, testName: "Mathematical Reasoning Test" },
+      { date: "2023-08-29", score: 71, testName: "Pre-Algebra Evaluation" },
+      { date: "2023-09-12", score: 69, testName: "Geometric Formulas Assessment" },
+      { date: "2023-09-27", score: 74, testName: "Statistics & Data Analysis" },
+      { date: "2023-10-10", score: 72, testName: "Algebra Basics Test" },
+      { date: "2023-10-25", score: 76, testName: "Ratios & Proportions Quiz" },
     ],
     year: [
       { date: "2023-01-15", score: 65, testName: "Q1 Assessment" },
@@ -331,14 +152,14 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
   const sortedStudents = [...displayStudents].sort((a, b) => b.averageScore - a.averageScore);
   
   // Sort topic mastery data from highest to lowest percentage
-  const sortedTopicMastery = [...dynamicTopicMastery].sort((a, b) => b.mastery - a.mastery);
+  const sortedTopicMastery = [...classData.topicMastery].sort((a, b) => b.mastery - a.mastery);
   
   // Prepare data for the error patterns pie chart with subject names
-  const errorChartData = dynamicErrorPatterns.map((error, index) => ({
+  const errorChartData = classData.errorPatterns.map((error, index) => ({
     name: error.pattern,
     value: error.percentage,
-    subject: error.pattern,
-    fill: ['#FF6B81', '#FF9F43', '#FFCC29', '#26D0CE', '#A78BFA'][index % 5]
+    subject: error.pattern, // Adding subject field which contains the pattern name
+    fill: ['#FF6B81', '#FF9F43', '#FFCC29'][index % 3] // Pink, Orange, Yellow colors similar to the image
   }));
 
   // Function to format date based on time period
@@ -405,8 +226,8 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
 
   // Get the appropriate tests list based on viewAllTests state
   const testsToDisplay = viewAllTests 
-    ? dynamicAssessments.allTests 
-    : dynamicAssessments.recentTests;
+    ? classAssessments.allTests 
+    : classAssessments.recentTests;
 
   // Filter tests based on search term
   const filteredTests = testsToDisplay
@@ -550,7 +371,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
           {/* Topic Mastery Overview - Takes up 2 cols */}
           <div className="lg:col-span-2">
             <h4 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">
-              Topic Mastery Overview - Grade {classData.grade}
+              Topic Mastery Overview
             </h4>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
@@ -642,12 +463,12 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
             </div>
             
             <div className="mt-4 space-y-4">
-              {dynamicErrorPatterns.map((error, index) => (
+              {classData.errorPatterns.map((error, index) => (
                 <div key={index} className="space-y-1">
                   <div className="flex items-center gap-2">
                     <div 
                       className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: ['#FF6B81', '#FF9F43', '#FFCC29', '#26D0CE', '#A78BFA'][index % 5] }} 
+                      style={{ backgroundColor: ['#FF6B81', '#FF9F43', '#FFCC29'][index % 3] }} 
                     />
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       {error.pattern}
@@ -658,7 +479,7 @@ export const ClassPerformanceCard: React.FC<ClassPerformanceCardProps> = ({
                       className="h-2 rounded-full" 
                       style={{ 
                         width: `${error.percentage}%`,
-                        backgroundColor: ['#FF6B81', '#FF9F43', '#FFCC29', '#26D0CE', '#A78BFA'][index % 5]
+                        backgroundColor: ['#FF6B81', '#FF9F43', '#FFCC29'][index % 3]
                       }} 
                     />
                   </div>
