@@ -9,6 +9,3 @@ export { challengeApi } from './challenges';
 
 // Export types
 export type { Database } from '@/types/database';
-
-// Export supabase client - use the correct integration client
-export { supabase } from '@/integrations/supabase/client';

@@ -1,190 +1,102 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { handleSupabaseError } from '@/lib/supabase/client';
+import { dynamicSupabase } from '@/lib/supabase/dynamic-client';
+import type { Database } from '@/types/database';
 
 export const classApi = {
-  // Get all classes
-  async getAll() {
-    try {
-      const { data, error } = await supabase
-        .from('class')
-        .select(`
-          class_id,
-          class_name,
-          teacher_id,
-          academic_year,
-          teachers!class_teacher_id_fkey (
-            TID,
-            name,
-            email
-          )
-        `);
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      handleSupabaseError(error);
-    }
-  },
-
-  // Get class by ID
-  async getById(classId: number) {
-    try {
-      const { data, error } = await supabase
-        .from('class')
-        .select(`
-          class_id,
-          class_name,
-          teacher_id,
-          academic_year,
-          teachers!class_teacher_id_fkey (
-            TID,
-            name,
-            email
-          )
-        `)
-        .eq('class_id', classId)
-        .single();
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      handleSupabaseError(error);
-    }
-  },
-
-  // Get classes by teacher ID
-  async getByTeacherId(teacherId: string) {
-    try {
-      const { data, error } = await supabase
-        .from('class')
-        .select(`
-          class_id,
-          class_name,
-          teacher_id,
-          academic_year
-        `)
-        .eq('teacher_id', teacherId);
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      handleSupabaseError(error);
-    }
-  },
-
-  // Get teacher's classes by email
+  // Get teacher's classes using their email to find classes assigned to them
   async getTeacherClasses(teacherEmail: string) {
+    const supabase = dynamicSupabase.getCurrentClient();
+    if (!supabase) {
+      throw new Error('No Supabase client for current project');
+    }
     try {
-      // First get teacher by email
-      const { data: teacher, error: teacherError } = await supabase
+      // 1. Get teacher info by email
+      const { data: teacherData, error: teacherError } = await supabase
         .from('teachers')
         .select('TID, name')
         .eq('email', teacherEmail)
         .single();
 
       if (teacherError) throw teacherError;
-      if (!teacher) return { teacherName: null, classes: [] };
+      if (!teacherData) return { teacherName: null, classes: [] };
 
-      // Then get classes by teacher ID
-      const { data: classes, error: classesError } = await supabase
+      // 2. Get classes for this teacher using TID
+      const { data: classData, error: classError } = await supabase
         .from('class')
-        .select(`
-          class_id,
-          class_name,
-          teacher_id,
-          academic_year
-        `)
-        .eq('teacher_id', teacher.TID);
+        .select('class_id, class_name, academic_year')
+        .eq('teacher_id', teacherData.TID);
 
-      if (classesError) throw classesError;
+      if (classError) throw classError;
 
+      // 3. Return formatted data
       return {
-        teacherName: teacher.name,
-        classes: classes || []
+        teacherName: teacherData.name,
+        classes: classData || []
       };
     } catch (error) {
-      handleSupabaseError(error);
-      return { teacherName: null, classes: [] };
+      console.error('Error in getTeacherClasses:', error);
+      throw error;
     }
   },
 
-  // Get students in a class
-  async getStudents(classId: number) {
+  // Get all students for a specific class (by class name)
+  async getStudentsByClass(className: string) {
+    const supabase = dynamicSupabase.getCurrentClient() as import('@supabase/supabase-js').SupabaseClient<Database>;
+    if (!supabase) {
+      throw new Error('No Supabase client for current project');
+    }
+    
     try {
-      const { data, error } = await supabase
+      // First, get the class by name
+      const { data: classData, error: classError } = await supabase
+        .from('class')
+        .select('class_id')
+        .eq('class_name', className)
+        .single();
+
+      if (classError) {
+        console.error('Error fetching class by name:', classError);
+        throw classError;
+      }
+      if (!classData) {
+        return [];
+      }
+
+      // Get students in this class
+      const { data: students, error: studentsError } = await supabase
         .from('students')
-        .select(`
-          SID,
-          name,
-          email,
-          class_no,
-          class_id
-        `)
-        .eq('class_id', classId)
-        .order('class_no');
+        .select('SID, name, email, class_id, class_no')
+        .eq('class_id', classData.class_id);
 
-      if (error) throw error;
-      return data || [];
+      if (studentsError) {
+        console.error('Error fetching students:', studentsError);
+        throw studentsError;
+      }
+
+      return students || [];
     } catch (error) {
-      handleSupabaseError(error);
+      console.error('Error in getStudentsByClass:', error);
+      throw error;
     }
   },
 
-  // Create new class
-  async create(classData: {
-    class_id: number;
-    class_name: string;
-    teacher_id: string;
-    academic_year: string;
-  }) {
-    try {
-      const { data, error } = await supabase
-        .from('class')
-        .insert(classData)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      handleSupabaseError(error);
+  // Get all classes from the class table
+  async getAllClasses() {
+    const supabase = dynamicSupabase.getCurrentClient() as import('@supabase/supabase-js').SupabaseClient<Database>;
+    if (!supabase) {
+      throw new Error('No Supabase client for current project');
     }
-  },
-
-  // Update class
-  async update(classId: number, updates: {
-    class_name?: string;
-    teacher_id?: string;
-    academic_year?: string;
-  }) {
-    try {
-      const { data, error } = await supabase
-        .from('class')
-        .update(updates)
-        .eq('class_id', classId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      handleSupabaseError(error);
+    
+    const { data, error } = await supabase
+      .from('class')
+      .select('class_id, class_name, academic_year')
+      .order('class_name');
+      
+    if (error) {
+      console.error('Error fetching all classes:', error);
+      throw error;
     }
-  },
-
-  // Delete class
-  async delete(classId: number) {
-    try {
-      const { error } = await supabase
-        .from('class')
-        .delete()
-        .eq('class_id', classId);
-
-      if (error) throw error;
-      return true;
-    } catch (error) {
-      handleSupabaseError(error);
-    }
+    
+    return data || [];
   }
 };
