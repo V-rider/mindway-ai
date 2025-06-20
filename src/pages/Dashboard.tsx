@@ -33,32 +33,32 @@ import { motion } from "framer-motion";
 // Mock data
 const mockSchool: School = {
   id: "school-1",
-  name: "Riverdale Elementary",
+  name: "Riverdale Elementary", // TODO: get school name from db 
   classes: [
-    { id: "class-1-1", name: "Class 1A", grade: "1", studentCount: 20 },
-    { id: "class-1-2", name: "Class 1B", grade: "1", studentCount: 18 },
-    { id: "class-1-3", name: "Class 1C", grade: "1", studentCount: 19 },
-    { id: "class-1-4", name: "Class 1D", grade: "1", studentCount: 21 },
-    { id: "class-2-1", name: "Class 2A", grade: "2", studentCount: 22 },
-    { id: "class-2-2", name: "Class 2B", grade: "2", studentCount: 20 },
-    { id: "class-2-3", name: "Class 2C", grade: "2", studentCount: 21 },
-    { id: "class-2-4", name: "Class 2D", grade: "2", studentCount: 23 },
-    { id: "class-1", name: "Class 3A", grade: "3", studentCount: 24 },
-    { id: "class-2", name: "Class 3B", grade: "3", studentCount: 22 },
-    { id: "class-3", name: "Class 3C", grade: "3", studentCount: 23 },
-    { id: "class-4", name: "Class 3D", grade: "3", studentCount: 25 },
-    { id: "class-5", name: "Class 4A", grade: "4", studentCount: 26 },
-    { id: "class-6", name: "Class 4B", grade: "4", studentCount: 22 },
-    { id: "class-7", name: "Class 4C", grade: "4", studentCount: 24 },
-    { id: "class-8", name: "Class 4D", grade: "4", studentCount: 23 },
-    { id: "class-9", name: "Class 5A", grade: "5", studentCount: 25 },
-    { id: "class-10", name: "Class 5B", grade: "5", studentCount: 24 },
-    { id: "class-11", name: "Class 5C", grade: "5", studentCount: 20 },
-    { id: "class-12", name: "Class 5D", grade: "5", studentCount: 22 },
-    { id: "class-13", name: "Class 6A", grade: "6", studentCount: 25 },
-    { id: "class-14", name: "Class 6B", grade: "6", studentCount: 23 },
-    { id: "class-15", name: "Class 6C", grade: "6", studentCount: 24 },
-    { id: "class-16", name: "Class 6D", grade: "6", studentCount: 26 },
+    // { id: "class-1-1", name: "Class 1A", grade: "1", studentCount: 20 },
+    // { id: "class-1-2", name: "Class 1B", grade: "1", studentCount: 18 },
+    // { id: "class-1-3", name: "Class 1C", grade: "1", studentCount: 19 },
+    // { id: "class-1-4", name: "Class 1D", grade: "1", studentCount: 21 },
+    // { id: "class-2-1", name: "Class 2A", grade: "2", studentCount: 22 },
+    // { id: "class-2-2", name: "Class 2B", grade: "2", studentCount: 20 },
+    // { id: "class-2-3", name: "Class 2C", grade: "2", studentCount: 21 },
+    // { id: "class-2-4", name: "Class 2D", grade: "2", studentCount: 23 },
+    // { id: "class-1", name: "Class 3A", grade: "3", studentCount: 24 },
+    // { id: "class-2", name: "Class 3B", grade: "3", studentCount: 22 },
+    // { id: "class-3", name: "Class 3C", grade: "3", studentCount: 23 },
+    // { id: "class-4", name: "Class 3D", grade: "3", studentCount: 25 },
+    // { id: "class-5", name: "Class 4A", grade: "4", studentCount: 26 },
+    // { id: "class-6", name: "Class 4B", grade: "4", studentCount: 22 },
+    // { id: "class-7", name: "Class 4C", grade: "4", studentCount: 24 },
+    // { id: "class-8", name: "Class 4D", grade: "4", studentCount: 23 },
+    // { id: "class-9", name: "Class 5A", grade: "5", studentCount: 25 },
+    // { id: "class-10", name: "Class 5B", grade: "5", studentCount: 24 },
+    // { id: "class-11", name: "Class 5C", grade: "5", studentCount: 20 },
+    // { id: "class-12", name: "Class 5D", grade: "5", studentCount: 22 },
+    // { id: "class-13", name: "Class 6A", grade: "6", studentCount: 25 },
+    // { id: "class-14", name: "Class 6B", grade: "6", studentCount: 23 },
+    // { id: "class-15", name: "Class 6C", grade: "6", studentCount: 24 },
+    // { id: "class-16", name: "Class 6D", grade: "6", studentCount: 26 },
   ]
 };
 
@@ -66,7 +66,7 @@ const mockClassPerformances: ClassPerformance[] = [
   // Grade 1 classes
   {
     id: "class-1-1",
-    name: "Class 1A",
+    name: "1A",
     grade: "1",
     averageScore: 78,
     topicMastery: [
@@ -83,7 +83,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-1-2",
-    name: "Class 1B",
+    name: "1B",
     grade: "1",
     averageScore: 72,
     topicMastery: [
@@ -100,7 +100,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-1-3",
-    name: "Class 1C",
+    name: "1C",
     grade: "1",
     averageScore: 76,
     topicMastery: [
@@ -117,7 +117,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-1-4",
-    name: "Class 1D",
+    name: "1D",
     grade: "1",
     averageScore: 80,
     topicMastery: [
@@ -135,7 +135,7 @@ const mockClassPerformances: ClassPerformance[] = [
   // Grade 2 classes
   {
     id: "class-2-1",
-    name: "Class 2A",
+    name: "2A",
     grade: "2",
     averageScore: 82,
     topicMastery: [
@@ -152,7 +152,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-2-2",
-    name: "Class 2B",
+    name: "2B",
     grade: "2",
     averageScore: 75,
     topicMastery: [
@@ -169,7 +169,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-2-3",
-    name: "Class 2C",
+    name: "2C",
     grade: "2",
     averageScore: 79,
     topicMastery: [
@@ -186,7 +186,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-2-4",
-    name: "Class 2D",
+    name: "2D",
     grade: "2",
     averageScore: 84,
     topicMastery: [
@@ -203,7 +203,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-1",
-    name: "Class 3A",
+    name: "3A",
     grade: "3",
     averageScore: 72,
     topicMastery: [
@@ -221,7 +221,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-2",
-    name: "Class 3B",
+    name: "3B",
     grade: "3",
     averageScore: 76,
     topicMastery: [
@@ -239,7 +239,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-3",
-    name: "Class 3C",
+    name: "3C",
     grade: "3",
     averageScore: 68,
     topicMastery: [
@@ -257,7 +257,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-4",
-    name: "Class 3D",
+    name: "3D",
     grade: "3",
     averageScore: 81,
     topicMastery: [
@@ -275,7 +275,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-5",
-    name: "Class 4A",
+    name: "4A",
     grade: "4",
     averageScore: 75,
     topicMastery: [
@@ -294,7 +294,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-6",
-    name: "Class 4B",
+    name: "4B",
     grade: "4",
     averageScore: 68,
     topicMastery: [
@@ -313,7 +313,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-7",
-    name: "Class 4C",
+    name: "4C",
     grade: "4",
     averageScore: 82,
     topicMastery: [
@@ -332,7 +332,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-8",
-    name: "Class 4D",
+    name: "4D",
     grade: "4",
     averageScore: 71,
     topicMastery: [
@@ -351,7 +351,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-9",
-    name: "Class 5A",
+    name: "5A",
     grade: "5",
     averageScore: 84,
     topicMastery: [
@@ -371,7 +371,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-10",
-    name: "Class 5B",
+    name: "5B",
     grade: "5",
     averageScore: 74,
     topicMastery: [
@@ -391,7 +391,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-11",
-    name: "Class 5C",
+    name: "5C",
     grade: "5",
     averageScore: 78,
     topicMastery: [
@@ -411,7 +411,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-12",
-    name: "Class 5D",
+    name: "5D",
     grade: "5",
     averageScore: 80,
     topicMastery: [
@@ -431,7 +431,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-13",
-    name: "Class 6A",
+    name: "6A",
     grade: "6",
     averageScore: 83,
     topicMastery: [
@@ -452,7 +452,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-14",
-    name: "Class 6B",
+    name: "6B",
     grade: "6",
     averageScore: 75,
     topicMastery: [
@@ -473,7 +473,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-15",
-    name: "Class 6C",
+    name: "6C",
     grade: "6",
     averageScore: 79,
     topicMastery: [
@@ -494,7 +494,7 @@ const mockClassPerformances: ClassPerformance[] = [
   },
   {
     id: "class-16",
-    name: "Class 6D",
+    name: "6D",
     grade: "6",
     averageScore: 81,
     topicMastery: [

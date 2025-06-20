@@ -59,7 +59,7 @@ function safeIncludes(val: unknown, search: string) {
 }
 
 export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({ 
-  school, 
+  // school, 
   classPerformances,
   onClassSelect,
   onGradeChange,
@@ -91,9 +91,9 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
             ? result.classes.map(c => String(c.class_name)).filter(Boolean)
             : []
         );
-        setTimeout(() => {
-          console.log('teacherClasses after set:', teacherClasses, teacherClasses.map(c => typeof c));
-        }, 0);
+        // setTimeout(() => {
+        //   console.log('teacherClasses after set:', teacherClasses, teacherClasses.map(c => typeof c));
+        // }, 0);
         
       } catch (error) {
         console.error("Error in fetchTeacherData:", error);
@@ -140,17 +140,23 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
     .slice(0, 3);
   
   // Check if a class is taught by the logged-in teacher (only for teachers)
-  const isTeacherClass = (className: string) => isAdmin && teacherClasses.includes(className);
+  const isTeacherClass = (className: string) => {
+    const result = isAdmin && teacherClasses.includes(className);
+    console.log(`isTeacherClass check for "${className}":`, { isAdmin, teacherClasses, result });
+    return result;
+  };
   
   // Data for charts
   const classBarChartData = filteredClasses.map(classData => {
     const isTeaching = isTeacherClass(classData.name);
+    console.log(`Chart data for "${classData.name}":`, { isTeaching, teacherClasses });
     
     return {
       name: classData.name,
       score: classData.averageScore,
       grade: `Grade ${classData.grade}`,
-      fill: classData.averageScore >= 80 ? "#10b981" : 
+      fill: isTeaching ? "#8b5cf6" : // Purple for teacher's classes
+            classData.averageScore >= 80 ? "#10b981" : 
             classData.averageScore >= 65 ? "#facc15" : "#ef4444",
       isTeaching: isTeaching
     };
@@ -199,7 +205,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
               <SchoolIcon className="h-6 w-6 mr-2 text-purple-500" />
-              {school.name} Overview
+              {/* {school.name} Overview */}
             </h2>
             
             {/* Detail Report Button */}
@@ -316,6 +322,8 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                     height={70}
                     tick={props => {
                       const isTeaching = classBarChartData.find(item => item.name === props.payload.value)?.isTeaching;
+                      // Extract class name without "Class " prefix
+                      const displayName = props.payload.value.replace(/^Class\s+/, '');
                       return (
                         <text 
                           x={props.x} 
@@ -326,7 +334,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                           fontWeight={isTeaching ? "600" : "normal"}
                           transform={`rotate(-45, ${props.x}, ${props.y})`}
                         >
-                          {props.payload.value}
+                          {displayName}
                         </text>
                       );
                     }}
