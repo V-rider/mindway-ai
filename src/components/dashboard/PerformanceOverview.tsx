@@ -349,11 +349,6 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                         }
                       }
                     }}
-                    cursor={(data) => {
-                      // Only show pointer cursor for teacher's classes
-                      const barData = classBarChartData.find(item => item.name === data.name);
-                      return barData?.isTeaching ? "pointer" : "default";
-                    }}
                   >
                     {classBarChartData.map((entry, index) => (
                       <Cell 
@@ -361,6 +356,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                         fill={entry.fill}
                         stroke={entry.isTeaching ? "#8b5cf6" : "transparent"}
                         strokeWidth={entry.isTeaching ? 3 : 0}
+                        style={{ cursor: entry.isTeaching ? "pointer" : "default" }}
                       />
                     ))}
                   </Bar>
