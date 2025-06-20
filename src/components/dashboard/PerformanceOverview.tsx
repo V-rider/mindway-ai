@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { School, ClassPerformance } from "@/types";
 import { motion } from "framer-motion";
@@ -151,10 +150,8 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
       name: classData.name,
       score: classData.averageScore,
       grade: `Grade ${classData.grade}`,
-      fill: isTeaching ? "#9b87f5" : (
-        classData.averageScore >= 80 ? "#10b981" : 
-        classData.averageScore >= 65 ? "#facc15" : "#ef4444"
-      ),
+      fill: classData.averageScore >= 80 ? "#10b981" : 
+            classData.averageScore >= 65 ? "#facc15" : "#ef4444",
       isTeaching: isTeaching
     };
   });
@@ -346,7 +343,16 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                       }
                     }}
                     cursor="pointer"
-                  />
+                  >
+                    {classBarChartData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.fill}
+                        stroke={entry.isTeaching ? "#9b87f5" : "none"}
+                        strokeWidth={entry.isTeaching ? 2 : 0}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
