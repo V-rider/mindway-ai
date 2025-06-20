@@ -74,8 +74,8 @@ const Students = () => {
         // Transform students data to match expected format
         const formattedStudents = allStudents.map(student => ({
           id: student.SID.toString(),
-          name: student.name,
-          email: student.email,
+          name: student.name || '',
+          email: student.email || '',
           className: student.className || 'Unknown Class'
         }));
         
@@ -92,12 +92,29 @@ const Students = () => {
     fetchStudents();
   }, [user?.email]);
   
-  // Filter students based on search term
-  const filteredStudents = students.filter(student => 
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.className.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter students based on search term - case insensitive and handles empty values
+  const filteredStudents = students.filter(student => {
+    if (!searchTerm.trim()) return true;
+    
+    const searchLower = searchTerm.toLowerCase().trim();
+    const name = (student.name || '').toLowerCase();
+    const email = (student.email || '').toLowerCase();
+    const className = (student.className || '').toLowerCase();
+    
+    return name.includes(searchLower) || 
+           email.includes(searchLower) || 
+           className.includes(searchLower);
+  });
+
+  // Handle search input changes
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Clear search
+  const clearSearch = () => {
+    setSearchTerm("");
+  };
   
   if (loading) {
     return (
@@ -164,17 +181,24 @@ const Students = () => {
               className="block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               placeholder="Search students by name, email, or class..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
             />
             {searchTerm && (
               <button
-                onClick={() => setSearchTerm("")}
+                onClick={clearSearch}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="h-5 w-5" />
               </button>
             )}
           </div>
+          
+          {/* Search Results Info */}
+          {searchTerm && (
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Showing {filteredStudents.length} of {students.length} students
+            </div>
+          )}
         </div>
         
         {/* Student List */}
@@ -185,6 +209,9 @@ const Students = () => {
                 key={student.id}
                 className="glass-card rounded-xl p-4 hover:shadow-md transition-all"
                 whileHover={{ y: -2 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
               >
                 <div className="flex items-center">
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-purple-100 dark:bg-gray-700 flex items-center justify-center mr-4">
@@ -235,13 +262,21 @@ const Students = () => {
                   <Users className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-2">
-                  No students found
+                  {searchTerm ? "No students found" : "No students available"}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400">
                   {searchTerm
-                    ? "No students match your search criteria. Try a different search term."
+                    ? `No students match "${searchTerm}". Try a different search term.`
                     : "You don't have any students in your classes yet."}
                 </p>
+                {searchTerm && (
+                  <button
+                    onClick={clearSearch}
+                    className="mt-4 px-4 py-2 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
+                  >
+                    Clear search
+                  </button>
+                )}
               </div>
             </div>
           )}
