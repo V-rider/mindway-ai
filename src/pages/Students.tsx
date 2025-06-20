@@ -31,18 +31,38 @@ const Students = () => {
   // Fetch students for the teacher's classes
   useEffect(() => {
     const fetchStudents = async () => {
-      if (!user?.email) return;
+      if (!user?.email) {
+        console.log('No user email available');
+        setError('No user email available');
+        setLoading(false);
+        return;
+      }
       
       try {
+        console.log('Starting to fetch students for user:', user.email);
         setLoading(true);
+        setError(null);
+        
         const teacherData = await classApi.getTeacherClasses(user.email);
+        console.log('Teacher data received:', teacherData);
+        
+        if (!teacherData.classes || teacherData.classes.length === 0) {
+          console.log('No classes found for teacher');
+          setStudents([]);
+          setLoading(false);
+          return;
+        }
         
         // Get all students from all teacher's classes
         const allStudents = [];
         for (const classItem of teacherData.classes) {
+          console.log('Fetching students for class:', classItem.class_name);
           const classStudents = await classApi.getStudentsByClass(classItem.class_name);
+          console.log('Students in class', classItem.class_name, ':', classStudents);
           allStudents.push(...classStudents);
         }
+        
+        console.log('All students found:', allStudents);
         
         // Transform students data to match expected format
         const formattedStudents = allStudents.map(student => ({
@@ -52,10 +72,11 @@ const Students = () => {
           className: student.class || 'Unknown Class'
         }));
         
+        console.log('Formatted students:', formattedStudents);
         setStudents(formattedStudents);
       } catch (err) {
         console.error('Error fetching students:', err);
-        setError('Failed to load students');
+        setError(`Failed to load students: ${err.message}`);
       } finally {
         setLoading(false);
       }
@@ -100,6 +121,12 @@ const Students = () => {
               Students
             </h1>
             <p className="text-red-600 mt-1">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-2 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
+              Retry
+            </button>
           </div>
         </div>
       </MainLayout>

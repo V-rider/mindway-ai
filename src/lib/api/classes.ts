@@ -9,7 +9,10 @@ export const classApi = {
     if (!supabase) {
       throw new Error('No Supabase client for current project');
     }
+    
     try {
+      console.log('Fetching teacher classes for:', teacherEmail);
+      
       // 1. Get teacher info by email
       const { data: teacherData, error: teacherError } = await supabase
         .from('teachers')
@@ -17,8 +20,17 @@ export const classApi = {
         .eq('email', teacherEmail)
         .single();
 
-      if (teacherError) throw teacherError;
-      if (!teacherData) return { teacherName: null, classes: [] };
+      if (teacherError) {
+        console.error('Teacher error:', teacherError);
+        throw teacherError;
+      }
+      
+      if (!teacherData) {
+        console.log('No teacher found for email:', teacherEmail);
+        return { teacherName: null, classes: [] };
+      }
+
+      console.log('Teacher data:', teacherData);
 
       // 2. Parse classes string (assuming it's comma-separated)
       const classNames = teacherData.classes.split(',').map(c => c.trim());
@@ -40,12 +52,14 @@ export const classApi = {
 
   // Get all students for a specific class (by class name)
   async getStudentsByClass(className: string) {
-    const supabase = dynamicSupabase.getCurrentClient() as import('@supabase/supabase-js').SupabaseClient<Database>;
+    const supabase = dynamicSupabase.getCurrentClient();
     if (!supabase) {
       throw new Error('No Supabase client for current project');
     }
     
     try {
+      console.log('Fetching students for class:', className);
+      
       // Get students in this class
       const { data: students, error: studentsError } = await supabase
         .from('students')
@@ -56,6 +70,8 @@ export const classApi = {
         console.error('Error fetching students:', studentsError);
         throw studentsError;
       }
+
+      console.log('Students found:', students);
 
       return (students || []).map(student => ({
         SID: student.sid,
@@ -71,12 +87,14 @@ export const classApi = {
 
   // Get all classes from the teachers table (since there's no separate class table)
   async getAllClasses() {
-    const supabase = dynamicSupabase.getCurrentClient() as import('@supabase/supabase-js').SupabaseClient<Database>;
+    const supabase = dynamicSupabase.getCurrentClient();
     if (!supabase) {
       throw new Error('No Supabase client for current project');
     }
     
     try {
+      console.log('Fetching all classes');
+      
       const { data: teachers, error } = await supabase
         .from('teachers')
         .select('classes, name');
@@ -85,6 +103,8 @@ export const classApi = {
         console.error('Error fetching teachers:', error);
         throw error;
       }
+      
+      console.log('Teachers data:', teachers);
       
       // Extract unique classes from all teachers
       const allClasses = new Set();
