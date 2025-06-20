@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { School, ClassPerformance } from "@/types";
 import { motion } from "framer-motion";
@@ -219,7 +220,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
             {isAdmin && (
               <p className="text-gray-600 dark:text-gray-400 text-sm hidden md:block">
                 <SchoolIcon className="h-4 w-4 mr-1.5 text-purple-500 inline" />
-                Classes you teach are highlighted in purple
+                Classes you teach are highlighted with purple outline
               </p>
             )}
             
@@ -297,7 +298,7 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
             </h3>
             {isAdmin && (
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                Classes you teach are highlighted in purple
+                Classes you teach have purple outlines
               </p>
             )}
             
@@ -348,8 +349,8 @@ export const PerformanceOverview: React.FC<PerformanceOverviewProps> = ({
                       <Cell 
                         key={`cell-${index}`} 
                         fill={entry.fill}
-                        stroke={entry.isTeaching ? "#9b87f5" : "none"}
-                        strokeWidth={entry.isTeaching ? 2 : 0}
+                        stroke={entry.isTeaching ? "#9b87f5" : "transparent"}
+                        strokeWidth={entry.isTeaching ? 3 : 0}
                       />
                     ))}
                   </Bar>
